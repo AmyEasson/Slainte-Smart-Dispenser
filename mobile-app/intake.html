@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Vitamin Intake Log (Mock)</title>
+
+    <!-- Basic styling to resemble a simple mobile layout -->
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 420px;   /* mobile-like width */
+            margin: 0 auto;
+        }
+
+        /* Single intake entry row */
+        .row {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 8px 12px;
+            padding: 10px 0;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .vit { font-weight: 600; }
+        .meta { color: #555; font-size: 12px; }
+        .status { font-weight: 700; }
+
+        /* Status-specific colours */
+        .TAKEN { color: #0a7; }
+        .PENDING { color: #a70; }
+        .MISSED { color: #d33; }
+
+        select { padding: 6px; }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- Header with title and status filter -->
+<header>
+    <h2>Intake Log</h2>
+    <select id="filter">
+        <option value="ALL">All</option>
+        <option value="TAKEN">Taken</option>
+        <option value="PENDING">Pending</option>
+        <option value="MISSED">Missed</option>
+    </select>
+</header>
+
+<!-- Container for rendered intake log entries -->
+<div id="list"></div>
+
+<script>
+    // Mock dataset representing a backend response
+    let logs = [];
+
+    // Format ISO timestamps for display
+    function fmt(iso) {
+        return new Date(iso).toLocaleString();
+    }
+
+    // Render intake entries based on selected filter
+    function render() {
+        const filter = document.getElementById("filter").value;
+        const list = document.getElementById("list");
+        list.innerHTML = "";
+
+        // Filter entries by intake status
+        const shown = logs.filter(
+            l => filter === "ALL" || l.status === filter
+        );
+
+        // Create UI rows for each entry
+        shown.forEach(l => {
+            const row = document.createElement("div");
+            row.className = "row";
+
+            row.innerHTML = `
+                <div>
+                    <div class="vit">${l.vitamin}</div>
+                    <div class="meta">Scheduled: ${fmt(l.scheduledTime)}</div>
+                    <div class="meta">
+                        ${l.takenAt ? ("Taken: " + fmt(l.takenAt)) : ""}
+                    </div>
+                </div>
+                <div class="status ${l.status}">${l.status}</div>
+            `;
+
+            list.appendChild(row);
+        });
+
+        // Empty state when no entries match the filter
+        if (shown.length === 0) {
+            list.innerHTML = `<p>No entries.</p>`;
+        }
+    }
+
+    // Load mock data (simulates GET /logs from backend)
+    function load() {
+        logs = [
+            {
+                id: 1,
+                vitamin: "Vitamin D",
+                scheduledTime: "2026-01-26T08:00:00Z",
+                status: "TAKEN",
+                takenAt: "2026-01-26T08:03:00Z"
+            },
+            {
+                id: 2,
+                vitamin: "Iron",
+                scheduledTime: "2026-01-26T20:00:00Z",
+                status: "PENDING",
+                takenAt: null
+            },
+            {
+                id: 3,
+                vitamin: "Omega-3",
+                scheduledTime: "2026-01-25T08:00:00Z",
+                status: "MISSED",
+                takenAt: null
+            }
+        ];
+
+        render();
+    }
+
+    // Re-render UI when filter selection changes
+    document.getElementById("filter").addEventListener("change", render);
+
+    // Initial load
+    load();
+</script>
+
+</body>
+</html>
