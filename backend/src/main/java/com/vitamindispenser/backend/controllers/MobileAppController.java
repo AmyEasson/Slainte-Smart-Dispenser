@@ -1,7 +1,7 @@
 package com.vitamindispenser.backend.controllers;
 
-import com.vitamindispenser.backend.dto.IntakeLogResponse;
-import com.vitamindispenser.backend.dto.ScheduleRequest;
+import com.vitamindispenser.backend.dto.logging.IntakeLogResponse;
+import com.vitamindispenser.backend.dto.schedule.ScheduleRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 

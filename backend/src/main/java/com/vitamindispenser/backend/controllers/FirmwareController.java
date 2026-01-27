@@ -1,6 +1,6 @@
 package com.vitamindispenser.backend.controllers;
 
-import com.vitamindispenser.backend.dto.VitaminStatusRequest;
+import com.vitamindispenser.backend.dto.logging.VitaminStatusRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 

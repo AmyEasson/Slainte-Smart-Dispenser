@@ -1,4 +1,7 @@
-package com.vitamindispenser.backend.dto;
+package com.vitamindispenser.backend.dto.schedule;
+
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.List;
 
@@ -19,17 +22,9 @@ import java.util.List;
  *   ]
  * }
  */
-
+@Getter
+@Setter
 public class ScheduleRequest {
     // List of all vitamins and their schedules
     private List<VitaminSchedule> vitamins;
-
-    // Getters and setters
-    public List<VitaminSchedule> getVitamins() {
-        return vitamins;
-    }
-
-    public void setVitamins(List<VitaminSchedule> vitamins) {
-        this.vitamins = vitamins;
-    }
 }
