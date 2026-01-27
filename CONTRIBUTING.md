@@ -1,11 +1,11 @@
 # Contributing Guidelines
 
-## General Rules
+## General Rules
 - Keep changes scoped to a single feature or fix per pull request
 - Follow existing code style and structure
 - Write clear commit messages
 
-## Branching
+## Branching
 - Use feature branches: 'feature/<name>'
 - Bug fixes: 'fix/<name>'
 
