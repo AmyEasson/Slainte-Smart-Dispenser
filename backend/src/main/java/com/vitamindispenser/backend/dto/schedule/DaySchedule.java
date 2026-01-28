@@ -13,6 +13,6 @@ import java.util.List;
 public class DaySchedule {
 
     private String day;
-    private List<String> times;
+    private List<TimeSlot> times;
 
 }

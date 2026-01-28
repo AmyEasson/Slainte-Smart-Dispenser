@@ -1,12 +1,14 @@
 package com.vitamindispenser.backend.controllers;
 
+import com.vitamindispenser.backend.domain.DispenseStatusService;
 import com.vitamindispenser.backend.dto.logging.VitaminStatusRequest;
+import lombok.NonNull;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import lombok.extern.slf4j.Slf4j;
 
-import java.util.HashMap;
-import java.util.Map;
-
+@Slf4j
 @RestController
 @RequestMapping("/api/firmware")
 public class FirmwareController {
@@ -16,6 +18,8 @@ public class FirmwareController {
      * 2. Firmware dispenses vitamins at scheduled times
      * 3. Firmware sends boolean (vitamin taken yes/no) back to backend
      */
+    @Autowired
+    private DispenseStatusService dispenseStatusService;
 
     // Firmware gets the current schedule to dispense
     @GetMapping("/schedule")
@@ -27,13 +31,23 @@ public class FirmwareController {
     }
 
     // Firmware sends vitamin intake status (boolean yes/no)
-    @PostMapping("/status")
-    public ResponseEntity<Map<String, String>> reportStatus(@RequestBody VitaminStatusRequest request){
-        // TODO: Save intake log to database
-        // TODO: Make this data available for mobile app to fetch
+    /*
+    Example json:
+            {
+              "intakeIds": [12345,234,23,355]
+              "dispenseEventStatus": true
+            }
 
-        Map<String, String> response = new HashMap<>();
-        response.put("message", "Status received successfully");
-        return ResponseEntity.ok(response);
+     Notes: the controller only calls the domain service (and not the repos directly)
+     */
+    @PostMapping("/status")
+    public ResponseEntity<String> reportStatus(@RequestBody VitaminStatusRequest request) {
+        log.info("Received status report from firmware");
+        log.info("Intake IDs: " + request.getIntakeIds());
+        log.info("Dispense status: " + request.getDispenseEventStatus());
+        dispenseStatusService.handleStatus(request.getIntakeIds(),
+                    request.getDispenseEventStatus());
+        log.info("Status processing completed");
+        return ResponseEntity.ok("Status processing completed");
     }
 }
