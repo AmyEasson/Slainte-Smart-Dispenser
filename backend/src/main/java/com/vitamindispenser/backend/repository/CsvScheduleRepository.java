@@ -24,7 +24,9 @@ public class CsvScheduleRepository implements ScheduleRepository {
 
     @Override
     public List<DispenseEvent> findByIds(List<Integer> ids) {
-
+        if (ids == null || ids.isEmpty()) {
+            return Collections.emptyList();
+        }
         List<DispenseEvent> results = new ArrayList<>();
 
         Set<Integer> idSet = new HashSet<>(ids);

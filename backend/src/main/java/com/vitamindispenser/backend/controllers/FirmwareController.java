@@ -2,6 +2,7 @@ package com.vitamindispenser.backend.controllers;
 
 import com.vitamindispenser.backend.domain.DispenseStatusService;
 import com.vitamindispenser.backend.dto.logging.VitaminStatusRequest;
+import lombok.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -40,12 +41,13 @@ public class FirmwareController {
      Notes: the controller only calls the domain service (and not the repos directly)
      */
     @PostMapping("/status")
-    public void reportStatus(@RequestBody VitaminStatusRequest request) {
+    public ResponseEntity<String> reportStatus(@RequestBody VitaminStatusRequest request) {
         log.info("Received status report from firmware");
         log.info("Intake IDs: " + request.getIntakeIds());
         log.info("Dispense status: " + request.getDispenseEventStatus());
         dispenseStatusService.handleStatus(request.getIntakeIds(),
                     request.getDispenseEventStatus());
         log.info("Status processing completed");
+        return ResponseEntity.ok("Status processing completed");
     }
 }

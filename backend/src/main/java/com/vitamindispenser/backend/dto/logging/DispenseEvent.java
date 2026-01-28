@@ -1,5 +1,6 @@
 package com.vitamindispenser.backend.dto.logging;
 
+import com.vitamindispenser.backend.domain.DispenseStatusService;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -17,8 +18,9 @@ public class DispenseEvent {
     private Integer numberOfPills;
     private Integer id;
 
-    public DispenseEvent(Integer numberOfPills, String vitaminType, String day, String time, Boolean taken, Integer id) {
+    public DispenseEvent() {}
 
+    public DispenseEvent(Integer numberOfPills, String vitaminType, String day, String time, Boolean taken, Integer id) {
         this.numberOfPills = numberOfPills;
         this.vitaminType = vitaminType;
         this.day = day;
