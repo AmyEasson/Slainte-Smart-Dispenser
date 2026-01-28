@@ -9,7 +9,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 
 import java.io.InputStreamReader;
-import java.util.Optional;
+import java.util.*;
 
 @Repository
 public class CsvScheduleRepository implements ScheduleRepository {
@@ -23,30 +23,41 @@ public class CsvScheduleRepository implements ScheduleRepository {
     }
 
     @Override
-    public Optional<DispenseEvent> findById(Long id) {
+    public List<DispenseEvent> findByIds(List<Integer> ids) {
+
+        List<DispenseEvent> results = new ArrayList<>();
+
+        Set<Integer> idSet = new HashSet<>(ids);
+
         try (CSVParser parser = CSVFormat.DEFAULT
                 .withFirstRecordAsHeader()
                 .parse(new InputStreamReader(csv.getInputStream()))) {
 
             for (CSVRecord r : parser) {
-                if (Long.parseLong(r.get("id")) == id) {
-                    return Optional.of(
-                            new DispenseEvent(
-                                    Integer.parseInt(r.get("numberOfPills")),
-                                    r.get("vitaminType"),
-                                    r.get("day"),
-                                    r.get("time"),
-                                    false,
-                                    Integer.parseInt(r.get("id"))
-                            )
-                    );
+
+                Integer rowId = Integer.parseInt(r.get("id"));
+
+                if (!idSet.contains(rowId)) {
+                    continue;
                 }
+
+                results.add(
+                        new DispenseEvent(
+                                Integer.parseInt(r.get("numberOfPills")),
+                                r.get("vitaminType"),
+                                r.get("day"),
+                                r.get("time"),
+                                false,
+                                rowId
+                        )
+                );
             }
 
         } catch (Exception e) {
             throw new IllegalStateException("Failed to read schedule CSV", e);
         }
 
-        return Optional.empty();
+        return results;
     }
+
 }

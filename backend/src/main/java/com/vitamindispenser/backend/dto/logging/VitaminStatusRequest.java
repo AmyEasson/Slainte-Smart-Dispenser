@@ -3,6 +3,8 @@ package com.vitamindispenser.backend.dto.logging;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
+
 /**
  * Request body from firmware reporting vitamin dispensing status
  */
@@ -10,6 +12,6 @@ import lombok.Setter;
 @Setter
 public class VitaminStatusRequest {
 
-    private Integer intakeId;      // the intake to which the status relates to
-    private Boolean vitaminTaken;  // true = successfully dispensed, false = failed
+    private List<Integer> intakeIds;      // the intake to which the status relates to
+    private Boolean dispenseEventStatus;  // true = successfully dispensed, false = failed
 }

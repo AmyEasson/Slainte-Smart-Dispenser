@@ -17,9 +17,6 @@ public class DispenseEvent {
     private Integer numberOfPills;
     private Integer id;
 
-    // Constructors
-    public DispenseEvent() {}
-
     public DispenseEvent(Integer numberOfPills, String vitaminType, String day, String time, Boolean taken, Integer id) {
 
         this.numberOfPills = numberOfPills;

@@ -1,11 +1,15 @@
 package com.vitamindispenser.backend.controllers;
 
+import com.vitamindispenser.backend.dto.logging.DispenseEvent;
 import com.vitamindispenser.backend.dto.logging.VitaminStatusRequest;
+import com.vitamindispenser.backend.repository.CsvScheduleRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/firmware")
@@ -16,6 +20,8 @@ public class FirmwareController {
      * 2. Firmware dispenses vitamins at scheduled times
      * 3. Firmware sends boolean (vitamin taken yes/no) back to backend
      */
+    @Autowired
+    private CsvScheduleRepository scheduleRepository;
 
     // Firmware gets the current schedule to dispense
     @GetMapping("/schedule")
@@ -41,10 +47,11 @@ public class FirmwareController {
         // in the database every intake has an id [but dto exactly?] vitaminType, number of pills, day, timestamp;
         // 2) Update the database status with all the data available so far
 
+        Optional<DispenseEvent> dispenseInformation = scheduleRepository.findById(request.getIntakeIds());
         Map<String, String> response = new HashMap<>();
         response.put("message", "Status received successfully");
-        response.put("intakeId", String.valueOf(request.getIntakeId()));
-        response.put("taken", String.valueOf(request.getVitaminTaken()));
+        response.put("intakeId", String.valueOf(request.getIntakeIds()));
+        response.put("taken", String.valueOf(request.getDispenseEventStatus()));
         return ResponseEntity.ok(response);
     }
 }
