@@ -3,18 +3,6 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <a href="./index.html" style="
-    display:inline-block;
-    margin-bottom:12px;
-    text-decoration:none;
-    color:#000;
-    border:1px solid #aaa;
-    padding:6px 10px;
-    border-radius:6px;
-    font-size:12px;
-    ">
-        ← Back to Home
-    </a>
     <title>User Intake Scheduling Tool (Mock)</title>
     <style>
         body { font-family: Arial, sans-serif; padding: 16px; max-width: 680px; margin: 0 auto; }
@@ -37,6 +25,18 @@
     </style>
 </head>
 <body>
+<a href="./index.html" style="
+    display:inline-block;
+    margin-bottom:12px;
+    text-decoration:none;
+    color:#000;
+    border:1px solid #aaa;
+    padding:6px 10px;
+    border-radius:6px;
+    font-size:12px;
+    ">
+    ← Back to Home
+</a>
 <h2>Scheduling Tool (Mock)</h2>
 <div class="muted">
     Users configure weekly schedules for each vitamin. A day only appears after it is added.
@@ -60,11 +60,8 @@
 
 <div class="card">
     <div class="actions">
-        <button id="generateBtn">Generate JSON</button>
-        <button id="copyBtn">Copy JSON</button>
-        <button id="resetBtn" class="danger">Reset</button>
+        <button id="save">save</button>
     </div>
-    <pre id="output">{}</pre>
 </div>
 
 <script>
@@ -154,6 +151,39 @@
                                 }))
                         )
                 }))
+        };
+    }
+
+    // Convert backend payload -> UI state
+    function fromBackendPayload(payload) {
+        const vitamins = Array.isArray(payload?.vitamins) ? payload.vitamins : [];
+        return {
+            vitamins: vitamins
+                .filter(v => typeof v?.vitaminType === "string" && v.vitaminType.trim().length > 0)
+                .map(v => {
+                    const uiSchedule = {}; // DAY -> [ { scheduled, cutoff }, ... ]
+                    const entries = Array.isArray(v.schedule) ? v.schedule : [];
+
+                    for (const e of entries) {
+                        const day = typeof e?.day === "string" ? e.day.trim().toUpperCase() : "";
+                        const times = Array.isArray(e?.times) ? e.times : [];
+
+                        // Must be exactly two "HH:MM" strings to be usable in the <input type="time">
+                        const scheduled = typeof times[0] === "string" ? times[0] : "";
+                        const cutoff = typeof times[1] === "string" ? times[1] : "";
+
+                        if (!DAYS.includes(day)) continue;
+                        if (!scheduled || !cutoff) continue;
+
+                        if (!uiSchedule[day]) uiSchedule[day] = [];
+                        uiSchedule[day].push({ scheduled, cutoff });
+                    }
+
+                    return {
+                        vitaminType: v.vitaminType.trim(),
+                        schedule: uiSchedule
+                    };
+                })
         };
     }
 
@@ -323,23 +353,12 @@
         addVitamin(inp.value);
         inp.value = "";
     });
-
-    document.getElementById("generateBtn").addEventListener("click", () => {
+    document.getElementById("save").addEventListener("click", () => {
         const payload = toBackendPayload();
-        document.getElementById("output").textContent = JSON.stringify(payload, null, 2);
+        // TODO: POST request that sent payload to backend
     });
 
-    document.getElementById("copyBtn").addEventListener("click", async () => {
-        const text = document.getElementById("output").textContent;
-        try { await navigator.clipboard.writeText(text); } catch {}
-    });
-
-    document.getElementById("resetBtn").addEventListener("click", () => {
-        state = { vitamins: [] };
-        document.getElementById("output").textContent = "{}";
-        render();
-    });
-
+    // TODO: Replace mock data with GET response from backend
     // Optional starter data (remove if want empty)
     state = {
         vitamins: [
