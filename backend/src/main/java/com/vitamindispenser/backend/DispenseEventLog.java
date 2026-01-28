@@ -37,10 +37,10 @@ public class DispenseEventLog {
     @Column(nullable = false)
     private Integer numberOfPills;
 
-    @Column(nullable = false)
+    @Column(name = "day_name", nullable = false)
     private String day;
 
-    @Column(nullable = false)
+    @Column(name = "time_value", nullable = false)
     private String time;
 
     @Column(nullable = false)
