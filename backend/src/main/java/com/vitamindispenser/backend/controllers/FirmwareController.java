@@ -1,5 +1,6 @@
 package com.vitamindispenser.backend.controllers;
 
+import com.vitamindispenser.backend.domain.DispenseStatusService;
 import com.vitamindispenser.backend.dto.logging.DispenseEvent;
 import com.vitamindispenser.backend.dto.logging.VitaminStatusRequest;
 import com.vitamindispenser.backend.repository.CsvScheduleRepository;
@@ -8,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -21,7 +23,7 @@ public class FirmwareController {
      * 3. Firmware sends boolean (vitamin taken yes/no) back to backend
      */
     @Autowired
-    private CsvScheduleRepository scheduleRepository;
+    private DispenseStatusService dispenseStatusService;
 
     // Firmware gets the current schedule to dispense
     @GetMapping("/schedule")
@@ -36,22 +38,15 @@ public class FirmwareController {
     /*
     Example json:
             {
-              "intakeId": 12345,
-              "taken": true
+              "intakeIds": [12345,234,23,355]
+              "dispenseEventStatus": true
             }
+
+     Notes: the controller only calls the domain service (and not the repos directly)
      */
     @PostMapping("/status")
-    public ResponseEntity<Map<String, String>> reportStatus(@RequestBody VitaminStatusRequest request) {
-        // TODO:
-        // Steps:1) Find the data for the intake event based on the intake id.
-        // in the database every intake has an id [but dto exactly?] vitaminType, number of pills, day, timestamp;
-        // 2) Update the database status with all the data available so far
-
-        Optional<DispenseEvent> dispenseInformation = scheduleRepository.findById(request.getIntakeIds());
-        Map<String, String> response = new HashMap<>();
-        response.put("message", "Status received successfully");
-        response.put("intakeId", String.valueOf(request.getIntakeIds()));
-        response.put("taken", String.valueOf(request.getDispenseEventStatus()));
-        return ResponseEntity.ok(response);
+    public void reportStatus(@RequestBody VitaminStatusRequest request) {
+            dispenseStatusService.handleStatus(request.getIntakeIds(),
+                    request.getDispenseEventStatus());
     }
 }
