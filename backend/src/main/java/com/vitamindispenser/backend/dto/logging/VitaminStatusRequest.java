@@ -10,9 +10,6 @@ import lombok.Setter;
 @Setter
 public class VitaminStatusRequest {
 
+    private Integer intakeId;      // the intake to which the status relates to
     private Boolean vitaminTaken;  // true = successfully dispensed, false = failed
-
-    // Additional data we might want later
-    private String vitaminType;
-    private String timestamp;
 }

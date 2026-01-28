@@ -27,13 +27,24 @@ public class FirmwareController {
     }
 
     // Firmware sends vitamin intake status (boolean yes/no)
+    /*
+    Example json:
+            {
+              "intakeId": 12345,
+              "taken": true
+            }
+     */
     @PostMapping("/status")
-    public ResponseEntity<Map<String, String>> reportStatus(@RequestBody VitaminStatusRequest request){
-        // TODO: Save intake log to database
-        // TODO: Make this data available for mobile app to fetch
+    public ResponseEntity<Map<String, String>> reportStatus(@RequestBody VitaminStatusRequest request) {
+        // TODO:
+        // Steps:1) Find the data for the intake event based on the intake id.
+        // in the database every intake has an id [but dto exactly?] vitaminType, number of pills, day, timestamp;
+        // 2) Update the database status with all the data available so far
 
         Map<String, String> response = new HashMap<>();
         response.put("message", "Status received successfully");
+        response.put("intakeId", String.valueOf(request.getIntakeId()));
+        response.put("taken", String.valueOf(request.getVitaminTaken()));
         return ResponseEntity.ok(response);
     }
 }

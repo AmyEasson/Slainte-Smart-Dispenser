@@ -1,6 +1,6 @@
 package com.vitamindispenser.backend.controllers;
 
-import com.vitamindispenser.backend.dto.logging.IntakeLogResponse;
+import com.vitamindispenser.backend.dto.logging.DispenseEvent;
 import com.vitamindispenser.backend.dto.schedule.ScheduleRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -50,7 +50,7 @@ public class MobileAppController {
 
     // Mobile app gets vitamin intake data
     @GetMapping("/intake")
-    public ResponseEntity<List<IntakeLogResponse>> getIntakeData() {
+    public ResponseEntity<List<DispenseEvent>> getIntakeData() {
         // TODO: Fetch intake logs
 
         // For now returning an empty list
