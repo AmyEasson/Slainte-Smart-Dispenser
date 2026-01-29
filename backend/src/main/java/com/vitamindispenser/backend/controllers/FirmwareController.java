@@ -1,12 +1,16 @@
 package com.vitamindispenser.backend.controllers;
 
 import com.vitamindispenser.backend.domain.DispenseStatusService;
+import com.vitamindispenser.backend.dto.logging.DispenseEvent;
 import com.vitamindispenser.backend.dto.logging.VitaminStatusRequest;
+import com.vitamindispenser.backend.repository.ScheduleRepository;
 import lombok.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -20,14 +24,20 @@ public class FirmwareController {
      */
     @Autowired
     private DispenseStatusService dispenseStatusService;
+    @Autowired
+    private ScheduleRepository scheduleRepository;
 
     // Firmware gets the current schedule to dispense
     @GetMapping("/schedule")
-    public ResponseEntity<Object> getSchedule() {
-        // TODO: Fetch schedule
-        // TODO: Return schedule in format firmware can understand
+    public ResponseEntity<List<DispenseEvent>> getSchedule() {
+        log.info("Firmware requesting schedule");
+        // TODO: Get all schedule IDs (for now, just which IDs exist)
+        // Currently a placeholder, need to implement some findAll() function
+        List<Integer> allIds = List.of(1,2,3); //temporarily hardcoded
 
-        return ResponseEntity.ok("TODO: return schedule for firmware");
+        List<DispenseEvent> events = scheduleRepository.findByIds(allIds);
+        log.info("Returning {} schedule events", events.size());
+        return ResponseEntity.ok(events);
     }
 
     // Firmware sends vitamin intake status (boolean yes/no)
