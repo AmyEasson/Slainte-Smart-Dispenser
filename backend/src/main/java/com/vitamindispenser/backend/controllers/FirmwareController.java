@@ -15,12 +15,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/firmware")
 public class FirmwareController {
-    /*
-     * Firmware workflow:
-     * 1. Firmware polls this endpoint to get current schedule
-     * 2. Firmware dispenses vitamins at scheduled times
-     * 3. Firmware sends boolean (vitamin taken yes/no) back to backend
-     */
     private final FirmwareScheduleService firmwareScheduleService;
     private final IntakeRecordingService intakeRecordingService;
 
@@ -32,7 +26,7 @@ public class FirmwareController {
         this.firmwareScheduleService = firmwareScheduleService;
     }
 
-    // Firmware gets the current schedule to dispense
+    // Firmware gets schedules that are due right now (within 5 minute window)
     @GetMapping("/schedule")
     public ResponseEntity<List<FirmwareDispenseResponse>> getSchedule() {
         log.info("Firmware requesting schedule");
@@ -41,16 +35,7 @@ public class FirmwareController {
         );
     }
 
-    // Firmware sends vitamin intake status (boolean yes/no)
-    /*
-    Example json:
-            {
-              "intakeIds": [12345,234,23,355]
-              "dispenseEventStatus": true
-            }
-
-     Notes: the controller only calls the domain service (and not the repos directly)
-     */
+    // Firmware reports whether vitamins were successfully taken
     @PostMapping("/status")
     public ResponseEntity<String> reportStatus(@RequestBody VitaminStatusRequest request) {
         log.info("Received status report from firmware");

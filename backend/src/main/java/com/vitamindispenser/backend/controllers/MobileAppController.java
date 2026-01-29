@@ -21,16 +21,13 @@ public class MobileAppController {
      *       "vitaminType": "Vitamin A",
      *       "numberOfPills": 2,
      *       "schedule": [
-     *         {"day": "monday", "times": ["10:00", "12:00"]},
-     *         {"day": "tuesday", "times": ["10:00", "12:00"]},
-     *         {"day": "wednesday", "times": ["10:00", "12:00"]}
-     *       ]
-     *     },
-     *     {
-     *       "vitaminType": "Magnesium",
-     *       "numberOfPills": 1,
-     *       "schedule": [
-     *         {"day": "monday", "times": ["09:00"]}
+     *         {
+     *           "day": "monday",
+     *           "times": [
+     *             {"id": 1, "time": "10:00"},
+     *             {"id": 2, "time": "12:00"}
+     *           ]
+     *         }
      *       ]
      *     }
      *   ]

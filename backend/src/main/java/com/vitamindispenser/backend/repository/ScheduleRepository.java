@@ -1,6 +1,5 @@
 package com.vitamindispenser.backend.repository;
 
-import com.vitamindispenser.backend.dto.logging.DispenseEvent;
 import com.vitamindispenser.backend.dto.schedule.DispenseSchedule;
 
 import java.time.Instant;

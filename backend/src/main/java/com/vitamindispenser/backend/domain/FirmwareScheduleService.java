@@ -14,23 +14,17 @@ import java.util.List;
 
 /**
  * DISPENSE FLOW OVERVIEW
- *
  * 1. Mobile app defines schedules → stored as DispenseSchedule
- *
  * 2. Firmware polls /api/v1/firmware/schedule
  *    - We find all DispenseSchedule entries that are due "now"
  *    - For each due schedule:
  *        - Create an IntakeAttempt (status = PENDING)
  *        - Return FirmwareDispenseResponse to firmware
- *
  * 3. Firmware performs physical dispensing and monitoring
- *
  * 4. Firmware reports result via /api/v1/firmware/status
  *    - DispenseStatusService updates the latest IntakeAttempt
  *      to TAKEN or MISSED
- *
  * 5. Mobile app reads IntakeAttempt history via /api/v1/mobile/intake
- *
  * IMPORTANT:
  * - DispenseSchedule = planned event
  * - IntakeAttempt   = runtime execution + outcome
@@ -53,6 +47,11 @@ public class FirmwareScheduleService {
         List<FirmwareDispenseResponse> result = new ArrayList<>();
 
         for (DispenseSchedule entry: due){
+            // skip if already created an attempt today
+            if (attemptRepository.hasAttemptToday(entry.getId())){
+                continue;
+            }
+
             // create runtime attempt
             IntakeAttempt attempt = new IntakeAttempt();
             attempt.setIntakeId(entry.getId());

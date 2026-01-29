@@ -1,6 +1,5 @@
 package com.vitamindispenser.backend.repository;
 
-import com.vitamindispenser.backend.dto.logging.DispenseEvent;
 import com.vitamindispenser.backend.dto.schedule.DispenseSchedule;
 import org.apache.commons.csv.CSVPrinter;
 import org.springframework.core.io.Resource;
@@ -59,9 +58,14 @@ public class CsvScheduleRepository implements ScheduleRepository {
         DayOfWeek today = nowUtc.getDayOfWeek();
         LocalTime currentTime = nowUtc.toLocalTime();
 
+        // only return schedules within a 5-minute window
+        LocalTime fiveMinutesAgo = currentTime.minusMinutes(5);
+
         return findAll().stream()
                 .filter(s ->
                         s.getDay().equals(today) &&
+                                // schedule time is between 5 minutes ago and now
+                                !s.getTime().isBefore(fiveMinutesAgo) &&
                                 !s.getTime().isAfter(currentTime)
                 )
                 .toList();

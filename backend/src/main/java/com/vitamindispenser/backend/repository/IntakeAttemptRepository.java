@@ -3,6 +3,8 @@ package com.vitamindispenser.backend.repository;
 import com.vitamindispenser.backend.dto.logging.IntakeAttempt;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -28,5 +30,13 @@ public class IntakeAttemptRepository {
 
     public List<IntakeAttempt> findAll() {
         return new ArrayList<>(attempts.values());
+    }
+
+    public boolean hasAttemptToday(Integer intakeId) {
+        // check if there's already an attempt for this intakeId today
+        return attempts.containsKey(intakeId) &&
+                attempts.get(intakeId).getScheduledAt() != null &&
+                // check if scheduledAt is today
+                attempts.get(intakeId).getScheduledAt().atZone(ZoneId.systemDefault()).toLocalDate().equals(LocalDate.now(ZoneId.systemDefault()));
     }
 }

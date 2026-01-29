@@ -12,11 +12,14 @@ import java.util.List;
 
 @Service
 public class ScheduleService {
-    @Autowired
-    private ScheduleRepository scheduleRepository;
+    private final ScheduleRepository scheduleRepository;
+
+    public ScheduleService(ScheduleRepository scheduleRepository) {
+        this.scheduleRepository = scheduleRepository;
+    }
 
     /**
-     * Converts mobile app schedule format to DispenseEvent format and saves to CSV
+     * Gets all schedules for firmware
      */
     public void createSchedule(ScheduleRequest request){
         List<DispenseSchedule> schedules = convertToDispenseSchedules(request);
@@ -24,7 +27,8 @@ public class ScheduleService {
     }
 
     /**
-     * Gets all schedules for firmware
+     * Converts mobile app's nested schedule format into flat DispenseSchedule entries.
+     * Each vitamin-day-time combination becomes one DispenseSchedule row in CSV.
      */
     public List<DispenseSchedule> convertToDispenseSchedules(ScheduleRequest request) {
         List<DispenseSchedule> schedules = new ArrayList<>();
@@ -33,6 +37,7 @@ public class ScheduleService {
             for (DaySchedule day: vitamin.getSchedule()){
                 for (TimeSlot slot : day.getTimes()){
                     DispenseSchedule schedule = new DispenseSchedule();
+                    schedule.setId(slot.getId());
                     schedule.setVitaminType(vitamin.getVitaminType());
                     schedule.setNumberOfPills(vitamin.getNumberOfPills());
                     schedule.setDay(DayOfWeek.valueOf(day.getDay().toUpperCase()));
