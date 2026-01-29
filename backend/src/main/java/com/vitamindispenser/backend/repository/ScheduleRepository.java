@@ -1,11 +1,13 @@
 package com.vitamindispenser.backend.repository;
 
 import com.vitamindispenser.backend.dto.logging.DispenseEvent;
+import com.vitamindispenser.backend.dto.schedule.DispenseSchedule;
 
+import java.time.Instant;
 import java.util.List;
 
 public interface ScheduleRepository {
-    List<DispenseEvent> findByIds(List<Integer> ids);
-    List<DispenseEvent> findAll();
-    void saveAll(List<DispenseEvent> events);
+    List<DispenseSchedule> findAll();
+    List<DispenseSchedule> findDue(Instant now);
+    void saveAll(List<DispenseSchedule> schedules);
 }

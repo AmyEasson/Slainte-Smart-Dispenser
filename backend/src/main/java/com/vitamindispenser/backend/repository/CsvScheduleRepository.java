@@ -1,6 +1,7 @@
 package com.vitamindispenser.backend.repository;
 
 import com.vitamindispenser.backend.dto.logging.DispenseEvent;
+import com.vitamindispenser.backend.dto.schedule.DispenseSchedule;
 import org.apache.commons.csv.CSVPrinter;
 import org.springframework.core.io.Resource;
 import org.apache.commons.csv.CSVFormat;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Repository;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.InputStreamReader;
+import java.time.*;
 import java.util.*;
 
 @Repository
@@ -26,64 +28,22 @@ public class CsvScheduleRepository implements ScheduleRepository {
     }
 
     @Override
-    public List<DispenseEvent> findByIds(List<Integer> ids) {
-        if (ids == null || ids.isEmpty()) {
-            return Collections.emptyList();
-        }
-        List<DispenseEvent> results = new ArrayList<>();
-
-        Set<Integer> idSet = new HashSet<>(ids);
+    public List<DispenseSchedule> findAll() {
+        List<DispenseSchedule> results = new ArrayList<>();
 
         try (CSVParser parser = CSVFormat.DEFAULT
                 .withFirstRecordAsHeader()
                 .parse(new InputStreamReader(csv.getInputStream()))) {
 
             for (CSVRecord r : parser) {
+                DispenseSchedule schedule = new DispenseSchedule();
+                schedule.setId(Integer.parseInt(r.get("id")));
+                schedule.setNumberOfPills(Integer.parseInt(r.get("numberOfPills")));
+                schedule.setVitaminType(r.get("vitaminType"));
+                schedule.setDay(DayOfWeek.valueOf(r.get("day").toUpperCase()));
+                schedule.setTime(LocalTime.parse(r.get("time")));
 
-                Integer rowId = Integer.parseInt(r.get("id"));
-
-                if (!idSet.contains(rowId)) {
-                    continue;
-                }
-
-                results.add(
-                        new DispenseEvent(
-                                Integer.parseInt(r.get("numberOfPills")),
-                                r.get("vitaminType"),
-                                r.get("day"),
-                                r.get("time"),
-                                false,
-                                rowId
-                        )
-                );
-            }
-
-        } catch (Exception e) {
-            throw new IllegalStateException("Failed to read schedule CSV", e);
-        }
-
-        return results;
-    }
-
-    @Override
-    public List<DispenseEvent> findAll() {
-        List<DispenseEvent> results = new ArrayList<>();
-
-        try (CSVParser parser = CSVFormat.DEFAULT
-                .withFirstRecordAsHeader()
-                .parse(new InputStreamReader(csv.getInputStream()))) {
-
-            for (CSVRecord r : parser) {
-                results.add(
-                        new DispenseEvent(
-                                Integer.parseInt(r.get("numberOfPills")),
-                                r.get("vitaminType"),
-                                r.get("day"),
-                                r.get("time"),
-                                false,  // not taken yet
-                                Integer.parseInt(r.get("id"))
-                        )
-                );
+                results.add(schedule);
             }
         } catch (Exception e) {
             throw new IllegalStateException("Failed to read schedule CSV", e);
@@ -93,27 +53,43 @@ public class CsvScheduleRepository implements ScheduleRepository {
     }
 
     @Override
-    public void saveAll(List<DispenseEvent> events) {
+    public List<DispenseSchedule> findDue(Instant now) {
+
+        LocalDateTime nowUtc = LocalDateTime.ofInstant(now, ZoneOffset.UTC);
+        DayOfWeek today = nowUtc.getDayOfWeek();
+        LocalTime currentTime = nowUtc.toLocalTime();
+
+        return findAll().stream()
+                .filter(s ->
+                        s.getDay().equals(today) &&
+                                !s.getTime().isAfter(currentTime)
+                )
+                .toList();
+    }
+
+
+    @Override
+    public void saveAll(List<DispenseSchedule> schedules) {
         try {
             // Read existing entries first
-            List<DispenseEvent> existing = findAll();
+            List<DispenseSchedule> existing = findAll();
 
             // Find the highest existing ID
             int maxId = existing.stream()
-                    .mapToInt(DispenseEvent::getId)
+                    .mapToInt(DispenseSchedule::getId)
                     .max()
                     .orElse(0);
 
             // Assign new IDs to events that don't have one
-            for (DispenseEvent event : events) {
-                if (event.getId() == null || event.getId() == 0) {
-                    event.setId(++maxId);
+            for (DispenseSchedule schedule : schedules) {
+                if (schedule.getId() == null || schedule.getId() == 0) {
+                    schedule.setId(++maxId);
                 }
             }
 
             // Combine existing + new events
-            List<DispenseEvent> allEvents = new ArrayList<>(existing);
-            allEvents.addAll(events);
+            List<DispenseSchedule> allEvents = new ArrayList<>(existing);
+            allEvents.addAll(schedules);
 
             // Write all back to CSV
             writeToCSV(allEvents);
@@ -123,7 +99,7 @@ public class CsvScheduleRepository implements ScheduleRepository {
         }
     }
 
-    private void writeToCSV(List<DispenseEvent> events) throws Exception {
+    private void writeToCSV(List<DispenseSchedule> schedules) throws Exception {
         // Get the file path from the Resource
         File file = csv.getFile();
 
@@ -131,13 +107,13 @@ public class CsvScheduleRepository implements ScheduleRepository {
              CSVPrinter printer = new CSVPrinter(writer, CSVFormat.DEFAULT
                      .withHeader("id", "numberOfPills", "vitaminType", "day", "time"))) {
 
-            for (DispenseEvent event : events) {
+            for (DispenseSchedule schedule : schedules) {
                 printer.printRecord(
-                        event.getId(),
-                        event.getNumberOfPills(),
-                        event.getVitaminType(),
-                        event.getDay(),
-                        event.getTime()
+                        schedule.getId(),
+                        schedule.getNumberOfPills(),
+                        schedule.getVitaminType(),
+                        schedule.getDay().name(),
+                        schedule.getTime().toString()
                 );
             }
         }

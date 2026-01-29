@@ -1,6 +1,9 @@
 package com.vitamindispenser.backend.controllers;
 
+import com.vitamindispenser.backend.domain.IntakeService;
+import com.vitamindispenser.backend.domain.ScheduleService;
 import com.vitamindispenser.backend.dto.logging.DispenseEvent;
+import com.vitamindispenser.backend.dto.logging.IntakeLogResponse;
 import com.vitamindispenser.backend.dto.schedule.ScheduleRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -36,24 +39,27 @@ public class MobileAppController {
      *   ]
      * }
      */
+    private final IntakeService intakeService;
+    private final ScheduleService scheduleService;
+
+    public MobileAppController(IntakeService intakeService,
+                               ScheduleService scheduleService){
+        this.intakeService = intakeService;
+        this.scheduleService = scheduleService;
+    }
 
     // Mobile app sends schedule with multiple vitamins
     @PostMapping("/schedule")
     public ResponseEntity<Map<String, String>> createSchedule(@RequestBody ScheduleRequest request) {
-        // TODO: Save schedule
-        // TODO: Signal firmware that new schedule is available
-
-        Map<String, String> response = new HashMap<>();
-        response.put("message", "Schedule created successfully");
-        return ResponseEntity.ok(response);
+        scheduleService.createSchedule(request);
+        return ResponseEntity.ok(
+                Map.of("message", "Schedule created successfully")
+        );
     }
 
     // Mobile app gets vitamin intake data
     @GetMapping("/intake")
-    public ResponseEntity<List<DispenseEvent>> getIntakeData() {
-        // TODO: Fetch intake logs
-
-        // For now returning an empty list
-        return ResponseEntity.ok(new ArrayList<>());
+    public ResponseEntity<List<IntakeLogResponse>> getIntakeData() {
+        return ResponseEntity.ok(intakeService.getHistory());
     }
 }
