@@ -14,7 +14,7 @@ import java.util.List;
 
 @Slf4j
 @RestController
-@RequestMapping("/api/firmware")
+@RequestMapping("/api/v1/firmware")
 public class FirmwareController {
     /*
      * Firmware workflow:
@@ -22,10 +22,16 @@ public class FirmwareController {
      * 2. Firmware dispenses vitamins at scheduled times
      * 3. Firmware sends boolean (vitamin taken yes/no) back to backend
      */
-    @Autowired
-    private DispenseStatusService dispenseStatusService;
-    @Autowired
-    private ScheduleRepository scheduleRepository;
+    private final DispenseStatusService dispenseStatusService;
+    private final ScheduleRepository scheduleRepository;
+
+    public FirmwareController(
+            DispenseStatusService dispenseStatusService,
+            ScheduleRepository scheduleRepository
+    ){
+        this.dispenseStatusService = dispenseStatusService;
+        this.scheduleRepository = scheduleRepository;
+    }
 
     // Firmware gets the current schedule to dispense
     @GetMapping("/schedule")

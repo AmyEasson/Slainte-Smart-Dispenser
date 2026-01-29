@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/mobile")
+@RequestMapping("/api/v1/mobile")
 public class MobileAppController {
     /*
      * Expected JSON structure from mobile app:
