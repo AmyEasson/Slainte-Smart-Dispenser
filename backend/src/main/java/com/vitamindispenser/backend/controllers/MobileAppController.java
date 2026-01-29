@@ -1,15 +1,12 @@
 package com.vitamindispenser.backend.controllers;
 
-import com.vitamindispenser.backend.domain.IntakeService;
+import com.vitamindispenser.backend.domain.IntakeHistoryService;
 import com.vitamindispenser.backend.domain.ScheduleService;
-import com.vitamindispenser.backend.dto.logging.DispenseEvent;
 import com.vitamindispenser.backend.dto.logging.IntakeLogResponse;
 import com.vitamindispenser.backend.dto.schedule.ScheduleRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -39,12 +36,12 @@ public class MobileAppController {
      *   ]
      * }
      */
-    private final IntakeService intakeService;
+    private final IntakeHistoryService intakeHistoryService;
     private final ScheduleService scheduleService;
 
-    public MobileAppController(IntakeService intakeService,
+    public MobileAppController(IntakeHistoryService intakeHistoryService,
                                ScheduleService scheduleService){
-        this.intakeService = intakeService;
+        this.intakeHistoryService = intakeHistoryService;
         this.scheduleService = scheduleService;
     }
 
@@ -60,6 +57,6 @@ public class MobileAppController {
     // Mobile app gets vitamin intake data
     @GetMapping("/intake")
     public ResponseEntity<List<IntakeLogResponse>> getIntakeData() {
-        return ResponseEntity.ok(intakeService.getHistory());
+        return ResponseEntity.ok(intakeHistoryService.getHistory());
     }
 }

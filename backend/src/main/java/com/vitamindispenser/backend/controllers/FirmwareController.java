@@ -1,7 +1,7 @@
 package com.vitamindispenser.backend.controllers;
 
-import com.vitamindispenser.backend.domain.DispenseService;
-import com.vitamindispenser.backend.domain.DispenseStatusService;
+import com.vitamindispenser.backend.domain.FirmwareScheduleService;
+import com.vitamindispenser.backend.domain.IntakeRecordingService;
 import com.vitamindispenser.backend.dto.logging.FirmwareDispenseResponse;
 import com.vitamindispenser.backend.dto.logging.VitaminStatusRequest;
 import org.springframework.http.ResponseEntity;
@@ -21,15 +21,15 @@ public class FirmwareController {
      * 2. Firmware dispenses vitamins at scheduled times
      * 3. Firmware sends boolean (vitamin taken yes/no) back to backend
      */
-    private final DispenseService dispenseService;
-    private final DispenseStatusService dispenseStatusService;
+    private final FirmwareScheduleService firmwareScheduleService;
+    private final IntakeRecordingService intakeRecordingService;
 
     public FirmwareController(
-            DispenseStatusService dispenseStatusService,
-            DispenseService dispenseService
+            IntakeRecordingService intakeRecordingService,
+            FirmwareScheduleService firmwareScheduleService
     ){
-        this.dispenseStatusService = dispenseStatusService;
-        this.dispenseService = dispenseService;
+        this.intakeRecordingService = intakeRecordingService;
+        this.firmwareScheduleService = firmwareScheduleService;
     }
 
     // Firmware gets the current schedule to dispense
@@ -37,7 +37,7 @@ public class FirmwareController {
     public ResponseEntity<List<FirmwareDispenseResponse>> getSchedule() {
         log.info("Firmware requesting schedule");
         return ResponseEntity.ok(
-                dispenseService.getPendingDispenses(Instant.now())
+                firmwareScheduleService.getPendingDispenses(Instant.now())
         );
     }
 
@@ -56,7 +56,7 @@ public class FirmwareController {
         log.info("Received status report from firmware");
         log.info("Intake IDs: " + request.getIntakeIds());
         log.info("Dispense status: " + request.getDispenseEventStatus());
-        dispenseStatusService.handleStatus(
+        intakeRecordingService.handleStatus(
                 request.getIntakeIds(),
                 request.getDispenseEventStatus()
         );

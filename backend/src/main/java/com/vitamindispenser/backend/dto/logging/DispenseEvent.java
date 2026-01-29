@@ -1,6 +1,5 @@
 package com.vitamindispenser.backend.dto.logging;
 
-import com.vitamindispenser.backend.domain.DispenseStatusService;
 import lombok.Getter;
 import lombok.Setter;
 

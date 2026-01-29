@@ -8,12 +8,15 @@ import org.springframework.stereotype.Service;
 import java.time.Instant;
 import java.util.List;
 
+/**
+ * Records what happened (taken/missed)
+ */
 @Service
-public class DispenseStatusService {
+public class IntakeRecordingService {
 
     private final IntakeAttemptRepository attemptRepository;
 
-    public DispenseStatusService(IntakeAttemptRepository attemptRepository) {
+    public IntakeRecordingService(IntakeAttemptRepository attemptRepository) {
         this.attemptRepository = attemptRepository;
     }
 

@@ -6,11 +6,15 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+/**
+ * Reads history for the mobile app
+ */
+
 @Service
-public class IntakeService {
+public class IntakeHistoryService {
     private final IntakeAttemptRepository attemptRepository;
 
-    public IntakeService(IntakeAttemptRepository attemptRepository) {
+    public IntakeHistoryService(IntakeAttemptRepository attemptRepository) {
         this.attemptRepository = attemptRepository;
     }
 

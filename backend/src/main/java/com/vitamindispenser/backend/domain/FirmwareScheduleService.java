@@ -39,11 +39,11 @@ import java.util.List;
 
 
 @Service
-public class DispenseService {
+public class FirmwareScheduleService {
     private final ScheduleRepository scheduleRepository;
     private final IntakeAttemptRepository attemptRepository;
 
-    public DispenseService(ScheduleRepository scheduleRepository, IntakeAttemptRepository attemptRepository) {
+    public FirmwareScheduleService(ScheduleRepository scheduleRepository, IntakeAttemptRepository attemptRepository) {
         this.scheduleRepository = scheduleRepository;
         this.attemptRepository = attemptRepository;
     }
