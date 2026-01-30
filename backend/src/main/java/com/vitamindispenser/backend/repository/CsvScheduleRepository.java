@@ -14,6 +14,7 @@ import java.io.FileWriter;
 import java.io.InputStreamReader;
 import java.time.*;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Repository
 public class CsvScheduleRepository implements ScheduleRepository {
@@ -54,28 +55,45 @@ public class CsvScheduleRepository implements ScheduleRepository {
     @Override
     public List<DispenseSchedule> findDue(Instant now) {
 
-        LocalDateTime nowUtc = LocalDateTime.ofInstant(now, ZoneOffset.UTC);
-        DayOfWeek today = nowUtc.getDayOfWeek();
-        LocalTime currentTime = nowUtc.toLocalTime();
+        // Interpret "now" in the system's default timezone because CSV times are stored
+        // as local wall-clock times without explicit timezone information.
+        LocalDateTime nowLocal = LocalDateTime.ofInstant(now, ZoneId.systemDefault());
+        DayOfWeek today = nowLocal.getDayOfWeek();
+        LocalTime currentTime = nowLocal.toLocalTime();
+
+        DayOfWeek yesterday = today.minus(1);
 
         // only return schedules within a 5-minute window
         LocalTime fiveMinutesAgo = currentTime.minusMinutes(5);
 
         return findAll().stream()
-                .filter(s ->
-                        s.getDay().equals(today) &&
-                                // schedule time is between 5 minutes ago and now
-                                !s.getTime().isBefore(fiveMinutesAgo) &&
-                                !s.getTime().isAfter(currentTime)
-                )
+                .filter(s -> {
+                    LocalTime scheduleTime = s.getTime();
+
+                    // Window does not cross midnight: simple same-day range
+                    if (!fiveMinutesAgo.isAfter(currentTime)) {
+                        return s.getDay().equals(today)
+                                && !scheduleTime.isBefore(fiveMinutesAgo)
+                                && !scheduleTime.isAfter(currentTime);
+                    }
+
+                    // Window crosses midnight:
+                    // - include schedules on "yesterday" from fiveMinutesAgo up to midnight
+                    // - include schedules on "today" from midnight up to currentTime
+                    boolean isYesterdayInWindow = s.getDay().equals(yesterday)
+                            && !scheduleTime.isBefore(fiveMinutesAgo);
+                    boolean isTodayInWindow = s.getDay().equals(today)
+                            && !scheduleTime.isAfter(currentTime);
+
+                    return isYesterdayInWindow || isTodayInWindow;
+                })
                 .toList();
     }
-
 
     @Override
     public void saveAll(List<DispenseSchedule> schedules) {
         try {
-            // Read existing entries first
+            // Read existing entries
             List<DispenseSchedule> existing = findAll();
 
             // Find the highest existing ID
@@ -84,19 +102,22 @@ public class CsvScheduleRepository implements ScheduleRepository {
                     .max()
                     .orElse(0);
 
-            // Assign new IDs to events that don't have one
+            // Create a map of existing schedules by ID for easy lookup
+            Map<Integer, DispenseSchedule> existingMap = existing.stream()
+                    .collect(Collectors.toMap(DispenseSchedule::getId, s -> s));
+
+            // Process incoming schedules
             for (DispenseSchedule schedule : schedules) {
                 if (schedule.getId() == null || schedule.getId() == 0) {
+                    // New schedule - assign new ID
                     schedule.setId(++maxId);
                 }
+                // Add/update in the map (this replaces if ID already exists)
+                existingMap.put(schedule.getId(), schedule);
             }
 
-            // Combine existing + new events
-            List<DispenseSchedule> allEvents = new ArrayList<>(existing);
-            allEvents.addAll(schedules);
-
-            // Write all back to CSV
-            writeToCSV(allEvents);
+            // Write all schedules back to CSV
+            writeToCSV(new ArrayList<>(existingMap.values()));
 
         } catch (Exception e) {
             throw new IllegalStateException("Failed to save schedules to CSV", e);

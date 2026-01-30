@@ -9,7 +9,6 @@ import java.util.List;
 /**
  * Reads history for the mobile app
  */
-
 @Service
 public class IntakeHistoryService {
     private final IntakeAttemptRepository attemptRepository;
@@ -19,7 +18,7 @@ public class IntakeHistoryService {
     }
 
     public List<IntakeLogResponse> getHistory(){
-        return attemptRepository.findAll().stream()
+        return attemptRepository.findAllByOrderByScheduledAtDesc().stream()
                 .map(attempt -> {
                     IntakeLogResponse r = new IntakeLogResponse();
                     r.setIntakeId(attempt.getIntakeId());
@@ -29,5 +28,4 @@ public class IntakeHistoryService {
                 })
                 .toList();
     }
-
 }

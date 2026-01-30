@@ -8,10 +8,8 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 
-/**
- * Records what happened (taken/missed)
- */
 @Slf4j
 @Service
 public class IntakeRecordingService {
@@ -23,15 +21,17 @@ public class IntakeRecordingService {
     }
 
     public void handleStatus(List<Integer> intakeIds, boolean taken) {
-
         for (Integer id : intakeIds) {
-            IntakeAttempt attempt = attemptRepository.findLatest(id);
+            // Find the most recent attempt for this intakeId
+            Optional<IntakeAttempt> attemptOpt = attemptRepository
+                    .findFirstByIntakeIdOrderByScheduledAtDesc(id);
 
-            if (attempt == null) {
+            if (attemptOpt.isEmpty()) {
                 log.warn("No intake attempt found for ID: {}", id);
                 continue;
             }
 
+            IntakeAttempt attempt = attemptOpt.get();
             attempt.setStatus(taken ? IntakeStatus.TAKEN : IntakeStatus.MISSED);
             attempt.setReportedAt(Instant.now());
 

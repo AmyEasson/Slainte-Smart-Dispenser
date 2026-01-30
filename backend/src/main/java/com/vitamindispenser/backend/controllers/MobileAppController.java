@@ -8,7 +8,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/mobile")
@@ -44,11 +43,8 @@ public class MobileAppController {
 
     // Mobile app sends schedule with multiple vitamins
     @PostMapping("/schedule")
-    public ResponseEntity<Map<String, String>> createSchedule(@RequestBody ScheduleRequest request) {
-        scheduleService.createSchedule(request);
-        return ResponseEntity.ok(
-                Map.of("message", "Schedule created successfully")
-        );
+    public ResponseEntity<String> createSchedule(@RequestBody ScheduleRequest request) {
+        return ResponseEntity.ok(scheduleService.createSchedule(request));
     }
 
     // Mobile app gets vitamin intake data

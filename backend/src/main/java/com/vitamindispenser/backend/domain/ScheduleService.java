@@ -2,7 +2,6 @@ package com.vitamindispenser.backend.domain;
 
 import com.vitamindispenser.backend.dto.schedule.*;
 import com.vitamindispenser.backend.repository.ScheduleRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.DayOfWeek;
@@ -19,11 +18,12 @@ public class ScheduleService {
     }
 
     /**
-     * Gets all schedules for firmware
+     * Creates and saves dispense schedules for firmware from the provided request
      */
-    public void createSchedule(ScheduleRequest request){
+    public String createSchedule(ScheduleRequest request){
         List<DispenseSchedule> schedules = convertToDispenseSchedules(request);
         scheduleRepository.saveAll(schedules);
+        return "Schedule created successfully";
     }
 
     /**
