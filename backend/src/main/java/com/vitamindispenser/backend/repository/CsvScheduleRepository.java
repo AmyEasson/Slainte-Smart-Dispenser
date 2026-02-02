@@ -62,4 +62,29 @@ public class CsvScheduleRepository implements ScheduleRepository {
         return results;
     }
 
+    @Override
+    public List<DispenseEvent> findAll() {
+        List<DispenseEvent> results = new ArrayList<>();
+        try (CSVParser parser = CSVFormat.DEFAULT
+                .withFirstRecordAsHeader()
+                .parse(new InputStreamReader(csv.getInputStream()))) {
+
+            for (CSVRecord r : parser) {
+                results.add(
+                        new DispenseEvent(
+                                Integer.parseInt(r.get("numberOfPills")),
+                                r.get("vitaminType"),
+                                r.get("day"),
+                                r.get("time"),
+                                false,
+                                Integer.parseInt(r.get("id"))
+                        )
+                );
+            }
+        } catch (Exception e) {
+            throw new IllegalStateException("Failed to read schedule CSV", e);
+        }
+        return results;
+    }
+
 }
