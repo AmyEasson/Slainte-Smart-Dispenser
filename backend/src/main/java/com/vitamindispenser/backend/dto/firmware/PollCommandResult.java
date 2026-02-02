@@ -1,4 +1,4 @@
-package com.vitamindispenser.backend.domain;
+package com.vitamindispenser.backend.dto.firmware;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
