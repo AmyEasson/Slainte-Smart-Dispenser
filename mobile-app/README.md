@@ -38,6 +38,7 @@ Expected json structure:
   "vitamins": [
     {
       "vitaminType": "string",
+      "numberOfPills": 1,
       "schedule": [
         {
           "day": "MONDAY | TUESDAY | WEDNESDAY | THURSDAY | FRIDAY | SATURDAY | SUNDAY",
