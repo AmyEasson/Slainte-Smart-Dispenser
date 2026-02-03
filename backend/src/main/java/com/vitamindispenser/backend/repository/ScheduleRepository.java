@@ -1,6 +1,6 @@
 package com.vitamindispenser.backend.repository;
 
-import com.vitamindispenser.backend.dto.logging.DispenseEvent;
+import com.vitamindispenser.backend.dto.schedule.DispenseEvent;
 
 import java.util.List;
 
@@ -9,4 +9,6 @@ public interface ScheduleRepository {
 
     /** Returns all schedule entries (for poll command logic). */
     List<DispenseEvent> findAll();
+
+    List<DispenseEvent> saveAll(List<DispenseEvent> events);
 }

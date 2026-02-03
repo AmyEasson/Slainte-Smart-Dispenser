@@ -1,4 +1,4 @@
-package com.vitamindispenser.backend;
+package com.vitamindispenser.backend.dto.logging;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;

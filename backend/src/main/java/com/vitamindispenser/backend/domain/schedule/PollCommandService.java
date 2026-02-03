@@ -1,7 +1,7 @@
-package com.vitamindispenser.backend.domain;
+package com.vitamindispenser.backend.domain.schedule;
 
 import com.vitamindispenser.backend.dto.firmware.PollCommandResult;
-import com.vitamindispenser.backend.dto.logging.DispenseEvent;
+import com.vitamindispenser.backend.dto.schedule.DispenseEvent;
 import com.vitamindispenser.backend.repository.ScheduleRepository;
 import org.springframework.stereotype.Service;
 

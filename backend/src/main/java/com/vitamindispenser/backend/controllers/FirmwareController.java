@@ -1,8 +1,7 @@
 package com.vitamindispenser.backend.controllers;
 
-import com.vitamindispenser.backend.domain.DispenseStatusService;
-import com.vitamindispenser.backend.domain.PollCommandService;
-import com.vitamindispenser.backend.dto.logging.VitaminStatusRequest;
+import com.vitamindispenser.backend.domain.logging.DispenseStatusService;
+import com.vitamindispenser.backend.domain.schedule.PollCommandService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -70,6 +69,7 @@ public class FirmwareController {
 
      Notes: the controller only calls the domain service (and not the repos directly)
      */
+    /**
     @PostMapping("/status")
     public ResponseEntity<String> reportStatus(@RequestBody VitaminStatusRequest request) {
         log.info("Received status report from firmware");
@@ -80,4 +80,5 @@ public class FirmwareController {
         log.info("Status processing completed");
         return ResponseEntity.ok("Status processing completed");
     }
+    */
 }

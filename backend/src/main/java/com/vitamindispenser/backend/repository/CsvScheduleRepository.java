@@ -1,6 +1,7 @@
 package com.vitamindispenser.backend.repository;
 
-import com.vitamindispenser.backend.dto.logging.DispenseEvent;
+import com.vitamindispenser.backend.dto.schedule.DispenseEvent;
+import org.apache.commons.csv.CSVPrinter;
 import org.springframework.core.io.Resource;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
@@ -8,7 +9,12 @@ import org.apache.commons.csv.CSVRecord;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.*;
 
 @Repository
@@ -49,7 +55,6 @@ public class CsvScheduleRepository implements ScheduleRepository {
                                 r.get("vitaminType"),
                                 r.get("day"),
                                 r.get("time"),
-                                false,
                                 rowId
                         )
                 );
@@ -76,7 +81,6 @@ public class CsvScheduleRepository implements ScheduleRepository {
                                 r.get("vitaminType"),
                                 r.get("day"),
                                 r.get("time"),
-                                false,
                                 Integer.parseInt(r.get("id"))
                         )
                 );
@@ -86,5 +90,68 @@ public class CsvScheduleRepository implements ScheduleRepository {
         }
         return results;
     }
+
+    @Override
+    public List<DispenseEvent> saveAll(List<DispenseEvent> events){
+        if (events == null || events.isEmpty()){
+            return Collections.emptyList();
+        }
+
+        try {
+            List<DispenseEvent> existingEvents = findAll();
+
+            int nextId = existingEvents.stream()
+                    .mapToInt(DispenseEvent::getId)
+                    .max()
+                    .orElse(0) +1;
+
+            List<DispenseEvent> eventsWithIds = new ArrayList<>();
+            for (DispenseEvent event : events) {
+                DispenseEvent eventWithId = new DispenseEvent(
+                        event.getNumberOfPills(),
+                        event.getVitaminType(),
+                        event.getDay(),
+                        event.getTime(),
+                        nextId++
+                );
+                eventsWithIds.add(eventWithId);
+            }
+
+            List<DispenseEvent> allEvents = new ArrayList<>(existingEvents);
+            allEvents.addAll(eventsWithIds);
+
+            // write all events to CSV
+            writeEventsToCsv(allEvents);
+
+            return eventsWithIds;
+
+        } catch (Exception e){
+            throw new IllegalStateException("Failed to write schedule CSV", e);
+        }
+    }
+
+    private void writeEventsToCsv(List<DispenseEvent> events) throws IOException {
+        File file = csv.getFile();
+        File tempFile = new File(file.getParent(), file.getName() + ".tmp");
+
+        try (FileWriter writer = new FileWriter(tempFile);
+             CSVPrinter printer = new CSVPrinter(writer, CSVFormat.DEFAULT)) {
+
+            printer.printRecord("id", "vitaminType", "numberOfPills", "day", "time", "taken");
+
+            for (DispenseEvent event : events) {
+                printer.printRecord(
+                        event.getId(),
+                        event.getVitaminType(),
+                        event.getNumberOfPills(),
+                        event.getDay(),
+                        event.getTime()
+                );
+            }
+        }
+
+        Files.move(tempFile.toPath(), file.toPath(), StandardCopyOption.REPLACE_EXISTING);
+    }
+
 
 }

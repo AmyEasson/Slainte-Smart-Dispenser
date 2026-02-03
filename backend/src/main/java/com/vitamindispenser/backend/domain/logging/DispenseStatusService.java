@@ -1,12 +1,8 @@
-package com.vitamindispenser.backend.domain;
+package com.vitamindispenser.backend.domain.logging;
 
-import com.vitamindispenser.backend.DispenseEventLog;
-import com.vitamindispenser.backend.dto.logging.DispenseEvent;
 import com.vitamindispenser.backend.repository.DispenseEventLogRepository;
 import com.vitamindispenser.backend.repository.ScheduleRepository;
-import lombok.NonNull;
 import org.springframework.stereotype.Service;
-import java.util.List;
 
 @Service
 public class DispenseStatusService {
@@ -20,6 +16,8 @@ public class DispenseStatusService {
         this.logRepository = logRepository;
     }
 
+    // method needs fixed
+    /**
     public void handleStatus(@NonNull List<Integer> intakeIds, @NonNull Boolean taken) {
         // TODO: Find the data for the intake event based on the intake id. ==> done.
         List<DispenseEvent> events = scheduleRepository.findByIds(intakeIds);
@@ -28,6 +26,9 @@ public class DispenseStatusService {
         }
         logEvents(events);
     }
+     */
+
+    /**
     public void logEvents(List<DispenseEvent> events) {
         // TODO: Persist the data in the database ==> done
         List<DispenseEventLog> rows = events.stream().map(e -> {
@@ -42,7 +43,9 @@ public class DispenseStatusService {
         }).toList();
         logRepository.saveAll(rows);
     }
+     */
 }
+
 
 // to do:
 // 1) fix the controller endpoint

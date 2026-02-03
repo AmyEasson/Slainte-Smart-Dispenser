@@ -1,14 +1,13 @@
 package com.vitamindispenser.backend.controllers;
 
-import com.vitamindispenser.backend.dto.logging.DispenseEvent;
+import com.vitamindispenser.backend.domain.schedule.SchedulingService;
+import com.vitamindispenser.backend.dto.schedule.DispenseEvent;
 import com.vitamindispenser.backend.dto.schedule.ScheduleRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/mobile")
@@ -36,16 +35,17 @@ public class MobileAppController {
      *   ]
      * }
      */
+    private final SchedulingService schedulingService;
+
+    public MobileAppController(SchedulingService schedulingService) {
+        this.schedulingService = schedulingService;
+    }
 
     // Mobile app sends schedule with multiple vitamins
     @PostMapping("/schedule")
-    public ResponseEntity<Map<String, String>> createSchedule(@RequestBody ScheduleRequest request) {
-        // TODO: Save schedule
-        // TODO: Signal firmware that new schedule is available
-
-        Map<String, String> response = new HashMap<>();
-        response.put("message", "Schedule created successfully");
-        return ResponseEntity.ok(response);
+    public ResponseEntity<String> createSchedule(@RequestBody ScheduleRequest request) {
+        schedulingService.saveSchedule(request);
+        return ResponseEntity.ok("Schedule has been sent");
     }
 
     // Mobile app gets vitamin intake data
