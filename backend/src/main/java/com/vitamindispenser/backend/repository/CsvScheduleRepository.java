@@ -1,6 +1,7 @@
 package com.vitamindispenser.backend.repository;
 
 import com.vitamindispenser.backend.dto.schedule.DispenseEvent;
+import jakarta.annotation.PostConstruct;
 import org.apache.commons.csv.CSVPrinter;
 import org.springframework.core.io.Resource;
 import org.apache.commons.csv.CSVFormat;
@@ -27,6 +28,30 @@ public class CsvScheduleRepository implements ScheduleRepository {
     ) {
         this.csv = csv;
     }
+
+    /**
+     * Ensuring the csv file actually exists, creating it if not.
+     */
+    @PostConstruct
+    void ensureCsvExists() {
+        try {
+            File file = csv.getFile();
+            File parent = file.getParentFile();
+
+            if (!parent.exists()) {
+                parent.mkdirs();
+            }
+
+            if (!file.exists()) {
+                try (FileWriter writer = new FileWriter(file)) {
+                    writer.write("id,vitaminType,numberOfPills,day,time\n");
+                }
+            }
+        } catch (IOException e) {
+            throw new IllegalStateException("Failed to initialize schedule CSV", e);
+        }
+    }
+
 
     @Override
     public List<DispenseEvent> findByIds(List<Integer> ids) {
@@ -137,7 +162,8 @@ public class CsvScheduleRepository implements ScheduleRepository {
         try (FileWriter writer = new FileWriter(tempFile);
              CSVPrinter printer = new CSVPrinter(writer, CSVFormat.DEFAULT)) {
 
-            printer.printRecord("id", "vitaminType", "numberOfPills", "day", "time", "taken");
+            printer.printRecord("id", "vitaminType", "numberOfPills", "day", "time");
+
 
             for (DispenseEvent event : events) {
                 printer.printRecord(
