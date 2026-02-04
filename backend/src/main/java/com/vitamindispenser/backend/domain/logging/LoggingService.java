@@ -1,5 +1,6 @@
 package com.vitamindispenser.backend.domain.logging;
 
+import com.vitamindispenser.backend.domain.exceptions.ScheduleNotFoundException;
 import com.vitamindispenser.backend.dto.logging.LoggingDatabase;
 import com.vitamindispenser.backend.dto.logging.Log;
 import com.vitamindispenser.backend.dto.schedule.DispenseEvent;
@@ -29,7 +30,14 @@ public class LoggingService {
      */
     public void handleStatus(@NonNull List<Integer> intakeIds, @NonNull Boolean taken) {
         // find info for all the ids
+        if (intakeIds.isEmpty()) {
+            throw new IllegalArgumentException("intakeIds must not be empty");
+        }
         List<DispenseEvent> events = scheduleRepository.findByIds(intakeIds);
+        if (events.isEmpty()) {
+            throw new ScheduleNotFoundException("No schedule events found for ids: " + intakeIds);
+        }
+
         // create logs to log those info along with their ids
         List<Log> logs = new ArrayList<>();
         // we need to make a Log from the Dispense Event

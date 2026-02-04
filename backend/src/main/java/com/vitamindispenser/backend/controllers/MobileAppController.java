@@ -63,4 +63,12 @@ public class MobileAppController {
                 .contentType(MediaType.parseMediaType("text/csv"))
                 .body(csv);
     }
+
+    /* this endpoint shall be called by the dashboard thing
+       and it makes use of the export.csv endpoint above
+     */
+    @GetMapping("/intake")
+    public ResponseEntity<String> getIntake() {
+        return ResponseEntity.ok("Intake for Dashboard");
+    }
 }
