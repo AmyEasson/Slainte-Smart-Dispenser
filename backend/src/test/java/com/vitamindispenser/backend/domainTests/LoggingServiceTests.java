@@ -22,7 +22,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class LoggingServiceTest {
+class LoggingServiceTests {
 
     @Mock
     private ScheduleRepository scheduleRepository;

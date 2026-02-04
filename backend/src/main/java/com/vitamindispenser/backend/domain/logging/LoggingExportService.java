@@ -15,6 +15,7 @@ public class LoggingExportService {
         this.repo = repo;
     }
 
+    /** Full export (with IDs) – used by /logs/export.csv */
     public String exportAllLogsAsCsv() {
         List<LoggingDatabase> rows = repo.findAll();
 
@@ -46,6 +47,28 @@ public class LoggingExportService {
             s = s.replace("\"", "\"\"");
         }
         return mustQuote ? "\"" + s + "\"" : s;
+    }
+    public boolean hasAnyLogs() {
+        return repo.count() > 0;
+    }
+
+    /** RAW dashboard export (NO IDs) – used by /intake */
+    public String exportDashboardCsv() {
+        List<LoggingDatabase> rows = repo.findAll();
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("vitaminType,day,time,numberOfPills,taken\n");
+
+        for (LoggingDatabase r : rows) {
+            sb.append(csv(r.getVitaminType())).append(',')
+                    .append(csv(r.getDay())).append(',')
+                    .append(csv(r.getTime())).append(',')
+                    .append(csv(r.getNumberOfPills())).append(',')
+                    .append(csv(r.getTaken()))
+                    .append('\n');
+        }
+
+        return sb.toString();
     }
 }
 

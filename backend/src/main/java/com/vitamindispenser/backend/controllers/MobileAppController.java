@@ -57,18 +57,23 @@ public class MobileAppController {
     @GetMapping("/logs/export.csv")
     public ResponseEntity<String> exportCsv() {
         String csv = exportService.exportAllLogsAsCsv();
-
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"logs.csv\"")
                 .contentType(MediaType.parseMediaType("text/csv"))
                 .body(csv);
     }
 
-    /* this endpoint shall be called by the dashboard thing
-       and it makes use of the export.csv endpoint above
+    /*
+    This endpoint shall be called by the UI to just enumerate raw data there
      */
     @GetMapping("/intake")
     public ResponseEntity<String> getIntake() {
-        return ResponseEntity.ok("Intake for Dashboard");
+        if (!exportService.hasAnyLogs()) {
+            return ResponseEntity.ok("No intake data available.");
+        }
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType("text/csv"))
+                .body(exportService.exportDashboardCsv());
     }
 }
