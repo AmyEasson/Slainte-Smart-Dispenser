@@ -1,14 +1,16 @@
 package com.vitamindispenser.backend.controllers;
 
-import com.vitamindispenser.backend.dto.logging.DispenseEvent;
+import com.vitamindispenser.backend.domain.logging.LoggingExportService;
+import com.vitamindispenser.backend.domain.schedule.SchedulingService;
+import com.vitamindispenser.backend.dto.schedule.DispenseEvent;
 import com.vitamindispenser.backend.dto.schedule.ScheduleRequest;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/mobile")
@@ -36,24 +38,42 @@ public class MobileAppController {
      *   ]
      * }
      */
+    private final SchedulingService schedulingService;
+    private final LoggingExportService exportService;
+
+    public MobileAppController(SchedulingService schedulingService,  LoggingExportService exportService) {
+        this.schedulingService = schedulingService;
+        this.exportService = exportService;
+    }
 
     // Mobile app sends schedule with multiple vitamins
     @PostMapping("/schedule")
-    public ResponseEntity<Map<String, String>> createSchedule(@RequestBody ScheduleRequest request) {
-        // TODO: Save schedule
-        // TODO: Signal firmware that new schedule is available
-
-        Map<String, String> response = new HashMap<>();
-        response.put("message", "Schedule created successfully");
-        return ResponseEntity.ok(response);
+    public ResponseEntity<String> createSchedule(@RequestBody ScheduleRequest request) {
+        schedulingService.saveSchedule(request);
+        return ResponseEntity.ok("Schedule has been sent");
     }
 
     // Mobile app gets vitamin intake data
-    @GetMapping("/intake")
-    public ResponseEntity<List<DispenseEvent>> getIntakeData() {
-        // TODO: Fetch intake logs
+    @GetMapping("/logs/export.csv")
+    public ResponseEntity<String> exportCsv() {
+        String csv = exportService.exportAllLogsAsCsv();
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"logs.csv\"")
+                .contentType(MediaType.parseMediaType("text/csv"))
+                .body(csv);
+    }
 
-        // For now returning an empty list
-        return ResponseEntity.ok(new ArrayList<>());
+    /*
+    This endpoint shall be called by the UI to just enumerate raw data there
+     */
+    @GetMapping("/intake")
+    public ResponseEntity<String> getIntake() {
+        if (!exportService.hasAnyLogs()) {
+            return ResponseEntity.ok("No intake data available.");
+        }
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType("text/csv"))
+                .body(exportService.exportDashboardCsv());
     }
 }
