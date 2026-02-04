@@ -1,156 +1,273 @@
 #include <Servo.h>
+#include <SPI.h>
+#include <WiFiNINA.h>
+#include <ArduinoJson.h>
 
-const int IR_SENSOR = 0; // Pin A0
-const int MOTOR = 9; // Pin ~9
-const int BUZZER = 8; // Pin 8
-const int SIMULATE_START = 2; // Pin 2
-const int SIMULATE_SNOOZE = 3; // Pin ~3
+// --- NETWORK SETTINGS ---
+char ssid[] = "Galaxy M52 5GDE25";      // Your Network Name
+char pass[] = "mjdb9370";               // Your Network Password
+int status = WL_IDLE_STATUS;
 
+// IP Address of your computer (Laptop on Hotspot)
+IPAddress serverAddress(10, 43, 64, 54);
+int serverPort = 8080;
 
-// 1. Wait after dispensing before checking sensor
-const unsigned long TIME_WAIT_AFTER_DISPENSE = 3000; // Sim: 3 sec | Real: 300000 (5 mins)
-// 2. How long to read the sensor to confirm pill presence
-const unsigned long TIME_READ_SENSOR = 2000;         // Sim: 2 sec | Real: 15000 (15 sec)
-// 3. How long to ring the alarm
-const unsigned long TIME_ALARM_DURATION = 5000;      // Sim: 5 sec | Real: 600000 (10 mins)
-// 4. Snooze duration
-const unsigned long TIME_SNOOZE_DURATION = 3000;     // Sim: 3 sec | Real: 300000 (5 mins)
-//5. Degrees to rotate the servo
+WiFiClient client;
+
+// --- HARDWARE PIN DEFINITIONS ---
+const int IR_SENSOR = 0;       // Pin A0
+const int MOTOR = 9;           // Pin ~9
+const int BUZZER = 8;          // Pin 8
+const int PHYSICAL_START = 2;  // Pin 2 (Button 1)
+const int PHYSICAL_SNOOZE = 3; // Pin ~3 (Button 2)
+
+// --- TIMINGS ---
+const unsigned long TIME_WAIT_AFTER_DISPENSE = 3000; 
+const unsigned long TIME_READ_SENSOR = 2000;         
+const unsigned long TIME_ALARM_DURATION = 5000;      
+const unsigned long TIME_SNOOZE_DURATION = 3000;     
 const int DEGREES = 150;
-// --- THRESHOLDS ---
-const int SENSOR_THRESHOLD = 200; // Above this = Pill detected (adjust for your potentiometer)
-
-
+const int SENSOR_THRESHOLD = 50; 
 
 // --- OBJECTS ---
 Servo myServo;
 
+// --- POLLING TIMER ---
+unsigned long lastPollTime = 0;
+const long POLL_INTERVAL = 2000; 
+
 void setup() {
   Serial.begin(9600);
   
-  // Setup Components
+  // Hardware Setup
   myServo.attach(MOTOR);
-  myServo.write(0); // Reset servo to 0
-  
+  myServo.write(0); 
   pinMode(BUZZER, OUTPUT);
   
-  // INPUT_PULLUP means the pin is HIGH when open, LOW when pressed
-  pinMode(SIMULATE_START, INPUT_PULLUP);
-  pinMode(SIMULATE_SNOOZE, INPUT_PULLUP);
-  
-  Serial.println("System Ready. Press Button 1 to Dispense.");
+  // Button Setup (INPUT_PULLUP: LOW when pressed)
+  pinMode(PHYSICAL_START, INPUT_PULLUP);
+  pinMode(PHYSICAL_SNOOZE, INPUT_PULLUP);
+
+  // WiFi Setup
+  Serial.print("Connecting to WiFi...");
+  while (status != WL_CONNECTED) {
+    Serial.print(".");
+    status = WiFi.begin(ssid, pass);
+    delay(1000);
+  }
+  Serial.println("\nConnected to WiFi!");
+  printWiFiStatus();
 }
 
 void loop() {
-  // 1. Check for Start Signal (Button 1)
-  if (digitalRead(SIMULATE_START) == LOW) {
+  // 1. Check Physical Button (Start)
+  if (digitalRead(PHYSICAL_START) == LOW) {
+    Serial.println("Physical Start Button Pressed!");
     runDispenseCycle();
+    delay(1000); // Debounce
+  }
+
+  // 2. Poll Server (every 2 seconds)
+  if (millis() - lastPollTime > POLL_INTERVAL) {
+    checkServerForCommands();
+    lastPollTime = millis();
   }
 }
 
-// --- MAIN LOGIC FLOW ---
+// ---------------------------------------------------------
+// HYBRID LOGIC FLOW
+// ---------------------------------------------------------
+
 void runDispenseCycle() {
-  Serial.println("--- Cycle Started ---");
+  Serial.println("--- Dispense Cycle Started ---");
   
-  // Step 1: Rotate Servo 30 degrees
-  Serial.println("Dispensing Pill...");
+  // 1. Dispense
   myServo.write(DEGREES);
-  delay(1000);
-  myServo.write(0); // Return to 0
+  delay(1000); 
+  myServo.write(0);
   
-  // Step 2: Wait 5 minutes before checking
-  Serial.println("Waiting 5 minutes (Pre-Check)...");
-  smartDelay(TIME_WAIT_AFTER_DISPENSE); 
-  
-  // Step 3: Start Monitor/Alarm Loop
+  // 2. Wait
+  delay(TIME_WAIT_AFTER_DISPENSE);
+
   bool pillTaken = false;
   
+  // 3. Monitor Loop
   while (!pillTaken) {
-    
-    // A. Read sensor for 15 seconds
-    Serial.println("Checking Sensor for 15 seconds...");
     bool pillDetected = checkSensorForTime(TIME_READ_SENSOR);
     
     if (!pillDetected) {
-      Serial.println("Tray Empty. Pill taken!");
-      pillTaken = true; // Exit loop
+      Serial.println("Tray Empty. Pill Taken.");
+      sendStatusReport(true); 
+      pillTaken = true;
     } else {
-      // B. Pill still there? Ring Buzzer!
-      Serial.println("Pill Detected! Ringing Alarm...");
+      Serial.println("Pill Detected. Alarm!");
       
-      // This function returns TRUE if user hit snooze, FALSE if time ran out
-      bool snoozed = ringBuzzerWithSnooze(TIME_ALARM_DURATION);
+      // Ring Buzzer (Checks BOTH Physical Button AND Network)
+      bool snoozed = ringBuzzerHybrid(TIME_ALARM_DURATION);
       
       if (snoozed) {
-        Serial.println("Snooze Pressed! Pausing for 5 minutes...");
-        noTone(BUZZER); // Stop noise immediately
-        smartDelay(TIME_SNOOZE_DURATION); // Wait 5 mins
-        // Loop triggers again -> Goes back to Step A (Check Sensor)
-      } else {
-        Serial.println("Alarm finished (No Snooze). Stopping Buzzer.");
+        Serial.println("Snooze Triggered (Physical or WiFi). Pausing...");
         noTone(BUZZER);
-        break; // Stop nagging (or remove this break to buzz forever)
+        digitalWrite(BUZZER, LOW); // Stop Sound
+        delay(TIME_SNOOZE_DURATION);
+      } else {
+        Serial.println("Alarm finished (Missed Dose).");
+        noTone(BUZZER);
+        digitalWrite(BUZZER, LOW); // Stop Sound
+        sendStatusReport(false); 
+        break;
       }
     }
   }
-  
-  Serial.println("--- Cycle Finished ---");
 }
 
-// --- HELPER FUNCTIONS ---
+// ---------------------------------------------------------
+// HYBRID HELPER FUNCTIONS
+// ---------------------------------------------------------
 
-// 1. Sensor Check Function
-// Returns true if pill is seen, false if empty
+// Checks BOTH the Physical Button AND the Network for snooze command
+bool ringBuzzerHybrid(unsigned long duration) {
+  unsigned long start = millis();
+  unsigned long lastBeep = 0;
+  bool beepState = false;
+
+  while (millis() - start < duration) {
+    // UPDATED BEEP LOGIC FOR LOUDER SOUND
+    // We create a "Beep-Beep-Beep" effect using tone()
+    if (millis() - lastBeep > 200) { // Changed to 200ms for a clearer beep rhythm
+      lastBeep = millis();
+      beepState = !beepState;
+      
+      if (beepState) {
+        // Play 2000Hz tone (Standard "Loud" BEEP frequency)
+        tone(BUZZER, 2000); 
+      } else {
+        // Silence
+        noTone(BUZZER); 
+      }
+    }
+
+    // CHECK 1: Physical Snooze Button
+    if (digitalRead(PHYSICAL_SNOOZE) == LOW) {
+       return true; 
+    }
+
+    // CHECK 2: Network Snooze Command (Check every ~1 sec)
+    if (millis() % 1000 < 20) { 
+       if (checkForSnoozeCommand()) return true;
+    }
+
+    // CHECK 3: Pill Removed?
+    if (analogRead(IR_SENSOR) <= SENSOR_THRESHOLD) {
+       // Ideally we would return here, but for now we let the loop continue
+    }
+
+    delay(10);
+  }
+  return false;
+}
+
 bool checkSensorForTime(unsigned long duration) {
   unsigned long start = millis();
   int detections = 0;
-  
   while (millis() - start < duration) {
-    int val = analogRead(IR_SENSOR);
-    
-    // If potentiometer is "High" (Right side), we count it as a pill
-    if (val > SENSOR_THRESHOLD) {
-      detections++;
-    }
-    delay(100); // Short check interval
+    if (analogRead(IR_SENSOR) > SENSOR_THRESHOLD) detections++;
+    delay(100);
   }
-  
-  // If we saw the "pill" significantly, return true
-  return (detections > 5); 
+  return (detections > 2);
 }
 
-// 2. Alarm Function with Snooze
-// Returns true if Snooze was pressed
-bool ringBuzzerWithSnooze(unsigned long duration) {
-  unsigned long start = millis();
-  
-  while (millis() - start < duration) {
-    // Ring Buzzer
-    tone(BUZZER, 1000); // 1KHz sound
+// ---------------------------------------------------------
+// NETWORK FUNCTIONS
+// ---------------------------------------------------------
+
+void checkServerForCommands() {
+  if (client.connect(serverAddress, serverPort)) {
+    client.println("GET /api/firmware/poll HTTP/1.1");
+    client.print("Host: "); client.println(serverAddress);
+    client.println("Connection: close");
+    client.println();
+
+    String responseBody = "";
+    boolean headerEnded = false;
     
-    // CHECK SNOOZE BUTTON
-    if (digitalRead(SIMULATE_SNOOZE) == LOW) {
-      return true; // Exit immediately if pressed
+    while (client.connected() || client.available()) {
+      if (client.available()) {
+        String line = client.readStringUntil('\n');
+        if (line == "\r") headerEnded = true; 
+        else if (headerEnded) responseBody += line;
+      }
     }
-    
-    // Check if they took the pill WHILE it was buzzing
-    if (analogRead(IR_SENSOR) < SENSOR_THRESHOLD) {
-       Serial.println("Pill taken during alarm!");
-       return false; // Treat as finished
+    client.stop(); 
+
+    responseBody.trim();
+    if (responseBody.length() > 0) {
+      StaticJsonDocument<200> doc;
+      DeserializationError error = deserializeJson(doc, responseBody);
+
+      if (!error) {
+        const char* cmd = doc["command"];
+        if (strcmp(cmd, "IDLE") != 0) {
+           Serial.print("Server Command: "); Serial.println(cmd);
+        }
+        
+        if (strcmp(cmd, "DISPENSE") == 0) {
+          runDispenseCycle();
+        }
+      }
     }
-    
-    delay(50); // Small delay for stability
   }
-  
-  return false; // Time ran out, button was never pressed
 }
 
-// 3. Smart Delay
-// Just waits, but keeps things stable
-void smartDelay(unsigned long duration) {
-  unsigned long start = millis();
-  while (millis() - start < duration) {
-    // We could check for "Cancel" buttons here if we wanted
-    delay(10);
+bool checkForSnoozeCommand() {
+  if (client.connect(serverAddress, serverPort)) {
+    client.println("GET /api/firmware/poll HTTP/1.1");
+    client.print("Host: "); client.println(serverAddress);
+    client.println("Connection: close");
+    client.println();
+
+    String responseBody = "";
+    boolean headerEnded = false;
+    while (client.connected() || client.available()) {
+      if (client.available()) {
+        String line = client.readStringUntil('\n');
+        if (line == "\r") headerEnded = true;
+        else if (headerEnded) responseBody += line;
+      }
+    }
+    client.stop();
+    
+    if (responseBody.indexOf("SNOOZE") >= 0) {
+      return true;
+    }
   }
+  return false;
+}
+
+void sendStatusReport(bool wasTaken) {
+  if (client.connect(serverAddress, serverPort)) {
+    Serial.println("Sending Report to Server...");
+    StaticJsonDocument<200> doc;
+    JsonArray ids = doc.createNestedArray("intakeIds");
+    ids.add(1); 
+    doc["dispenseEventStatus"] = wasTaken;
+
+    String jsonString;
+    serializeJson(doc, jsonString);
+
+    client.println("POST /api/firmware/status HTTP/1.1");
+    client.print("Host: "); client.println(serverAddress);
+    client.println("Content-Type: application/json");
+    client.print("Content-Length: "); client.println(jsonString.length());
+    client.println("Connection: close");
+    client.println();
+    client.println(jsonString);
+    client.stop();
+  }
+}
+
+void printWiFiStatus() {
+  Serial.print("SSID: "); Serial.println(WiFi.SSID());
+  IPAddress ip = WiFi.localIP();
+  Serial.print("IP Address: "); Serial.println(ip);
 }
