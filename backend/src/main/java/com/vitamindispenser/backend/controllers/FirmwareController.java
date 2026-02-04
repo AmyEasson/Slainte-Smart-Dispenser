@@ -1,7 +1,8 @@
 package com.vitamindispenser.backend.controllers;
 
-import com.vitamindispenser.backend.domain.logging.DispenseStatusService;
+import com.vitamindispenser.backend.domain.logging.LoggingService;
 import com.vitamindispenser.backend.domain.schedule.PollCommandService;
+import com.vitamindispenser.backend.dto.logging.IntakeReport;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,7 +22,7 @@ public class FirmwareController {
      * 3. Firmware sends boolean (vitamin taken yes/no) back to backend via POST /status
      */
     @Autowired
-    private DispenseStatusService dispenseStatusService;
+    private LoggingService loggingService;
 
     @Autowired
     private PollCommandService pollCommandService;
@@ -69,16 +70,13 @@ public class FirmwareController {
 
      Notes: the controller only calls the domain service (and not the repos directly)
      */
-    /**
     @PostMapping("/status")
-    public ResponseEntity<String> reportStatus(@RequestBody VitaminStatusRequest request) {
-        log.info("Received status report from firmware");
+    public ResponseEntity<String> reportStatus(@RequestBody IntakeReport request) {
         log.info("Intake IDs: " + request.getIntakeIds());
         log.info("Dispense status: " + request.getDispenseEventStatus());
-        dispenseStatusService.handleStatus(request.getIntakeIds(),
+        loggingService.handleStatus(request.getIntakeIds(),
                     request.getDispenseEventStatus());
-        log.info("Status processing completed");
         return ResponseEntity.ok("Status processing completed");
     }
-    */
+
 }

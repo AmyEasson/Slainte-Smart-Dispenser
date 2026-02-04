@@ -15,7 +15,7 @@ Warning: Deploying this app somewhere might mean that we need to migrate to Post
 @Table(name = "dispense_event_log")
 @Getter
 @Setter
-public class DispenseEventLog {
+public class LoggingDatabase {
     /*
     logId is the primary key
     Database generates it automatically

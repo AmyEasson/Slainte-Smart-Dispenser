@@ -10,8 +10,7 @@ import java.util.List;
  */
 @Getter
 @Setter
-public class VitaminStatusRequest {
-
+public class IntakeReport {
     private List<Integer> intakeIds;      // the intake to which the status relates to
     private Boolean dispenseEventStatus;  // true = successfully dispensed, false = failed
 }

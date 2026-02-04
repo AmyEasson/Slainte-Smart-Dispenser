@@ -1,5 +1,6 @@
 package com.vitamindispenser.backend.repository;
 
+import com.vitamindispenser.backend.dto.logging.Log;
 import com.vitamindispenser.backend.dto.schedule.DispenseEvent;
 import jakarta.annotation.PostConstruct;
 import org.apache.commons.csv.CSVPrinter;
@@ -53,6 +54,10 @@ public class CsvScheduleRepository implements ScheduleRepository {
     }
 
 
+    /*
+    This method is important to enable logging.
+    Relevant information from the scheduling database need to be fetched in order to be logged along with the status.
+     */
     @Override
     public List<DispenseEvent> findByIds(List<Integer> ids) {
         if (ids == null || ids.isEmpty()) {
