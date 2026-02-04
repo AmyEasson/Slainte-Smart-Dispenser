@@ -1,8 +1,11 @@
 package com.vitamindispenser.backend.controllers;
 
+import com.vitamindispenser.backend.domain.logging.LoggingExportService;
 import com.vitamindispenser.backend.domain.schedule.SchedulingService;
 import com.vitamindispenser.backend.dto.schedule.DispenseEvent;
 import com.vitamindispenser.backend.dto.schedule.ScheduleRequest;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -36,9 +39,11 @@ public class MobileAppController {
      * }
      */
     private final SchedulingService schedulingService;
+    private final LoggingExportService exportService;
 
-    public MobileAppController(SchedulingService schedulingService) {
+    public MobileAppController(SchedulingService schedulingService,  LoggingExportService exportService) {
         this.schedulingService = schedulingService;
+        this.exportService = exportService;
     }
 
     // Mobile app sends schedule with multiple vitamins
@@ -49,11 +54,13 @@ public class MobileAppController {
     }
 
     // Mobile app gets vitamin intake data
-    @GetMapping("/intake")
-    public ResponseEntity<List<DispenseEvent>> getIntakeData() {
-        // TODO: Fetch intake logs
+    @GetMapping("/logs/export.csv")
+    public ResponseEntity<String> exportCsv() {
+        String csv = exportService.exportAllLogsAsCsv();
 
-        // For now returning an empty list
-        return ResponseEntity.ok(new ArrayList<>());
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"logs.csv\"")
+                .contentType(MediaType.parseMediaType("text/csv"))
+                .body(csv);
     }
 }
