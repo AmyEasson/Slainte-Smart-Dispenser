@@ -112,9 +112,9 @@
             list.innerHTML = `<p>No entries.</p>`;
         }
     }
-    // Load mock data (simulates GET /logs from backend)
+    // Load data GET /logs from backend)
     async function load() {
-        const res = await fetch("/api/mobile/intake"); // or "/api/intake" if you prefix APIs
+        const res = await fetch("/api/mobile/intake");
         if (!res.ok) throw new Error("Failed to load intake: " + res.status);
 
         logs = await res.json(); // expects an array
