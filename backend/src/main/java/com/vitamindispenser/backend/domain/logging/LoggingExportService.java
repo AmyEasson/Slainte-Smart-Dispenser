@@ -49,9 +49,6 @@ public class LoggingExportService {
         }
         return mustQuote ? "\"" + s + "\"" : s;
     }
-    public boolean hasAnyLogs() {
-        return repo.count() > 0;
-    }
 
     /** RAW dashboard export (NO IDs) – used by /intake */
     public List<IntakeForRawDashboard> exportDashboardJson() {
