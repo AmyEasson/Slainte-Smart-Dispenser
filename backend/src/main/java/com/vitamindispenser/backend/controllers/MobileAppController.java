@@ -47,10 +47,17 @@ public class MobileAppController {
     }
 
     // Mobile app sends schedule with multiple vitamins
+    // TODO: change createSchedule to completely overwrite file rather than append
     @PostMapping("/schedule")
     public ResponseEntity<String> createSchedule(@RequestBody ScheduleRequest request) {
         schedulingService.saveSchedule(request);
         return ResponseEntity.ok("Schedule has been sent");
+    }
+
+    // TODO: create endpoint for app to retrieve the current schedule so it can be displayed - getSchedule
+    @GetMapping("/getSchedule")
+    public ResponseEntity<ScheduleRequest> getSchedule() {
+        return ResponseEntity.ok(schedulingService.retrieveSchedule());
     }
 
     // Mobile app gets vitamin intake data
@@ -66,6 +73,7 @@ public class MobileAppController {
     /*
     This endpoint shall be called by the UI to just enumerate raw data there
      */
+    // TODO: change to JSON format - frontend does not need csv
     @GetMapping("/intake")
     public ResponseEntity<String> getIntake() {
         if (!exportService.hasAnyLogs()) {

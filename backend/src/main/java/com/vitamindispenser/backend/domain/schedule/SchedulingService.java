@@ -11,7 +11,9 @@ import org.springframework.stereotype.Service;
 
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class SchedulingService {
@@ -54,6 +56,46 @@ public class SchedulingService {
         }
         scheduleRepository.saveAll(events);
     }
+
+    public ScheduleRequest retrieveSchedule() {
+        List<DispenseEvent> events = scheduleRepository.findAll();
+
+        Map<String, VitaminSchedule> vitaminMap = new HashMap<>();
+
+        for (DispenseEvent event : events) {
+            // Key uniquely identifies a VitaminSchedule
+            String vitaminKey = event.getVitaminType() + "-" + event.getNumberOfPills();
+
+            VitaminSchedule vitaminSchedule =
+                    vitaminMap.computeIfAbsent(vitaminKey, k -> {
+                        VitaminSchedule v = new VitaminSchedule();
+                        v.setVitaminType(event.getVitaminType());
+                        v.setNumberOfPills(event.getNumberOfPills());
+                        v.setSchedule(new ArrayList<>());
+                        return v;
+                    });
+
+            // Find or create the DaySchedule
+            DaySchedule daySchedule = vitaminSchedule.getSchedule().stream()
+                    .filter(d -> d.getDay().equals(event.getDay()))
+                    .findFirst()
+                    .orElseGet(() -> {
+                        DaySchedule d = new DaySchedule();
+                        d.setDay(event.getDay());
+                        d.setTimes(new ArrayList<>());
+                        vitaminSchedule.getSchedule().add(d);
+                        return d;
+                    });
+
+            // Add time
+            daySchedule.getTimes().add(event.getTime());
+        }
+
+        ScheduleRequest request = new ScheduleRequest();
+        request.setVitamins(new ArrayList<>(vitaminMap.values()));
+        return request;
+    }
+
 }
 
 

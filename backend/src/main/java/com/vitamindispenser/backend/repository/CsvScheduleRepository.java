@@ -122,18 +122,19 @@ public class CsvScheduleRepository implements ScheduleRepository {
     }
 
     @Override
-    public List<DispenseEvent> saveAll(List<DispenseEvent> events){
-        if (events == null || events.isEmpty()){
-            return Collections.emptyList();
+    public List<DispenseEvent> saveAll(List<DispenseEvent> events) {
+        if (events == null || events.isEmpty()) {
+            // still overwrite with empty file
+            try {
+                writeEventsToCsv(Collections.emptyList());
+                return Collections.emptyList();
+            } catch (IOException e) {
+                throw new IllegalStateException("Failed to clear schedule CSV", e);
+            }
         }
 
         try {
-            List<DispenseEvent> existingEvents = findAll();
-
-            int nextId = existingEvents.stream()
-                    .mapToInt(DispenseEvent::getId)
-                    .max()
-                    .orElse(0) +1;
+            int nextId = 1;
 
             List<DispenseEvent> eventsWithIds = new ArrayList<>();
             for (DispenseEvent event : events) {
@@ -147,18 +148,16 @@ public class CsvScheduleRepository implements ScheduleRepository {
                 eventsWithIds.add(eventWithId);
             }
 
-            List<DispenseEvent> allEvents = new ArrayList<>(existingEvents);
-            allEvents.addAll(eventsWithIds);
-
-            // write all events to CSV
-            writeEventsToCsv(allEvents);
+            // overwrite file with ONLY these events
+            writeEventsToCsv(eventsWithIds);
 
             return eventsWithIds;
 
-        } catch (Exception e){
+        } catch (Exception e) {
             throw new IllegalStateException("Failed to write schedule CSV", e);
         }
     }
+
 
     private void writeEventsToCsv(List<DispenseEvent> events) throws IOException {
         File file = csv.getFile();
