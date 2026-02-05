@@ -2,6 +2,8 @@ package com.vitamindispenser.backend.controllers;
 
 import com.vitamindispenser.backend.domain.logging.LoggingExportService;
 import com.vitamindispenser.backend.domain.schedule.SchedulingService;
+import com.vitamindispenser.backend.dto.logging.IntakeForRawDashboard;
+import com.vitamindispenser.backend.dto.logging.IntakeResponseForRawDashboard;
 import com.vitamindispenser.backend.dto.schedule.DispenseEvent;
 import com.vitamindispenser.backend.dto.schedule.ScheduleRequest;
 import org.springframework.http.HttpHeaders;
@@ -73,15 +75,18 @@ public class MobileAppController {
     /*
     This endpoint shall be called by the UI to just enumerate raw data there
      */
-    // TODO: change to JSON format - frontend does not need csv
     @GetMapping("/intake")
-    public ResponseEntity<String> getIntake() {
-        if (!exportService.hasAnyLogs()) {
-            return ResponseEntity.ok("No intake data available.");
+    public ResponseEntity<?> getIntake() {
+        List<IntakeForRawDashboard> data = exportService.exportDashboardJson();
+
+        if (data.isEmpty()) {
+            return ResponseEntity.ok(
+                    new IntakeResponseForRawDashboard(List.of(), "No intake data available.")
+            );
         }
 
-        return ResponseEntity.ok()
-                .contentType(MediaType.parseMediaType("text/csv"))
-                .body(exportService.exportDashboardCsv());
+        return ResponseEntity.ok(
+                new IntakeResponseForRawDashboard(data, null)
+        );
     }
 }

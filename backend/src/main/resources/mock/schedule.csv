@@ -1,4 +1,4 @@
 id,vitaminType,numberOfPills,day,time
-1,Omega 3,1,monday,09:00
-2,Omega 3,1,saturday,09:00
-3,Vitamin B3,1,thursday,12:00
+101,Omega 3,1,monday,09:00
+102,Omega 3,2,saturday,09:00
+103,Vitamin B3,3,thursday,12:00
