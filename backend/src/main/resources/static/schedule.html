@@ -453,7 +453,7 @@
         status.textContent = "Saving...";
 
         try {
-            const res = await fetch("/api/mobile/schedule", {
+            const res = await fetch("http://localhost:8080/api/mobile/schedule", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
@@ -487,7 +487,7 @@
     // TODO: replace to GET endpoint that retrieve the existing schedule
     // Load data (GET /intake from backend)
     async function load() {
-        const res = await fetch("/api/mobile/");
+        const res = await fetch("http://localhost:8080/api/mobile/");
         if (!res.ok) throw new Error("Failed to load intake: " + res.status);
 
         state = await res.json(); // expects an array

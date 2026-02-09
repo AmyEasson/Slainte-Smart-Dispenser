@@ -86,7 +86,6 @@
         }
 
         .TAKEN { color: #0a7; border-color: #0a7; }
-        .PENDING { color: #a70; border-color: #a70; }
         .MISSED { color: #d33; border-color: #d33; }
 
         .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
@@ -132,7 +131,6 @@
             <select id="filter">
                 <option value="ALL">All</option>
                 <option value="TAKEN">Taken</option>
-                <option value="PENDING">Pending</option>
                 <option value="MISSED">Missed</option>
             </select>
         </label>
@@ -184,11 +182,9 @@
     let sortDir = "asc"; // "asc" | "desc"
 
     function normalizeStatus(row) {
-        // Your DTO has Boolean taken. UI filter expects TAKEN/PENDING/MISSED.
-        // With only a boolean, we can reliably represent TAKEN vs PENDING.
         // (If you later add "missed" info, you can map it here.)
         if (row.taken === true) return "TAKEN";
-        return "PENDING";
+        return "MISSED";
     }
 
     function compare(a, b, key) {
