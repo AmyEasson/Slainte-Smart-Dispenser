@@ -2,128 +2,355 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
-    <title>Vitamin Intake Log (Mock)</title>
+    <title>Vitamin Intake Log</title>
 
-    <!-- Basic styling to resemble a simple mobile layout -->
     <style>
         body {
             font-family: Arial, sans-serif;
             padding: 20px;
-            max-width: 420px;   /* mobile-like width */
+            max-width: 900px;
             margin: 0 auto;
         }
-
-        /* Single intake entry row */
-        .row {
-            display: grid;
-            grid-template-columns: 1fr auto;
-            gap: 8px 12px;
-            padding: 10px 0;
-            border-bottom: 1px solid #ddd;
-        }
-
-        .vit { font-weight: 600; }
-        .meta { color: #555; font-size: 12px; }
-        .status { font-weight: 700; }
-
-        /* Status-specific colours */
-        .TAKEN { color: #0a7; }
-        .PENDING { color: #a70; }
-        .MISSED { color: #d33; }
-
-        select { padding: 6px; }
 
         header {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 12px;
+        }
+
+        select, input {
+            padding: 8px;
+            border: 1px solid #bbb;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .toolbar {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .hint {
+            color: #666;
+            font-size: 12px;
+            margin: 6px 0 14px;
+        }
+
+        .card {
+            border: 1px solid #e3e3e3;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead th {
+            text-align: left;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+            background: #f6f6f6;
+            border-bottom: 1px solid #e3e3e3;
+            padding: 10px 12px;
+            user-select: none;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        tbody td {
+            border-bottom: 1px solid #eee;
+            padding: 10px 12px;
+            vertical-align: top;
+        }
+
+        tbody tr:hover {
+            background: #fafafa;
+        }
+
+        .pill {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 700;
+            border: 1px solid #ddd;
+            white-space: nowrap;
+        }
+
+        .TAKEN { color: #0a7; border-color: #0a7; }
+        .MISSED { color: #d33; border-color: #d33; }
+
+        .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+        .right { text-align: right; }
+
+        .error {
+            margin-top: 12px;
+            color: #b00;
+            font-weight: 600;
+        }
+
+        .loading {
+            margin-top: 12px;
+            color: #444;
+        }
+
+        .footer {
+            margin-top: 10px;
+            color: #666;
+            font-size: 12px;
         }
     </style>
 </head>
 
 <body>
 <a href="index.html" style="
-    display:inline-block;
-    margin-bottom:12px;
-    text-decoration:none;
-    color:#000;
-    border:1px solid #aaa;
-    padding:6px 10px;
-    border-radius:6px;
-    font-size:12px;
-    ">
-    ← Back to Home
-</a>
-<!-- Header with title and status filter -->
+      display:inline-block;
+      margin-bottom:12px;
+      text-decoration:none;
+      color:#000;
+      border:1px solid #aaa;
+      padding:6px 10px;
+      border-radius:6px;
+      font-size:12px;
+  ">← Back to Home</a>
+
 <header>
-    <h2>Intake Log</h2>
-    <select id="filter">
-        <option value="ALL">All</option>
-        <option value="TAKEN">Taken</option>
-        <option value="PENDING">Pending</option>
-        <option value="MISSED">Missed</option>
-    </select>
+    <h2 style="margin:0;">Intake Log</h2>
+
+    <div class="toolbar">
+        <label>
+            Status:
+            <select id="filter">
+                <option value="ALL">All</option>
+                <option value="TAKEN">Taken</option>
+                <option value="MISSED">Missed</option>
+            </select>
+        </label>
+
+        <label>
+            Search:
+            <input id="search" type="text" placeholder="e.g. Vitamin D, monday, 10:00" />
+        </label>
+
+        <button id="refresh" type="button" style="
+        padding:8px 12px;border:1px solid #bbb;border-radius:6px;background:#fff;cursor:pointer;
+      ">Refresh</button>
+    </div>
 </header>
 
-<!-- Container for rendered intake log entries -->
-<div id="list"></div>
+<div class="hint">
+    Click a column header to sort. Data loaded from <span class="mono">GET /api/mobile/intake</span>.
+</div>
+
+<div id="state" class="loading" style="display:none;">Loading…</div>
+<div id="error" class="error" style="display:none;"></div>
+
+<div class="card">
+    <table>
+        <thead>
+        <tr>
+            <th data-sort="vitaminType">Vitamin</th>
+            <th data-sort="day">Day</th>
+            <th data-sort="time">Time</th>
+            <th data-sort="numberOfPills" class="right">Pills</th>
+            <th data-sort="status">Status</th>
+        </tr>
+        </thead>
+        <tbody id="tbody">
+        <!-- rows injected here -->
+        </tbody>
+    </table>
+</div>
+
+<div class="footer" id="count"></div>
 
 <script>
-    // Mock dataset representing a backend response
-    let logs = [];
+    // Raw items from backend: IntakeForRawDashboard[]
+    // { vitaminType, day, time, numberOfPills, taken }
+    let items = [];
 
-    // Format ISO timestamps for display
-    function fmt(iso) {
-        return new Date(iso).toLocaleString();
+    // Sorting state
+    let sortKey = "day";
+    let sortDir = "asc"; // "asc" | "desc"
+
+    function normalizeStatus(row) {
+        // (If you later add "missed" info, you can map it here.)
+        if (row.taken === true) return "TAKEN";
+        return "MISSED";
     }
 
-    // Render intake entries based on selected filter
+    function compare(a, b, key) {
+        const av = a[key];
+        const bv = b[key];
+
+        // numeric
+        if (typeof av === "number" && typeof bv === "number") return av - bv;
+
+        // treat null/undefined as empty
+        const as = (av ?? "").toString().toLowerCase();
+        const bs = (bv ?? "").toString().toLowerCase();
+
+        // try time sorting when key is "time" and looks like HH:mm
+        if (key === "time") {
+            const toMins = (t) => {
+                const m = /^(\d{1,2}):(\d{2})$/.exec(t ?? "");
+                if (!m) return Number.POSITIVE_INFINITY;
+                return parseInt(m[1], 10) * 60 + parseInt(m[2], 10);
+            };
+            return toMins(av) - toMins(bv);
+        }
+
+        // day ordering (mon..sun) if possible
+        if (key === "day") {
+            const order = { monday:1, tuesday:2, wednesday:3, thursday:4, friday:5, saturday:6, sunday:7 };
+            const ao = order[as] ?? 999;
+            const bo = order[bs] ?? 999;
+            if (ao !== bo) return ao - bo;
+        }
+
+        if (as < bs) return -1;
+        if (as > bs) return 1;
+        return 0;
+    }
+
     function render() {
         const filter = document.getElementById("filter").value;
-        const list = document.getElementById("list");
-        list.innerHTML = "";
+        const q = document.getElementById("search").value.trim().toLowerCase();
 
-        // Filter entries by intake status
-        const shown = logs.filter(
-            l => filter === "ALL" || l.status === filter
-        );
+        const tbody = document.getElementById("tbody");
+        tbody.innerHTML = "";
 
-        // Create UI rows for each entry
-        shown.forEach(l => {
-            const row = document.createElement("div");
-            row.className = "row";
+        // derive status field for filtering/sorting
+        const enriched = items.map(r => ({
+            ...r,
+            status: normalizeStatus(r)
+        }));
 
-            row.innerHTML = `
-                <div>
-                    <div class="vit">${l.vitamin}</div>
-                    <div class="meta">Scheduled: ${fmt(l.scheduledTime)}</div>
-                    <div class="meta">
-                        ${l.takenAt ? ("Taken: " + fmt(l.takenAt)) : ""}
-                    </div>
-                </div>
-                <div class="status ${l.status}">${l.status}</div>
-            `;
+        let shown = enriched.filter(r => {
+            const statusOk = (filter === "ALL" || r.status === filter);
 
-            list.appendChild(row);
+            if (!statusOk) return false;
+            if (!q) return true;
+
+            // basic search over all displayed fields
+            const hay = [
+                r.vitaminType,
+                r.day,
+                r.time,
+                r.numberOfPills,
+                r.status
+            ].map(x => (x ?? "").toString().toLowerCase()).join(" ");
+
+            return hay.includes(q);
         });
 
-        // Empty state when no entries match the filter
+        // sort
+        shown.sort((a, b) => {
+            const c = compare(a, b, sortKey);
+            return sortDir === "asc" ? c : -c;
+        });
+
+        // rows
+        shown.forEach(r => {
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+        <td>${escapeHtml(r.vitaminType ?? "")}</td>
+        <td>${escapeHtml(r.day ?? "")}</td>
+        <td class="mono">${escapeHtml(r.time ?? "")}</td>
+        <td class="right">${escapeHtml((r.numberOfPills ?? "").toString())}</td>
+        <td><span class="pill ${r.status}">${r.status}</span></td>
+      `;
+            tbody.appendChild(tr);
+        });
+
         if (shown.length === 0) {
-            list.innerHTML = `<p>No entries.</p>`;
+            const tr = document.createElement("tr");
+            tr.innerHTML = `<td colspan="5" style="padding:14px 12px;color:#666;">No entries.</td>`;
+            tbody.appendChild(tr);
+        }
+
+        document.getElementById("count").textContent =
+            `Showing ${shown.length} of ${items.length} entries.`;
+    }
+
+    function escapeHtml(str) {
+        return str
+            .replaceAll("&", "&amp;")
+            .replaceAll("<", "&lt;")
+            .replaceAll(">", "&gt;")
+            .replaceAll('"', "&quot;")
+            .replaceAll("'", "&#039;");
+    }
+
+    function setState({ loading, error }) {
+        const state = document.getElementById("state");
+        const err = document.getElementById("error");
+
+        state.style.display = loading ? "block" : "none";
+        err.style.display = error ? "block" : "none";
+        err.textContent = error || "";
+    }
+
+    async function load() {
+        setState({ loading: true, error: "" });
+        try {
+            const res = await fetch("http://localhost:8080/api/mobile/intake", { headers: { "Accept": "application/json" } });
+            if (!res.ok) throw new Error("Failed to load intake: " + res.status);
+
+            const payload = await res.json();
+
+            // Your controller returns IntakeResponseForRawDashboard(data, message)
+            // so payload is an object like: { data: [...], message: "..." | null }
+            const data = payload?.data ?? [];
+
+            if (!Array.isArray(data)) {
+                throw new Error("Unexpected response shape: expected payload.data to be an array");
+            }
+
+            items = data;
+
+            // Optional: show backend message (like "No intake data available.")
+            if (payload?.message) {
+                setState({ loading: false, error: payload.message });
+            } else {
+                setState({ loading: false, error: "" });
+            }
+
+            render();
+        } catch (e) {
+            console.error(e);
+            setState({ loading: false, error: e.message || "Unknown error" });
+            items = [];
+            render();
         }
     }
-    // Load data GET /logs from backend)
-    async function load() {
-        const res = await fetch("/api/mobile/intake");
-        if (!res.ok) throw new Error("Failed to load intake: " + res.status);
 
-        logs = await res.json(); // expects an array
-        render();
-    }
-
-
-    // Re-render UI when filter selection changes
+    // Filter/search re-render
     document.getElementById("filter").addEventListener("change", render);
+    document.getElementById("search").addEventListener("input", render);
+    document.getElementById("refresh").addEventListener("click", load);
+
+    // Sorting by clicking headers
+    document.querySelectorAll("thead th[data-sort]").forEach(th => {
+        th.addEventListener("click", () => {
+            const key = th.getAttribute("data-sort");
+            if (sortKey === key) {
+                sortDir = (sortDir === "asc") ? "desc" : "asc";
+            } else {
+                sortKey = key;
+                sortDir = "asc";
+            }
+            render();
+        });
+    });
 
     // Initial load
     load();

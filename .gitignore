@@ -1,21 +1,11 @@
-# Compiled files
 target/
-*.class
 
-# Maven
-.mvn/
 
-# IDE
 .idea/
 *.iml
 *.ipr
 *.iws
 
-# Logs
-*.log
 
-# OS Files
-.DS_Store
 
-# Application properties with secrets
 application-local.properties
