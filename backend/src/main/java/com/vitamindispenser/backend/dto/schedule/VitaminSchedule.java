@@ -1,5 +1,6 @@
 package com.vitamindispenser.backend.dto.schedule;
 
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -8,6 +9,7 @@ import java.util.List;
 /**
  * Represents a single vitamin type with its dispensing schedule
  */
+@JsonPropertyOrder({ "vitaminType", "numberOfPills", "schedule" })
 @Getter
 @Setter
 public class VitaminSchedule {
