@@ -1,5 +1,6 @@
 package com.vitamindispenser.backend.domain.logging;
 
+import com.vitamindispenser.backend.dto.logging.IntakeForRawDashboard;
 import com.vitamindispenser.backend.dto.logging.LoggingDatabase;
 import com.vitamindispenser.backend.repository.DispenseEventLogRepository;
 import org.springframework.stereotype.Service;
@@ -48,27 +49,18 @@ public class LoggingExportService {
         }
         return mustQuote ? "\"" + s + "\"" : s;
     }
-    public boolean hasAnyLogs() {
-        return repo.count() > 0;
-    }
 
     /** RAW dashboard export (NO IDs) – used by /intake */
-    public String exportDashboardCsv() {
-        List<LoggingDatabase> rows = repo.findAll();
-
-        StringBuilder sb = new StringBuilder();
-        sb.append("vitaminType,day,time,numberOfPills,taken\n");
-
-        for (LoggingDatabase r : rows) {
-            sb.append(csv(r.getVitaminType())).append(',')
-                    .append(csv(r.getDay())).append(',')
-                    .append(csv(r.getTime())).append(',')
-                    .append(csv(r.getNumberOfPills())).append(',')
-                    .append(csv(r.getTaken()))
-                    .append('\n');
-        }
-
-        return sb.toString();
+    public List<IntakeForRawDashboard> exportDashboardJson() {
+        return repo.findAll().stream()
+                .map(r -> new IntakeForRawDashboard(
+                        r.getVitaminType(),
+                        r.getDay(),
+                        r.getTime(),
+                        r.getNumberOfPills(),
+                        r.getTaken()
+                ))
+                .toList();
     }
 }
 

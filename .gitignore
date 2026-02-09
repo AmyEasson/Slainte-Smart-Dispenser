@@ -1,40 +1,11 @@
-# ===== Java build output =====
-*.class
-*.jar
-*.war
-*.ear
 target/
 
-# ===== Maven =====
-dependency-reduced-pom.xml
 
-# ===== Logs =====
-*.log
-
-# ===== OS junk =====
-.DS_Store
-Thumbs.db
-
-# ===== IntelliJ IDEA =====
 .idea/
 *.iml
 *.ipr
 *.iws
-out/
 
-# ===== Eclipse =====
-.project
-.classpath
-.settings/
 
-# ===== VS Code =====
-.vscode/
 
-# ===== Gradle (if used accidentally) =====
-.gradle/
-build/
-
-# ===== Environment / secrets =====
-.env
-application-local.yml
 application-local.properties

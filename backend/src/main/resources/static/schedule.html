@@ -28,7 +28,7 @@
     </style>
 </head>
 <body>
-<a href="./index.html" style="
+<a href="index.html" style="
   display:inline-block;
   margin-bottom:12px;
   text-decoration:none;
@@ -484,32 +484,16 @@
         console.log(JSON.stringify(payload, null, 2));
         document.getElementById("preview").textContent = JSON.stringify(payload, null, 2);
     });
+    // TODO: replace to GET endpoint that retrieve the existing schedule
+    // Load data (GET /intake from backend)
+    async function load() {
+        const res = await fetch("/api/mobile/");
+        if (!res.ok) throw new Error("Failed to load intake: " + res.status);
 
-    // TODO: Replace mock data with GET response from backend
-    // Optional starter data (remove if want empty)
-    // Starter data
-    state = {
-        vitamins: [
-            {
-                vitaminType: "Vitamin A",
-                numberOfPills: 2,
-                schedule: {
-                    MONDAY: ["10:00", "12:00"],
-                    TUESDAY: ["10:00", "12:00"],
-                    WEDNESDAY: ["10:00", "12:00"]
-                }
-            },
-            {
-                vitaminType: "Magnesium",
-                numberOfPills: 1,
-                schedule: {
-                    FRIDAY: ["09:00"]
-                }
-            }
-        ]
-    };
-
-    render();
+        state = await res.json(); // expects an array
+        render();
+    }
+    load();
 </script>
 </body>
 </html>

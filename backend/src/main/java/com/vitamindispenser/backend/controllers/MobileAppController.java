@@ -2,6 +2,8 @@ package com.vitamindispenser.backend.controllers;
 
 import com.vitamindispenser.backend.domain.logging.LoggingExportService;
 import com.vitamindispenser.backend.domain.schedule.SchedulingService;
+import com.vitamindispenser.backend.dto.logging.IntakeForRawDashboard;
+import com.vitamindispenser.backend.dto.logging.IntakeResponseForRawDashboard;
 import com.vitamindispenser.backend.dto.schedule.DispenseEvent;
 import com.vitamindispenser.backend.dto.schedule.ScheduleRequest;
 import org.springframework.http.HttpHeaders;
@@ -12,6 +14,10 @@ import org.springframework.web.bind.annotation.*;
 import java.util.ArrayList;
 import java.util.List;
 
+
+@CrossOrigin(origins = {
+        "http://localhost:63342"
+})
 @RestController
 @RequestMapping("/api/mobile")
 public class MobileAppController {
@@ -47,10 +53,17 @@ public class MobileAppController {
     }
 
     // Mobile app sends schedule with multiple vitamins
+    // TODO: change createSchedule to completely overwrite file rather than append
     @PostMapping("/schedule")
     public ResponseEntity<String> createSchedule(@RequestBody ScheduleRequest request) {
         schedulingService.saveSchedule(request);
         return ResponseEntity.ok("Schedule has been sent");
+    }
+
+    // TODO: create endpoint for app to retrieve the current schedule so it can be displayed - getSchedule
+    @GetMapping("/getSchedule")
+    public ResponseEntity<ScheduleRequest> getSchedule() {
+        return ResponseEntity.ok(schedulingService.retrieveSchedule());
     }
 
     // Mobile app gets vitamin intake data
@@ -67,13 +80,17 @@ public class MobileAppController {
     This endpoint shall be called by the UI to just enumerate raw data there
      */
     @GetMapping("/intake")
-    public ResponseEntity<String> getIntake() {
-        if (!exportService.hasAnyLogs()) {
-            return ResponseEntity.ok("No intake data available.");
+    public ResponseEntity<?> getIntake() {
+        List<IntakeForRawDashboard> data = exportService.exportDashboardJson();
+
+        if (data.isEmpty()) {
+            return ResponseEntity.ok(
+                    new IntakeResponseForRawDashboard(List.of(), "No intake data available.")
+            );
         }
 
-        return ResponseEntity.ok()
-                .contentType(MediaType.parseMediaType("text/csv"))
-                .body(exportService.exportDashboardCsv());
+        return ResponseEntity.ok(
+                new IntakeResponseForRawDashboard(data, null)
+        );
     }
 }
