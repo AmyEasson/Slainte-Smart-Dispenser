@@ -54,11 +54,24 @@
             <label>Vitamin type</label>
             <input id="newVitaminName" placeholder="e.g. Vitamin D" />
         </div>
-        <div style="align-self:end;">
-            <button id="addVitaminBtn">Add vitamin</button>
+
+        <div>
+            <label>Number of pills</label>
+            <input
+                    id="newVitaminPills"
+                    type="number"
+                    min="1"
+                    step="1"
+                    value="1"
+            />
         </div>
     </div>
+
+    <div style="margin-top:8px; text-align:right;">
+        <button id="addVitaminBtn">Add vitamin</button>
+    </div>
 </div>
+
 
 <div id="vitaminList"></div>
 
@@ -94,7 +107,12 @@
     function addVitamin(name) {
         const trimmed = (name || "").trim();
         if (!trimmed) return;
-        state.vitamins.push({ vitaminType: trimmed, numberOfPills: 1, schedule: {} });
+
+        const pillsInp = document.getElementById("newVitaminPills");
+        const n = Number(pillsInp?.value);
+        const pills = Number.isFinite(n) && n >= 1 ? Math.floor(n) : 1;
+
+        state.vitamins.push({ vitaminType: trimmed, numberOfPills: pills, schedule: {} });
         render();
     }
 
