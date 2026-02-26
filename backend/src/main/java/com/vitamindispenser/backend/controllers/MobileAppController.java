@@ -6,13 +6,19 @@ import com.vitamindispenser.backend.dto.logging.IntakeForRawDashboard;
 import com.vitamindispenser.backend.dto.logging.IntakeResponseForRawDashboard;
 import com.vitamindispenser.backend.dto.schedule.DispenseEvent;
 import com.vitamindispenser.backend.dto.schedule.ScheduleRequest;
+import com.vitamindispenser.backend.model.Device;
+import com.vitamindispenser.backend.model.User;
+import com.vitamindispenser.backend.repository.DeviceRepository;
+import com.vitamindispenser.backend.repository.UserRepository;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/mobile")
@@ -42,24 +48,45 @@ public class MobileAppController {
      */
     private final SchedulingService schedulingService;
     private final LoggingExportService exportService;
+    private final UserRepository userRepository;
+    private final DeviceRepository deviceRepository;
 
-    public MobileAppController(SchedulingService schedulingService,  LoggingExportService exportService) {
+    public MobileAppController(SchedulingService schedulingService, LoggingExportService exportService, UserRepository userRepository, DeviceRepository deviceRepository) {
         this.schedulingService = schedulingService;
         this.exportService = exportService;
+        this.userRepository = userRepository;
+        this.deviceRepository = deviceRepository;
+    }
+
+    @PostMapping("/claim-device")
+    public ResponseEntity<String> claimDevice(@RequestBody Map<String, String> body, Principal principal){
+        String deviceId = body.get("deviceId");
+        User user = userRepository.findByUsername(principal.getName())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        Device device = deviceRepository.findByDeviceId(deviceId)
+                .orElse(new Device());
+        device.setDeviceId(deviceId);
+        device.setOwner(user);
+        deviceRepository.save(device);
+
+        return ResponseEntity.ok("Successfully claimed device");
     }
 
     // Mobile app sends schedule with multiple vitamins
-    // TODO: change createSchedule to completely overwrite file rather than append
     @PostMapping("/schedule")
-    public ResponseEntity<String> createSchedule(@RequestBody ScheduleRequest request) {
-        schedulingService.saveSchedule(request);
+    public ResponseEntity<String> createSchedule(@RequestBody ScheduleRequest request, Principal principal) {
+        User user = userRepository.findByUsername(principal.getName())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        schedulingService.saveSchedule(request, user);
         return ResponseEntity.ok("Schedule has been sent");
     }
 
-    // TODO: create endpoint for app to retrieve the current schedule so it can be displayed - getSchedule
     @GetMapping("/getSchedule")
-    public ResponseEntity<ScheduleRequest> getSchedule() {
-        return ResponseEntity.ok(schedulingService.retrieveSchedule());
+    public ResponseEntity<ScheduleRequest> getSchedule(Principal principal) {
+        User user = userRepository.findByUsername(principal.getName())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        return ResponseEntity.ok(schedulingService.retrieveSchedule(user));
     }
 
     // Mobile app gets vitamin intake data

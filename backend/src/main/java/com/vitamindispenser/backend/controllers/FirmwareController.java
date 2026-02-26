@@ -3,6 +3,9 @@ package com.vitamindispenser.backend.controllers;
 import com.vitamindispenser.backend.domain.logging.LoggingService;
 import com.vitamindispenser.backend.domain.schedule.PollCommandService;
 import com.vitamindispenser.backend.dto.logging.IntakeReport;
+import com.vitamindispenser.backend.model.Device;
+import com.vitamindispenser.backend.model.User;
+import com.vitamindispenser.backend.repository.DeviceRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -26,14 +29,21 @@ public class FirmwareController {
 
     @Autowired
     private PollCommandService pollCommandService;
+    @Autowired
+    private DeviceRepository deviceRepository;
 
     /**
      * Poll endpoint: returns command and, for DISPENSE, the intake/slot ids to report back in POST /status.
      * Response JSON: { "command": "IDLE" | "DISPENSE" | "SNOOZE", "intakeIds": [1, 2] }
      */
     @GetMapping("/poll")
-    public ResponseEntity<Map<String, Object>> poll() {
-        var result = pollCommandService.getPollingResults();
+    public ResponseEntity<Map<String, Object>> poll(@RequestParam String deviceId) {
+        Device device = deviceRepository.findByDeviceId(deviceId)
+                .orElseThrow(() -> new RuntimeException("Unknown device"));
+
+        User owner = device.getOwner();
+        var result = pollCommandService.getPollingResults(owner);
+
         Map<String, Object> body = new HashMap<>();
         body.put("command", result.getCommand());
         body.put("intakeIds", result.getIntakeIds());
