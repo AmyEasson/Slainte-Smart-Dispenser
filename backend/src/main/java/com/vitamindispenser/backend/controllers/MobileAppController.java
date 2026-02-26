@@ -91,8 +91,10 @@ public class MobileAppController {
 
     // Mobile app gets vitamin intake data
     @GetMapping("/logs/export.csv")
-    public ResponseEntity<String> exportCsv() {
-        String csv = exportService.exportAllLogsAsCsv();
+    public ResponseEntity<String> exportCsv(Principal principal) {
+        User user = userRepository.findByUsername(principal.getName())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        String csv = exportService.exportAllLogsAsCsv(user);
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"logs.csv\"")
                 .contentType(MediaType.parseMediaType("text/csv"))
@@ -103,8 +105,10 @@ public class MobileAppController {
     This endpoint shall be called by the UI to just enumerate raw data there
      */
     @GetMapping("/intake")
-    public ResponseEntity<?> getIntake() {
-        List<IntakeForRawDashboard> data = exportService.exportDashboardJson();
+    public ResponseEntity<?> getIntake(Principal principal) {
+        User user = userRepository.findByUsername(principal.getName())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        List<IntakeForRawDashboard> data = exportService.exportDashboardJson(user);
 
         if (data.isEmpty()) {
             return ResponseEntity.ok(

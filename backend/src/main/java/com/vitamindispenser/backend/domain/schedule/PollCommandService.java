@@ -1,11 +1,9 @@
 package com.vitamindispenser.backend.domain.schedule;
 
 import com.vitamindispenser.backend.dto.firmware.PollCommandResult;
-import com.vitamindispenser.backend.dto.schedule.DispenseEvent;
 import com.vitamindispenser.backend.model.ScheduleEntry;
 import com.vitamindispenser.backend.model.User;
 import com.vitamindispenser.backend.repository.ScheduleEntryRepository;
-import com.vitamindispenser.backend.repository.ScheduleRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.DayOfWeek;

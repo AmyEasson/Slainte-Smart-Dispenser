@@ -1,14 +1,13 @@
 package com.vitamindispenser.backend.domain.schedule;
 
 
-import com.vitamindispenser.backend.dto.schedule.DispenseEvent;
 import com.vitamindispenser.backend.dto.schedule.DaySchedule;
 import com.vitamindispenser.backend.dto.schedule.ScheduleRequest;
 import com.vitamindispenser.backend.dto.schedule.VitaminSchedule;
 import com.vitamindispenser.backend.model.ScheduleEntry;
 import com.vitamindispenser.backend.model.User;
 import com.vitamindispenser.backend.repository.ScheduleEntryRepository;
-import com.vitamindispenser.backend.repository.ScheduleRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -32,6 +31,8 @@ public class SchedulingService {
      * Saves a schedule request by flattening the nested structure into individual DispenseEvents
      * @param request The schedule request from the mobile app
      */
+
+    @Transactional
     public void saveSchedule(ScheduleRequest request, User user) {
         // delete existing schedule for this user first
         scheduleEntryRepository.deleteByUser(user);

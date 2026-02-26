@@ -81,11 +81,13 @@ public class FirmwareController {
      Notes: the controller only calls the domain service (and not the repos directly)
      */
     @PostMapping("/status")
-    public ResponseEntity<String> reportStatus(@RequestBody IntakeReport request) {
+    public ResponseEntity<String> reportStatus(@RequestBody IntakeReport request, @RequestParam(defaultValue = "DISPENSER_001") String deviceId) {
+        Device device = deviceRepository.findByDeviceId(deviceId)
+                .orElseThrow(() -> new RuntimeException("Unknown device"));
         log.info("Intake IDs: " + request.getIntakeIds());
         log.info("Dispense status: " + request.getDispenseEventStatus());
         loggingService.handleStatus(request.getIntakeIds(),
-                    request.getDispenseEventStatus());
+                    request.getDispenseEventStatus(), device.getOwner());
         return ResponseEntity.ok("Status processing completed");
     }
 
