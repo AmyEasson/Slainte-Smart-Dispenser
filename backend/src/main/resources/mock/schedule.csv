@@ -1,2 +1,4 @@
 id,vitaminType,numberOfPills,day,time
 1,Vitamin A,2,monday,11:00
+2,Omega 3,2,wednesday,10:17
+3,Magnesium,1,wednesday,10:20

@@ -1,4 +1,4 @@
-package com.vitamindispenser.backend.dto.logging;
+package com.vitamindispenser.backend.model;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -42,5 +42,9 @@ public class LoggingDatabase {
 
     @Column(nullable = false)
     private Boolean taken;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
 }
 
