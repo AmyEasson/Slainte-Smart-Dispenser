@@ -3,9 +3,6 @@ package com.vitamindispenser.backend.controllers;
 import com.vitamindispenser.backend.domain.logging.LoggingService;
 import com.vitamindispenser.backend.domain.schedule.PollCommandService;
 import com.vitamindispenser.backend.dto.logging.IntakeReport;
-import com.vitamindispenser.backend.model.Device;
-import com.vitamindispenser.backend.model.User;
-import com.vitamindispenser.backend.repository.DeviceRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -29,21 +26,14 @@ public class FirmwareController {
 
     @Autowired
     private PollCommandService pollCommandService;
-    @Autowired
-    private DeviceRepository deviceRepository;
 
     /**
      * Poll endpoint: returns command and, for DISPENSE, the intake/slot ids to report back in POST /status.
      * Response JSON: { "command": "IDLE" | "DISPENSE" | "SNOOZE", "intakeIds": [1, 2] }
      */
     @GetMapping("/poll")
-    public ResponseEntity<Map<String, Object>> poll(@RequestParam String deviceId) {
-        Device device = deviceRepository.findByDeviceId(deviceId)
-                .orElseThrow(() -> new RuntimeException("Unknown device"));
-
-        User owner = device.getOwner();
-        var result = pollCommandService.getPollingResults(owner);
-
+    public ResponseEntity<Map<String, Object>> poll() {
+        var result = pollCommandService.getPollingResults();
         Map<String, Object> body = new HashMap<>();
         body.put("command", result.getCommand());
         body.put("intakeIds", result.getIntakeIds());
@@ -81,13 +71,11 @@ public class FirmwareController {
      Notes: the controller only calls the domain service (and not the repos directly)
      */
     @PostMapping("/status")
-    public ResponseEntity<String> reportStatus(@RequestBody IntakeReport request, @RequestParam(defaultValue = "DISPENSER_001") String deviceId) {
-        Device device = deviceRepository.findByDeviceId(deviceId)
-                .orElseThrow(() -> new RuntimeException("Unknown device"));
+    public ResponseEntity<String> reportStatus(@RequestBody IntakeReport request) {
         log.info("Intake IDs: " + request.getIntakeIds());
         log.info("Dispense status: " + request.getDispenseEventStatus());
         loggingService.handleStatus(request.getIntakeIds(),
-                    request.getDispenseEventStatus(), device.getOwner());
+                    request.getDispenseEventStatus());
         return ResponseEntity.ok("Status processing completed");
     }
 

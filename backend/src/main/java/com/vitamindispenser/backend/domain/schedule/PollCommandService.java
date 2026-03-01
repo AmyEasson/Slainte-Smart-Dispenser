@@ -1,9 +1,8 @@
 package com.vitamindispenser.backend.domain.schedule;
 
 import com.vitamindispenser.backend.dto.firmware.PollCommandResult;
-import com.vitamindispenser.backend.model.ScheduleEntry;
-import com.vitamindispenser.backend.model.User;
-import com.vitamindispenser.backend.repository.ScheduleEntryRepository;
+import com.vitamindispenser.backend.dto.schedule.DispenseEvent;
+import com.vitamindispenser.backend.repository.ScheduleRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.DayOfWeek;
@@ -28,16 +27,22 @@ public class PollCommandService {
     private static final DateTimeFormatter TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm");
     private static final long DISPENSE_COOLDOWN_MINUTES = 5;
 
-    private final ScheduleEntryRepository scheduleEntryRepository;
+    private final ScheduleRepository scheduleRepository;
 
+    /** App-set override: return this once on next poll, then clear. */
     private volatile String pendingCommand;
+
+    /** Slot id -> time we last sent DISPENSE for it (ms), so we don't dispense every 2s for 2 min. */
     private final Map<Integer, Long> lastDispenseSentAt = new ConcurrentHashMap<>();
 
-    public PollCommandService(ScheduleEntryRepository scheduleEntryRepository) {
-        this.scheduleEntryRepository = scheduleEntryRepository;
+    public PollCommandService(ScheduleRepository scheduleRepository) {
+        this.scheduleRepository = scheduleRepository;
     }
 
-    public PollCommandResult getPollingResults(User user) {
+    /**
+     * Returns the command and, when DISPENSE, the intake/slot ids for this dispense.
+     */
+    public PollCommandResult getPollingResults() {
         if (pendingCommand != null) {
             String cmd = pendingCommand;
             pendingCommand = null;
@@ -49,17 +54,17 @@ public class PollCommandService {
                 .toLowerCase(Locale.ENGLISH);
         String nowTime = LocalTime.now().format(TIME_FORMAT);
 
-        List<ScheduleEntry> entries = scheduleEntryRepository.findByUser(user);
+        List<DispenseEvent> all = scheduleRepository.findAll();
         long nowMs = System.currentTimeMillis();
         List<Integer> intakeIds = new ArrayList<>();
 
-        for (ScheduleEntry e : entries) {
+        for (DispenseEvent e : all) {
             if (!e.getDay().equalsIgnoreCase(today)) continue;
             if (!e.getTime().equals(nowTime)) continue;
 
             Long last = lastDispenseSentAt.get(e.getId());
             if (last != null && (nowMs - last) < DISPENSE_COOLDOWN_MINUTES * 60 * 1000) {
-                continue;
+                continue; // already sent DISPENSE for this slot recently
             }
             lastDispenseSentAt.put(e.getId(), nowMs);
             intakeIds.add(e.getId());
@@ -71,6 +76,10 @@ public class PollCommandService {
         return new PollCommandResult("IDLE", Collections.emptyList());
     }
 
+    /**
+     * Sets a one-shot SNOOZE for the next poll. Only SNOOZE is accepted from the mobile app;
+     * DISPENSE is controlled solely by the schedule.
+     */
     public void setPendingCommand(String command) {
         if (command == null || command.isBlank() || "IDLE".equalsIgnoreCase(command) || "DISPENSE".equalsIgnoreCase(command)) {
             pendingCommand = null;
