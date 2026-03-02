@@ -29,6 +29,13 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll() // login/register are public
                         .requestMatchers("/api/firmware/**").permitAll() // allow firmware endpoints without auth - arduino can't login
+                        .requestMatchers("/",
+                                "/index.html",
+                                "/favicon.ico",
+                                "static/**",
+                                "/css/**",
+                                "/js/**",
+                                "/images/**").permitAll()
                         .anyRequest().authenticated()           // everything else needs a token
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
