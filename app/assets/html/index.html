@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Mobile App (Mock)</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 16px;
+            max-width: 520px;
+            margin: 0 auto;
+        }
+        h2 { margin: 0 0 8px; }
+        .muted { color: #666; font-size: 12px; line-height: 1.4; margin-bottom: 16px; }
+
+        .card {
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 14px;
+            margin: 12px 0;
+        }
+        .title { font-weight: 700; margin-bottom: 6px; }
+        .desc { color: #555; font-size: 12px; margin-bottom: 10px; }
+
+        a.btn {
+            display: inline-block;
+            padding: 10px 12px;
+            border: 1px solid #aaa;
+            border-radius: 8px;
+            text-decoration: none;
+            color: #000;
+        }
+        a.btn:hover { background: #f3f3f3; }
+    </style>
+</head>
+<body>
+<h2>Mobile App (Mock)</h2>
+<div class="muted">
+    Simple navigation for the mocked UI prototypes.
+    No backend calls are made here.
+</div>
+
+<div class="card">
+    <div class="title">Intake Log</div>
+    <div class="desc">View mocked intake logs and statuses (TAKEN / PENDING / MISSED).</div>
+    <a class="btn" href="intake.html">Open Intake</a>
+</div>
+
+<div class="card">
+    <div class="title">Scheduling Tool</div>
+    <div class="desc">Create a weekly schedule payload and generate the JSON to send to backend.</div>
+    <a class="btn" href="schedule.html">Open Schedule</a>
+</div>
+</body>
+</html>
