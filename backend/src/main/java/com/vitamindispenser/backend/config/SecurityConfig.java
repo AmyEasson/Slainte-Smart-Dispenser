@@ -32,7 +32,7 @@ public class SecurityConfig {
                         .requestMatchers("/",
                                 "/index.html",
                                 "/favicon.ico",
-                                "static/**",
+                                "/static/**",
                                 "/css/**",
                                 "/js/**",
                                 "/images/**").permitAll()
