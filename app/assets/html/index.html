@@ -32,25 +32,174 @@
             color: #000;
         }
         a.btn:hover { background: #f3f3f3; }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+        }
+        button.btn {
+            padding: 10px 12px;
+            border: 1px solid #aaa;
+            border-radius: 8px;
+            background: #fff;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        button.btn:hover { background: #f3f3f3; }
+        .err { color: #b42318; font-size: 12px; margin-top: 6px; }
+        .ok { color: #047857; font-size: 12px; margin-top: 6px; }
+        label { display: block; font-size: 12px; color: #555; margin-bottom: 4px; }
+        .signout { float: right; font-size: 12px; color: #666; cursor: pointer; background: none; border: none; padding: 0; text-decoration: underline; }
+
+        .tabs { display: flex; gap: 8px; margin-bottom: 12px; }
+        .tab {
+            padding: 8px 14px;
+            border: 1px solid #aaa;
+            border-radius: 8px;
+            background: #fff;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        .tab.active { background: #111827; color: #fff; border-color: #111827; }
     </style>
 </head>
 <body>
-<h2>Mobile App (Mock)</h2>
-<div class="muted">
-    Simple navigation for the mocked UI prototypes.
-    No backend calls are made here.
+
+<!-- Login/Register section -->
+<div id="loginSection">
+    <h2>Mobile App (Mock)</h2>
+    <div class="muted">Sign in or register to continue.</div>
+
+    <div class="card">
+        <div class="tabs">
+            <button class="tab active" id="tabLogin" onclick="switchTab('login')">Sign in</button>
+            <button class="tab" id="tabRegister" onclick="switchTab('register')">Register</button>
+        </div>
+
+        <label>Username</label>
+        <input id="authUser" placeholder="username" autocomplete="username" />
+        <label>Password</label>
+        <input id="authPass" type="password" placeholder="password" autocomplete="current-password" />
+
+        <button class="btn" id="authBtn">Sign in</button>
+        <div id="authMsg" style="display:none;"></div>
+    </div>
 </div>
 
-<div class="card">
-    <div class="title">Intake Log</div>
-    <div class="desc">View mocked intake logs and statuses (TAKEN / PENDING / MISSED).</div>
-    <a class="btn" href="intake.html">Open Intake</a>
+<!-- Main nav (shown after login) -->
+<div id="navSection" style="display:none;">
+    <h2>Mobile App (Mock) <button class="signout" id="logoutBtn">Sign out</button></h2>
+    <div class="muted" id="welcomeMsg"></div>
+
+    <div class="card">
+        <div class="title">Intake Log</div>
+        <div class="desc">View mocked intake logs and statuses (TAKEN / PENDING / MISSED).</div>
+        <a class="btn" href="intake.html">Open Intake</a>
+    </div>
+
+    <div class="card">
+        <div class="title">Scheduling Tool</div>
+        <div class="desc">Create a weekly schedule payload and generate the JSON to send to backend.</div>
+        <a class="btn" href="schedule.html">Open Schedule</a>
+    </div>
 </div>
 
-<div class="card">
-    <div class="title">Scheduling Tool</div>
-    <div class="desc">Create a weekly schedule payload and generate the JSON to send to backend.</div>
-    <a class="btn" href="schedule.html">Open Schedule</a>
-</div>
+<script>
+    const API_BASE = window.location.hostname === "localhost"
+        ? "http://localhost:8080"
+        : "http://" + window.location.hostname + ":8080";
+
+    let currentTab = "login";
+
+    // Check if already logged in this session
+    const existingToken = sessionStorage.getItem("authToken");
+    const existingUser = sessionStorage.getItem("authUser");
+    if (existingToken) showNav(existingUser);
+
+    function switchTab(tab) {
+        currentTab = tab;
+        document.getElementById("tabLogin").classList.toggle("active", tab === "login");
+        document.getElementById("tabRegister").classList.toggle("active", tab === "register");
+        document.getElementById("authBtn").textContent = tab === "login" ? "Sign in" : "Register";
+        document.getElementById("authMsg").style.display = "none";
+    }
+
+    document.getElementById("authBtn").addEventListener("click", async () => {
+        const username = document.getElementById("authUser").value.trim();
+        const password = document.getElementById("authPass").value;
+        const msg = document.getElementById("authMsg");
+
+        msg.style.display = "none";
+
+        if (!username || !password) {
+            msg.className = "err";
+            msg.style.display = "block";
+            msg.textContent = "Please enter your username and password.";
+            return;
+        }
+
+        const endpoint = currentTab === "login" ? "/api/auth/login" : "/api/auth/register";
+
+        try {
+            const res = await fetch(API_BASE + endpoint, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ username, password })
+            });
+
+            const text = await res.text();
+
+            if (!res.ok) {
+                msg.className = "err";
+                msg.style.display = "block";
+                msg.textContent = text || "Request failed (" + res.status + ")";
+                return;
+            }
+
+            if (currentTab === "register") {
+                msg.className = "ok";
+                msg.style.display = "block";
+                msg.textContent = text || "Registered successfully. You can now sign in.";
+                switchTab("login");
+                return;
+            }
+
+            // Login — parse token
+            const data = JSON.parse(text);
+            sessionStorage.setItem("authToken", data.token);
+            sessionStorage.setItem("authUser", username);
+            showNav(username);
+
+        } catch (e) {
+            msg.className = "err";
+            msg.style.display = "block";
+            msg.textContent = "Network error: " + (e?.message || String(e));
+        }
+    });
+
+    document.getElementById("authPass").addEventListener("keydown", (e) => {
+        if (e.key === "Enter") document.getElementById("authBtn").click();
+    });
+
+    document.getElementById("logoutBtn").addEventListener("click", () => {
+        sessionStorage.removeItem("authToken");
+        sessionStorage.removeItem("authUser");
+        document.getElementById("navSection").style.display = "none";
+        document.getElementById("loginSection").style.display = "block";
+        document.getElementById("authUser").value = "";
+        document.getElementById("authPass").value = "";
+    });
+
+    function showNav(username) {
+        document.getElementById("loginSection").style.display = "none";
+        document.getElementById("navSection").style.display = "block";
+        document.getElementById("welcomeMsg").textContent = "Simple navigation for the mocked UI prototypes. Signed in as " + username + ".";
+    }
+</script>
 </body>
 </html>
