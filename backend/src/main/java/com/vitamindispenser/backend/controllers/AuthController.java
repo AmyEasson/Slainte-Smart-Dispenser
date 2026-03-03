@@ -2,6 +2,7 @@ package com.vitamindispenser.backend.controllers;
 
 import com.vitamindispenser.backend.dto.AuthRequest;
 import com.vitamindispenser.backend.model.User;
+import com.vitamindispenser.backend.repository.DeviceRepository;
 import com.vitamindispenser.backend.repository.UserRepository;
 import com.vitamindispenser.backend.security.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +22,7 @@ public class AuthController {
 
     @Autowired private UserRepository userRepository;
     @Autowired private PasswordEncoder passwordEncoder;
+    @Autowired private DeviceRepository deviceRepository;
     @Autowired private JwtUtil jwtUtil;
 
     @PostMapping("/register")
@@ -32,6 +34,13 @@ public class AuthController {
         user.setUsername(request.getUsername());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         userRepository.save(user);
+
+        // Auto-claim DISPENSER_001
+        deviceRepository.findByDeviceId("DISPENSER_001").ifPresent(device -> {
+            device.setOwner(user);
+            deviceRepository.save(device);
+        });
+
         return ResponseEntity.ok("User registered successfully");
     }
 
