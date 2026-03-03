@@ -165,7 +165,6 @@
         </tr>
         </thead>
         <tbody id="tbody">
-        <!-- rows injected here -->
         </tbody>
     </table>
 </div>
@@ -173,16 +172,18 @@
 <div class="footer" id="count"></div>
 
 <script>
-    // Raw items from backend: IntakeForRawDashboard[]
-    // { vitaminType, day, time, numberOfPills, taken }
-    let items = [];
+    const API_BASE = window.location.hostname === "localhost"
+        ? "http://localhost:8080"
+        : "http://" + window.location.hostname + ":8080";
 
-    // Sorting state
+    const authToken = sessionStorage.getItem("authToken");
+    if (!authToken) window.location.href = "index.html";
+
+    let items = [];
     let sortKey = "day";
-    let sortDir = "asc"; // "asc" | "desc"
+    let sortDir = "asc";
 
     function normalizeStatus(row) {
-        // (If you later add "missed" info, you can map it here.)
         if (row.taken === true) return "TAKEN";
         return "MISSED";
     }
@@ -191,14 +192,11 @@
         const av = a[key];
         const bv = b[key];
 
-        // numeric
         if (typeof av === "number" && typeof bv === "number") return av - bv;
 
-        // treat null/undefined as empty
         const as = (av ?? "").toString().toLowerCase();
         const bs = (bv ?? "").toString().toLowerCase();
 
-        // try time sorting when key is "time" and looks like HH:mm
         if (key === "time") {
             const toMins = (t) => {
                 const m = /^(\d{1,2}):(\d{2})$/.exec(t ?? "");
@@ -208,7 +206,6 @@
             return toMins(av) - toMins(bv);
         }
 
-        // day ordering (mon..sun) if possible
         if (key === "day") {
             const order = { monday:1, tuesday:2, wednesday:3, thursday:4, friday:5, saturday:6, sunday:7 };
             const ao = order[as] ?? 999;
@@ -228,7 +225,6 @@
         const tbody = document.getElementById("tbody");
         tbody.innerHTML = "";
 
-        // derive status field for filtering/sorting
         const enriched = items.map(r => ({
             ...r,
             status: normalizeStatus(r)
@@ -236,11 +232,9 @@
 
         let shown = enriched.filter(r => {
             const statusOk = (filter === "ALL" || r.status === filter);
-
             if (!statusOk) return false;
             if (!q) return true;
 
-            // basic search over all displayed fields
             const hay = [
                 r.vitaminType,
                 r.day,
@@ -252,13 +246,11 @@
             return hay.includes(q);
         });
 
-        // sort
         shown.sort((a, b) => {
             const c = compare(a, b, sortKey);
             return sortDir === "asc" ? c : -c;
         });
 
-        // rows
         shown.forEach(r => {
             const tr = document.createElement("tr");
             tr.innerHTML = `
@@ -302,13 +294,19 @@
     async function load() {
         setState({ loading: true, error: "" });
         try {
-            const res = await fetch("http:///api/mobile/intake", { headers: { "Accept": "application/json" } });
-            if (!res.ok) throw new Error("Failed to load intake: " + res.status);
+            const res = await fetch(API_BASE + "/api/mobile/intake", {
+                headers: {
+                    "Accept": "application/json",
+                    "Authorization": "Bearer " + authToken
+                }
+            });
+
+            if (!res.ok) {
+                const text = await res.text();
+                throw new Error(`Failed to load intake (${res.status}): ${text}`);
+            }
 
             const payload = await res.json();
-
-            // Your controller returns IntakeResponseForRawDashboard(data, message)
-            // so payload is an object like: { data: [...], message: "..." | null }
             const data = payload?.data ?? [];
 
             if (!Array.isArray(data)) {
@@ -317,7 +315,6 @@
 
             items = data;
 
-            // Optional: show backend message (like "No intake data available.")
             if (payload?.message) {
                 setState({ loading: false, error: payload.message });
             } else {
@@ -333,12 +330,10 @@
         }
     }
 
-    // Filter/search re-render
     document.getElementById("filter").addEventListener("change", render);
     document.getElementById("search").addEventListener("input", render);
     document.getElementById("refresh").addEventListener("click", load);
 
-    // Sorting by clicking headers
     document.querySelectorAll("thead th[data-sort]").forEach(th => {
         th.addEventListener("click", () => {
             const key = th.getAttribute("data-sort");
@@ -352,7 +347,6 @@
         });
     });
 
-    // Initial load
     load();
 </script>
 

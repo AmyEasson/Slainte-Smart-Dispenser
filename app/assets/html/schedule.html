@@ -136,7 +136,6 @@
             font-size: 13px;
         }
 
-        /* Header: no longer clickable (avoid accidental collapse on scroll). */
         .cardHeader{
             display:flex;
             align-items:flex-start;
@@ -176,7 +175,7 @@
         }
 
         .dayBtn{
-            height: 44px;              /* better tap target */
+            height: 44px;
             padding: 0;
             border-radius: 14px;
             font-size: 12px;
@@ -306,13 +305,16 @@
     const DAYS = ["MONDAY","TUESDAY","WEDNESDAY","THURSDAY","FRIDAY","SATURDAY","SUNDAY"];
     const DAY_LABEL = { MONDAY:"Mon",TUESDAY:"Tue",WEDNESDAY:"Wed",THURSDAY:"Thu",FRIDAY:"Fri",SATURDAY:"Sat",SUNDAY:"Sun" };
 
-    // Optional runtime config; keep fallback for desktop
-    const API_BASE = (window.API_BASE && String(window.API_BASE).trim()) || "http://localhost:8080";
+    const API_BASE = window.location.hostname === "localhost"
+        ? "http://localhost:8080"
+        : "http://" + window.location.hostname + ":8080";
+
+    const authToken = sessionStorage.getItem("authToken");
+    if (!authToken) window.location.href = "index.html";
 
     let state = { vitamins: [] };
 
-    // Used to auto-focus + open time picker after re-render
-    let pendingFocus = null; // { idx:number, day:string }
+    let pendingFocus = null;
 
     function escapeHtml(s){
         return String(s ?? "")
@@ -345,8 +347,6 @@
         const v = state.vitamins[vIdx];
         const arr = v.schedule[day] || [];
         v.schedule[day] = arr.filter(x => x !== time);
-        // Keep the day selected even if empty: user explicitly chose it.
-        // It will not be sent to backend unless at least one time exists.
     }
 
     function toggleDay(vIdx, day){
@@ -355,7 +355,6 @@
             delete v.schedule[day];
             return;
         }
-        // Create an empty day (no default time)
         v.schedule[day] = [];
     }
 
@@ -393,7 +392,6 @@
         }
     }
 
-    // JSON contract: unchanged
     function toBackendPayload(){
         return {
             vitamins: state.vitamins
@@ -436,7 +434,6 @@
                             .map(t => normalizeTime(t))
                             .filter(Boolean);
 
-                        // If backend gave an empty list, ignore the day (backend contract implies times exist)
                         if (cleaned.length === 0) continue;
 
                         uiSchedule[day] = Array.from(new Set((uiSchedule[day] || []).concat(cleaned))).sort();
@@ -488,7 +485,7 @@
         const emptyDays = findEmptySelectedDays();
         if (emptyDays.length) {
             status.className = "err";
-            status.textContent = "Selected days with no times (won’t be saved): " + emptyDays.join(", ");
+            status.textContent = "Selected days with no times (won't be saved): " + emptyDays.join(", ");
             return;
         }
 
@@ -635,7 +632,7 @@
                     if (times.length === 0){
                         const m = document.createElement("div");
                         m.className = "err";
-                        m.textContent = "Add at least one time, otherwise this day won’t be saved.";
+                        m.textContent = "Add at least one time, otherwise this day won't be saved.";
                         chips.appendChild(m);
                     } else {
                         times.forEach(t=>{
@@ -649,7 +646,6 @@
             }
         });
 
-        // wire events
         root.querySelectorAll("button[data-kind='toggle']").forEach(btn=>{
             btn.addEventListener("click", (e)=>{
                 e.stopPropagation();
@@ -669,7 +665,6 @@
             });
         });
 
-        // Do not force-rewrite value on every keystroke
         root.querySelectorAll("input[data-kind='pills']").forEach(inp=>{
             inp.addEventListener("change",(e)=>{
                 const idx = Number(e.target.dataset.idx);
@@ -802,7 +797,6 @@
     document.getElementById("save").addEventListener("click", async ()=>{
         const payload = toBackendPayload();
 
-        // Extra UX guard: do not send if user selected days without times (they would be dropped)
         const emptyDays = findEmptySelectedDays();
         const status = document.getElementById("status");
         if (emptyDays.length){
@@ -824,7 +818,10 @@
         try{
             const res = await fetch(API_BASE + "/api/mobile/schedule", {
                 method: "POST",
-                headers: { "Content-Type":"application/json" },
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer " + authToken
+                },
                 body: JSON.stringify(payload)
             });
 
@@ -849,10 +846,13 @@
         loadStatus.textContent = "Loading schedule...";
 
         try{
-            const res = await fetch(API_BASE + "/api/mobile/getSchedule");
+            const res = await fetch(API_BASE + "/api/mobile/getSchedule", {
+                headers: { "Authorization": "Bearer " + authToken }
+            });
             if (!res.ok){
+                const text = await res.text();
                 loadStatus.className = "err";
-                loadStatus.textContent = `Failed to load schedule (${res.status}). Starting empty.`;
+                loadStatus.textContent = `Failed to load schedule (${res.status}): ${text}`;
                 state = { vitamins: [] };
                 render();
                 setStatusFromValidation();
