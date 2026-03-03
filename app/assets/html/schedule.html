@@ -5,16 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Scheduling</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,700;0,9..144,900;1,9..144,400&family=DM+Sans:wght@400;500;600;700&display=swap');
         :root{
-            --bg:#f8fafc;
-            --panel:#ffffff;
-            --text:#111827;
-            --muted:#6b7280;
-            --border:#e5e7eb;
-            --primary:#2563eb;
-            --danger:#b42318;
-            --ok:#047857;
-            --err:#b42318;
+            --bg:#F5F0E8;
+            --panel:#FEFCF8;
+            --text:#1A2E1A;
+            --muted:#4A6B4A;
+            --border:#D4C5A9;
+            --primary:#1E4D2B;
+            --danger:#C04030;
+            --ok:#2D6A4F;
+            --err:#C04030;
         }
 
         *{ box-sizing:border-box; }
@@ -22,13 +23,14 @@
             margin:0;
             background:var(--bg);
             color:var(--text);
-            font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+            font-family: 'DM Sans', system-ui, sans-serif;
         }
 
         .wrap{
             max-width: 720px;
             margin: 0 auto;
-            padding: 16px;
+            /*padding: 50px 16px 16px;*/
+            padding: calc(env(safe-area-inset-top, 20px) + 54px) 16px 16px;
         }
 
         .topbar{
@@ -37,8 +39,9 @@
             justify-content:space-between;
             gap:12px;
             margin-bottom: 12px;
+            animation: fade-up 0.5s ease-out 0.1s both;
         }
-        .topbar h1{ font-size: 18px; margin:0; font-weight: 900; }
+        .topbar h1{ font-size: 20px; margin:0; font-weight: 900; font-family: 'Fraunces', serif; color: var(--text); }
 
         .back{
             display:inline-flex;
@@ -49,35 +52,48 @@
             border:1px solid var(--border);
             text-decoration:none;
             color:var(--text);
-            background:#fff;
+            background:var(--panel);
             min-width:64px;
             font-size: 14px;
+            font-family: 'DM Sans', sans-serif;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.04);
         }
 
         .card{
             background: var(--panel);
-            border: 1px solid var(--border);
-            border-radius: 18px;
-            padding: 12px;
-            box-shadow: 0 1px 0 rgba(0,0,0,0.02);
+            border: 1px solid rgba(30,77,43,0.08);
+            border-radius: 22px;
+            padding: 14px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
             margin-top: 12px;
+            animation: fade-up 0.5s ease-out 0.2s both;
         }
 
         .muted{ color: var(--muted); font-size: 14px; }
         .ok{ color: var(--ok); font-size: 14px; }
         .err{ color: var(--err); font-size: 14px; }
 
-        label{ display:block; font-size: 12px; color: #4b5563; margin-bottom: 6px; }
+        label{ display:block; font-size: 12px; color: var(--muted); margin-bottom: 6px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
 
         input, button{
             width:100%;
-            border-radius: 14px;
-            border: 1px solid var(--border);
-            padding: 12px;
+            border-radius: 16px;
+            border: 2px solid transparent;
+            padding: 14px 16px;
             font-size: 16px;
-            background:#fff;
+            background:var(--panel);
             color: var(--text);
+            font-family: 'DM Sans', sans-serif;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+            transition: all 0.25s ease;
         }
+
+        input:focus{
+            border-color: #52B788;
+            box-shadow: 0 0 0 4px rgba(82,183,136,0.15), 0 2px 8px rgba(0,0,0,0.06);
+            outline: none;
+        }
+
         input[type="number"]{ font-variant-numeric: tabular-nums; }
         input[type="time"]{ font-variant-numeric: tabular-nums; }
 
@@ -88,8 +104,13 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-        .primary{ background: var(--primary); color:#fff; border-color: var(--primary); }
-        .danger{ border-color: rgba(180,35,24,0.35); color: var(--danger); background: #fff; }
+        .primary{
+            background: linear-gradient(135deg, #1E4D2B, #2D6A4F);
+            color:#FEFCF8;
+            border-color: transparent;
+            box-shadow: 0 4px 16px rgba(30,77,43,0.35);
+        }
+        .danger{ border-color: transparent; color: var(--danger); background: #FEF2F2; box-shadow: none; }
 
         .grid2{ display:grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         @media (max-width: 520px){ .grid2{ grid-template-columns: 1fr; } }
@@ -105,7 +126,7 @@
             gap:12px; padding: 6px 2px 10px 2px;
         }
         .titleLine{ min-width: 0; }
-        .vitName{ font-weight: 950; font-size: 16px; line-height: 1.15; word-break: break-word; }
+        .vitName{ font-weight: 900; font-size: 17px; line-height: 1.15; word-break: break-word; font-family: 'Fraunces', serif; }
         .vitSummary{ margin-top: 4px; color: var(--muted); font-size: 13px; }
 
         .toggleBtn{ width:auto; padding: 10px 12px; font-size: 13px; border-radius: 999px; }
@@ -116,13 +137,21 @@
 
         .dayBtn{
             height: 44px; padding: 0; border-radius: 14px; font-size: 12px;
-            font-weight: 900; text-align:center; border: 1px solid var(--border); background:#fff;
+            font-weight: 700; text-align:center; border: 2px solid var(--border); background:var(--panel);
+            font-family: 'DM Sans', sans-serif; box-shadow: none;
         }
+        .dayBtn.selected{ background: linear-gradient(135deg, #1E4D2B, #2D6A4F); color:#FEFCF8; border-color: transparent; }
         .dayBtn.selected{ background: var(--primary); color:#fff; border-color: var(--primary); }
+        .back:active{ transform: scale(0.95); }
+        .primary:active{ transform: scale(0.97); box-shadow: 0 2px 8px rgba(30,77,43,0.25); }
+        .dayBtn:active{ transform: scale(0.92); }
+        .toggleBtn:active{ transform: scale(0.95); }
+        .chip .x:active{ transform: scale(0.9); }
 
         .dayBlock{
-            margin-top: 12px; padding: 12px; border-radius: 16px;
-            border:1px solid var(--border); background: #f9fafb;
+            margin-top: 12px; padding: 12px; border-radius: 18px;
+            border:1px solid rgba(30,77,43,0.08); background: #EDE8DD;
+            animation: fade-up 0.3s ease-out both;
         }
         .dayHead{ display:flex; justify-content: space-between; align-items:center; gap:10px; margin-bottom: 8px; }
         .dayHead .name{ font-weight: 950; font-size: 14px; }
@@ -130,8 +159,10 @@
 
         .chips{ display:flex; flex-wrap: wrap; gap:8px; margin-top: 8px; }
         .chip{
-            display:inline-flex; align-items:center; gap:8px; padding: 8px 10px;
-            border-radius: 999px; border: 1px solid var(--border); background:#fff; font-size: 13px;
+            display:inline-flex; align-items:center; gap:8px; padding: 8px 12px;
+            border-radius: 999px; border: 1px solid rgba(30,77,43,0.1); background:var(--panel); font-size: 13px;
+            font-family: ui-monospace, monospace; box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+            animation: fade-in 0.3s ease-out both;
         }
         .chip .x{ width:auto; padding: 6px 10px; font-size: 12px; border-radius: 999px; }
 
@@ -145,16 +176,19 @@
         .view-empty{ color: var(--muted); font-size: 14px; padding: 8px 2px; }
 
         .view-card{
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 14px;
+            border: 1px solid rgba(30,77,43,0.08);
+            border-radius: 22px;
+            padding: 16px;
             margin-top: 10px;
             background: var(--panel);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+            animation: fade-up 0.4s ease-out both;
         }
+
         .view-card-header{
             display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px;
         }
-        .view-card-name{ font-weight: 900; font-size: 15px; }
+        .view-card-name{ font-weight: 900; font-size: 16px; font-family: 'Fraunces', serif; }
         .view-card-pills{ color: var(--muted); font-size: 13px; margin-top: 2px; }
 
         .view-day-row{
@@ -165,34 +199,53 @@
         .view-day-label{ font-weight: 700; min-width: 90px; font-size: 13px; }
         .view-times{ display:flex; flex-wrap:wrap; gap:6px; }
         .view-time-chip{
-            padding: 3px 10px; border-radius: 999px; border: 1px solid var(--border);
-            font-size: 13px; background: var(--bg); font-family: ui-monospace, monospace;
+            padding: 4px 12px; border-radius: 999px; border: 1px solid rgba(30,77,43,0.1);
+            font-size: 13px; background: #EDE8DD; font-family: ui-monospace, monospace;
         }
 
         /* ── Daily time picker modal ── */
         .modal-overlay{
             display:none; position:fixed; inset:0;
-            background: rgba(0,0,0,0.3); z-index: 100;
+            background: rgba(11,26,15,0.4); z-index: 100;
             align-items:center; justify-content:center;
         }
-        .modal-overlay.open{ display:flex; }
+        .modal-overlay.open{ display:flex; animation: fade-in 0.2s ease-out; }
+        .modal-overlay.open .modal{ animation: slide-down 0.3s ease-out; }
         .modal{
-            background: var(--panel); border-radius: 20px; padding: 20px;
-            width: min(340px, 90vw); box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+            background: var(--bg); border-radius: 24px; padding: 22px;
+            width: min(340px, 90vw); box-shadow: 0 12px 40px rgba(11,26,15,0.25);
+            border: 1px solid rgba(30,77,43,0.08);
         }
-        .modal h2{ font-size: 16px; margin: 0 0 6px; font-weight: 900; }
+        .modal h2{ font-size: 18px; margin: 0 0 6px; font-weight: 900; font-family: 'Fraunces', serif; }
         .modal p{ font-size: 13px; color: var(--muted); margin: 0 0 14px; }
         .modal input[type="time"]{ margin-bottom: 14px; width: auto; }
         .modal-btns{ display:flex; gap:10px; }
         .modal-btns button{ flex:1; padding: 12px; font-size: 15px; }
 
-        .signout{ width:auto; padding: 10px 12px; font-size: 13px; border-radius: 999px; color: var(--muted); }
+        .signout{ width:auto; padding: 10px 12px; font-size: 13px; border-radius: 999px; color: var(--muted); background: none; border: none; box-shadow: none; }
+
+
+        @keyframes fade-up {
+            from { opacity: 0; transform: translateY(14px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fade-in {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slide-down {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
     </style>
 </head>
 <body>
 <div class="wrap">
     <div class="topbar">
-        <a class="back" href="index.html">Back</a>
+        <a class="back" href="home.html">Back</a>
         <h1>Scheduling</h1>
         <button class="signout toggleBtn" id="logoutBtn">Sign out</button>
     </div>
@@ -267,14 +320,14 @@
 
     const authToken = sessionStorage.getItem("authToken");
     if (!authToken) {
-        window.ReactNativeWebView && window.ReactNativeWebView.postMessage("index");
+        window.ReactNativeWebView && window.ReactNativeWebView.postMessage("login");
         throw new Error("Not authenticated");
     }
 
     document.getElementById("logoutBtn").addEventListener("click", () => {
         sessionStorage.removeItem("authToken");
         sessionStorage.removeItem("authUser");
-        window.ReactNativeWebView && window.ReactNativeWebView.postMessage("index");
+        window.ReactNativeWebView && window.ReactNativeWebView.postMessage("login");
     });
 
     let state = { vitamins: [] };

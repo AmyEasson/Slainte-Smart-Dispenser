@@ -1,15 +1,16 @@
-import { SafeAreaView } from "react-native";
+import { View, StatusBar } from "react-native";
 import { WebView } from "react-native-webview";
 import { useState } from "react";
 
 export default function HomeScreen() {
-  const [page, setPage] = useState<"index" | "intake" | "schedule">("index");
+  const [page, setPage] = useState<"login" | "home" | "intake" | "schedule">("login");
 
   // load local HTML files
   const sources = {
-    index: require("../../assets/html/index.html"),
-    intake: require("../../assets/html/intake.html"),
-    schedule: require("../../assets/html/schedule.html"),
+      login: require("../../assets/html/login.html"),
+      home: require("../../assets/html/home.html"),
+      intake: require("../../assets/html/intake.html"),
+      schedule: require("../../assets/html/schedule.html"),
   };
 
   // intercept <a href="..."> clicks inside HTML
@@ -22,9 +23,14 @@ export default function HomeScreen() {
 
       if (!href) return;
 
-      if (href.endsWith('index.html')) {
+      if (href.endsWith('login.html')) {
         e.preventDefault();
-        window.ReactNativeWebView.postMessage('index');
+        window.ReactNativeWebView.postMessage('login');
+      }
+      
+      if (href.endsWith('home.html')) {
+        e.preventDefault();
+        window.ReactNativeWebView.postMessage('home');
       }
 
       if (href.endsWith('intake.html')) {
@@ -40,20 +46,27 @@ export default function HomeScreen() {
     true;
   `;
 
-  return (
-    <SafeAreaView style={{ flex: 1 }}>
-      <WebView
-        originWhitelist={["*"]}
-        source={sources[page]}
-        injectedJavaScript={injectedJS}
-        onMessage={(event) => {
-          const msg = event.nativeEvent.data;
+    return (
+        <View style={{ flex: 1, backgroundColor: "#F5F0E8" }}>
+            <StatusBar
+                barStyle="light-content"
+                backgroundColor="transparent"
+                translucent={true}
+            />
+            <WebView
+                originWhitelist={["*"]}
+                source={sources[page]}
+                style={{ flex: 1 }}
+                injectedJavaScript={injectedJS}
+                onMessage={(event) => {
+                    const msg = event.nativeEvent.data;
 
-          if (msg === "index") setPage("index");
-          if (msg === "intake") setPage("intake");
-          if (msg === "schedule") setPage("schedule");
-        }}
-      />
-    </SafeAreaView>
-  );
+                    if (msg === "login") setPage("login");
+                    if (msg === "home") setPage("home");
+                    if (msg === "intake") setPage("intake");
+                    if (msg === "schedule") setPage("schedule");
+                }}
+            />
+        </View>
+    );
 }

@@ -1,245 +1,245 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Mobile App (Mock)</title>
-    <style>
-        :root{
-            --bg:#f8fafc;
-            --panel:#ffffff;
-            --text:#111827;
-            --muted:#6b7280;
-            --border:#e5e7eb;
-            --primary:#2563eb;
-            --danger:#b42318;
-            --ok:#047857;
-        }
+<!--<!DOCTYPE html>-->
+<!--<html lang="en">-->
+<!--<head>-->
+<!--    <meta charset="UTF-8" />-->
+<!--    <meta name="viewport" content="width=device-width, initial-scale=1" />-->
+<!--    <title>Mobile App (Mock)</title>-->
+<!--    <style>-->
+<!--        :root{-->
+<!--            &#45;&#45;bg:#f8fafc;-->
+<!--            &#45;&#45;panel:#ffffff;-->
+<!--            &#45;&#45;text:#111827;-->
+<!--            &#45;&#45;muted:#6b7280;-->
+<!--            &#45;&#45;border:#e5e7eb;-->
+<!--            &#45;&#45;primary:#2563eb;-->
+<!--            &#45;&#45;danger:#b42318;-->
+<!--            &#45;&#45;ok:#047857;-->
+<!--        }-->
 
-        *{ box-sizing:border-box; }
-        body{
-            margin:0;
-            background:var(--bg);
-            color:var(--text);
-            font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
-            padding: 16px;
-            max-width: 520px;
-            margin: 0 auto;
-        }
+<!--        *{ box-sizing:border-box; }-->
+<!--        body{-->
+<!--            margin:0;-->
+<!--            background:var(&#45;&#45;bg);-->
+<!--            color:var(&#45;&#45;text);-->
+<!--            font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;-->
+<!--            padding: 16px;-->
+<!--            max-width: 520px;-->
+<!--            margin: 0 auto;-->
+<!--        }-->
 
-        h2{ margin: 0 0 8px; font-size: 18px; font-weight: 900; }
+<!--        h2{ margin: 0 0 8px; font-size: 18px; font-weight: 900; }-->
 
-        .muted{ color: var(--muted); font-size: 13px; line-height: 1.4; margin-bottom: 16px; }
-        .err{ color: var(--danger); font-size: 13px; margin-top: 6px; }
-        .ok{ color: var(--ok); font-size: 13px; margin-top: 6px; }
+<!--        .muted{ color: var(&#45;&#45;muted); font-size: 13px; line-height: 1.4; margin-bottom: 16px; }-->
+<!--        .err{ color: var(&#45;&#45;danger); font-size: 13px; margin-top: 6px; }-->
+<!--        .ok{ color: var(&#45;&#45;ok); font-size: 13px; margin-top: 6px; }-->
 
-        .card{
-            background: var(--panel);
-            border: 1px solid var(--border);
-            border-radius: 18px;
-            padding: 14px;
-            margin: 12px 0;
-            box-shadow: 0 1px 0 rgba(0,0,0,0.02);
-        }
+<!--        .card{-->
+<!--            background: var(&#45;&#45;panel);-->
+<!--            border: 1px solid var(&#45;&#45;border);-->
+<!--            border-radius: 18px;-->
+<!--            padding: 14px;-->
+<!--            margin: 12px 0;-->
+<!--            box-shadow: 0 1px 0 rgba(0,0,0,0.02);-->
+<!--        }-->
 
-        .title{ font-weight: 900; font-size: 15px; margin-bottom: 4px; }
-        .desc{ color: var(--muted); font-size: 13px; margin-bottom: 10px; }
+<!--        .title{ font-weight: 900; font-size: 15px; margin-bottom: 4px; }-->
+<!--        .desc{ color: var(&#45;&#45;muted); font-size: 13px; margin-bottom: 10px; }-->
 
-        label{ display: block; font-size: 12px; color: #4b5563; margin-bottom: 4px; }
+<!--        label{ display: block; font-size: 12px; color: #4b5563; margin-bottom: 4px; }-->
 
-        input{
-            width: 100%;
-            padding: 12px;
-            border: 1px solid var(--border);
-            border-radius: 14px;
-            font-size: 16px;
-            margin-bottom: 10px;
-            background: #fff;
-            color: var(--text);
-        }
+<!--        input{-->
+<!--            width: 100%;-->
+<!--            padding: 12px;-->
+<!--            border: 1px solid var(&#45;&#45;border);-->
+<!--            border-radius: 14px;-->
+<!--            font-size: 16px;-->
+<!--            margin-bottom: 10px;-->
+<!--            background: #fff;-->
+<!--            color: var(&#45;&#45;text);-->
+<!--        }-->
 
-        button, a.btn{
-            display: inline-block;
-            padding: 10px 12px;
-            border: 1px solid var(--border);
-            border-radius: 14px;
-            background: #fff;
-            cursor: pointer;
-            font-size: 14px;
-            color: var(--text);
-            text-decoration: none;
-            user-select: none;
-            -webkit-tap-highlight-color: transparent;
-        }
+<!--        button, a.btn{-->
+<!--            display: inline-block;-->
+<!--            padding: 10px 12px;-->
+<!--            border: 1px solid var(&#45;&#45;border);-->
+<!--            border-radius: 14px;-->
+<!--            background: #fff;-->
+<!--            cursor: pointer;-->
+<!--            font-size: 14px;-->
+<!--            color: var(&#45;&#45;text);-->
+<!--            text-decoration: none;-->
+<!--            user-select: none;-->
+<!--            -webkit-tap-highlight-color: transparent;-->
+<!--        }-->
 
-        button#authBtn{
-            width: 100%;
-            border-radius: 14px;
-            padding: 12px;
-            font-size: 16px;
-            background: var(--primary);
-            color: #fff;
-            border-color: var(--primary);
-        }
+<!--        button#authBtn{-->
+<!--            width: 100%;-->
+<!--            border-radius: 14px;-->
+<!--            padding: 12px;-->
+<!--            font-size: 16px;-->
+<!--            background: var(&#45;&#45;primary);-->
+<!--            color: #fff;-->
+<!--            border-color: var(&#45;&#45;primary);-->
+<!--        }-->
 
-        .signout{
-            float: right;
-            font-size: 12px;
-            color: var(--muted);
-            cursor: pointer;
-            background: none;
-            border: none;
-            padding: 0;
-            text-decoration: underline;
-        }
+<!--        .signout{-->
+<!--            float: right;-->
+<!--            font-size: 12px;-->
+<!--            color: var(&#45;&#45;muted);-->
+<!--            cursor: pointer;-->
+<!--            background: none;-->
+<!--            border: none;-->
+<!--            padding: 0;-->
+<!--            text-decoration: underline;-->
+<!--        }-->
 
-        .tabs{ display: flex; gap: 8px; margin-bottom: 14px; }
-        .tab{
-            padding: 8px 14px;
-            border: 1px solid var(--border);
-            border-radius: 999px;
-            background: #fff;
-            cursor: pointer;
-            font-size: 13px;
-            color: var(--text);
-        }
-        .tab.active{ background: var(--text); color: #fff; border-color: var(--text); }
-    </style>
-</head>
-<body>
+<!--        .tabs{ display: flex; gap: 8px; margin-bottom: 14px; }-->
+<!--        .tab{-->
+<!--            padding: 8px 14px;-->
+<!--            border: 1px solid var(&#45;&#45;border);-->
+<!--            border-radius: 999px;-->
+<!--            background: #fff;-->
+<!--            cursor: pointer;-->
+<!--            font-size: 13px;-->
+<!--            color: var(&#45;&#45;text);-->
+<!--        }-->
+<!--        .tab.active{ background: var(&#45;&#45;text); color: #fff; border-color: var(&#45;&#45;text); }-->
+<!--    </style>-->
+<!--</head>-->
+<!--<body>-->
 
-<!-- Login/Register section -->
-<div id="loginSection">
-    <h2>Mobile App (Mock)</h2>
-    <div class="muted">Sign in or register to continue.</div>
+<!--&lt;!&ndash; Login/Register section &ndash;&gt;-->
+<!--<div id="loginSection">-->
+<!--    <h2>Mobile App (Mock)</h2>-->
+<!--    <div class="muted">Sign in or register to continue.</div>-->
 
-    <div class="card">
-        <div class="tabs">
-            <button class="tab active" id="tabLogin" onclick="switchTab('login')">Sign in</button>
-            <button class="tab" id="tabRegister" onclick="switchTab('register')">Register</button>
-        </div>
+<!--    <div class="card">-->
+<!--        <div class="tabs">-->
+<!--            <button class="tab active" id="tabLogin" onclick="switchTab('login')">Sign in</button>-->
+<!--            <button class="tab" id="tabRegister" onclick="switchTab('register')">Register</button>-->
+<!--        </div>-->
 
-        <label>Username</label>
-        <input id="authUser" placeholder="username" autocomplete="username" />
-        <label>Password</label>
-        <input id="authPass" type="password" placeholder="password" autocomplete="current-password" />
+<!--        <label>Username</label>-->
+<!--        <input id="authUser" placeholder="username" autocomplete="username" />-->
+<!--        <label>Password</label>-->
+<!--        <input id="authPass" type="password" placeholder="password" autocomplete="current-password" />-->
 
-        <button id="authBtn">Sign in</button>
-        <div id="authMsg" style="display:none;"></div>
-    </div>
-</div>
+<!--        <button id="authBtn">Sign in</button>-->
+<!--        <div id="authMsg" style="display:none;"></div>-->
+<!--    </div>-->
+<!--</div>-->
 
-<!-- Main nav (shown after login) -->
-<div id="navSection" style="display:none;">
-    <h2>Mobile App (Mock) <button class="signout" id="logoutBtn">Sign out</button></h2>
-    <div class="muted" id="welcomeMsg"></div>
+<!--&lt;!&ndash; Main nav (shown after login) &ndash;&gt;-->
+<!--<div id="navSection" style="display:none;">-->
+<!--    <h2>Mobile App (Mock) <button class="signout" id="logoutBtn">Sign out</button></h2>-->
+<!--    <div class="muted" id="welcomeMsg"></div>-->
 
-    <div class="card">
-        <div class="title">Intake Log</div>
-        <div class="desc">View mocked intake logs and statuses (TAKEN / PENDING / MISSED).</div>
-        <a class="btn" href="intake.html">Open Intake</a>
-    </div>
+<!--    <div class="card">-->
+<!--        <div class="title">Intake Log</div>-->
+<!--        <div class="desc">View mocked intake logs and statuses (TAKEN / PENDING / MISSED).</div>-->
+<!--        <a class="btn" href="intake.html">Open Intake</a>-->
+<!--    </div>-->
 
-    <div class="card">
-        <div class="title">Scheduling Tool</div>
-        <div class="desc">Create a weekly schedule payload and generate the JSON to send to backend.</div>
-        <a class="btn" href="schedule.html">Open Schedule</a>
-    </div>
-</div>
+<!--    <div class="card">-->
+<!--        <div class="title">Scheduling Tool</div>-->
+<!--        <div class="desc">Create a weekly schedule payload and generate the JSON to send to backend.</div>-->
+<!--        <a class="btn" href="schedule.html">Open Schedule</a>-->
+<!--    </div>-->
+<!--</div>-->
 
-<script>
-    const API_BASE = window.location.hostname === "localhost"
-        ? "http://localhost:8080"
-        : "http://" + window.location.hostname + ":8080";
+<!--<script>-->
+<!--    const API_BASE = window.location.hostname === "localhost"-->
+<!--        ? "http://localhost:8080"-->
+<!--        : "http://" + window.location.hostname + ":8080";-->
 
-    let currentTab = "login";
+<!--    let currentTab = "login";-->
 
-    // Check if already logged in this session
-    const existingToken = sessionStorage.getItem("authToken");
-    const existingUser = sessionStorage.getItem("authUser");
-    if (existingToken) showNav(existingUser);
+<!--    // Check if already logged in this session-->
+<!--    const existingToken = sessionStorage.getItem("authToken");-->
+<!--    const existingUser = sessionStorage.getItem("authUser");-->
+<!--    if (existingToken) showNav(existingUser);-->
 
-    function switchTab(tab) {
-        currentTab = tab;
-        document.getElementById("tabLogin").classList.toggle("active", tab === "login");
-        document.getElementById("tabRegister").classList.toggle("active", tab === "register");
-        document.getElementById("authBtn").textContent = tab === "login" ? "Sign in" : "Register";
-        document.getElementById("authMsg").style.display = "none";
-        document.getElementById("authUser").value = "";
-        document.getElementById("authPass").value = "";
-    }
+<!--    function switchTab(tab) {-->
+<!--        currentTab = tab;-->
+<!--        document.getElementById("tabLogin").classList.toggle("active", tab === "login");-->
+<!--        document.getElementById("tabRegister").classList.toggle("active", tab === "register");-->
+<!--        document.getElementById("authBtn").textContent = tab === "login" ? "Sign in" : "Register";-->
+<!--        document.getElementById("authMsg").style.display = "none";-->
+<!--        document.getElementById("authUser").value = "";-->
+<!--        document.getElementById("authPass").value = "";-->
+<!--    }-->
 
-    document.getElementById("authBtn").addEventListener("click", async () => {
-        const username = document.getElementById("authUser").value.trim();
-        const password = document.getElementById("authPass").value;
-        const msg = document.getElementById("authMsg");
+<!--    document.getElementById("authBtn").addEventListener("click", async () => {-->
+<!--        const username = document.getElementById("authUser").value.trim();-->
+<!--        const password = document.getElementById("authPass").value;-->
+<!--        const msg = document.getElementById("authMsg");-->
 
-        msg.style.display = "none";
+<!--        msg.style.display = "none";-->
 
-        if (!username || !password) {
-            msg.className = "err";
-            msg.style.display = "block";
-            msg.textContent = "Please enter your username and password.";
-            return;
-        }
+<!--        if (!username || !password) {-->
+<!--            msg.className = "err";-->
+<!--            msg.style.display = "block";-->
+<!--            msg.textContent = "Please enter your username and password.";-->
+<!--            return;-->
+<!--        }-->
 
-        const endpoint = currentTab === "login" ? "/api/auth/login" : "/api/auth/register";
+<!--        const endpoint = currentTab === "login" ? "/api/auth/login" : "/api/auth/register";-->
 
-        try {
-            const res = await fetch(API_BASE + endpoint, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ username, password })
-            });
+<!--        try {-->
+<!--            const res = await fetch(API_BASE + endpoint, {-->
+<!--                method: "POST",-->
+<!--                headers: { "Content-Type": "application/json" },-->
+<!--                body: JSON.stringify({ username, password })-->
+<!--            });-->
 
-            const text = await res.text();
+<!--            const text = await res.text();-->
 
-            if (!res.ok) {
-                msg.className = "err";
-                msg.style.display = "block";
-                msg.textContent = text || "Request failed (" + res.status + ")";
-                return;
-            }
+<!--            if (!res.ok) {-->
+<!--                msg.className = "err";-->
+<!--                msg.style.display = "block";-->
+<!--                msg.textContent = text || "Request failed (" + res.status + ")";-->
+<!--                return;-->
+<!--            }-->
 
-            if (currentTab === "register") {
-                msg.className = "ok";
-                msg.style.display = "block";
-                msg.textContent = text || "Registered successfully. You can now sign in.";
-                switchTab("login");
-                return;
-            }
+<!--            if (currentTab === "register") {-->
+<!--                msg.className = "ok";-->
+<!--                msg.style.display = "block";-->
+<!--                msg.textContent = text || "Registered successfully. You can now sign in.";-->
+<!--                switchTab("login");-->
+<!--                return;-->
+<!--            }-->
 
-            // Login — parse token
-            const data = JSON.parse(text);
-            sessionStorage.setItem("authToken", data.token);
-            sessionStorage.setItem("authUser", username);
-            showNav(username);
+<!--            // Login — parse token-->
+<!--            const data = JSON.parse(text);-->
+<!--            sessionStorage.setItem("authToken", data.token);-->
+<!--            sessionStorage.setItem("authUser", username);-->
+<!--            showNav(username);-->
 
-        } catch (e) {
-            msg.className = "err";
-            msg.style.display = "block";
-            msg.textContent = "Network error: " + (e?.message || String(e));
-        }
-    });
+<!--        } catch (e) {-->
+<!--            msg.className = "err";-->
+<!--            msg.style.display = "block";-->
+<!--            msg.textContent = "Network error: " + (e?.message || String(e));-->
+<!--        }-->
+<!--    });-->
 
-    document.getElementById("authPass").addEventListener("keydown", (e) => {
-        if (e.key === "Enter") document.getElementById("authBtn").click();
-    });
+<!--    document.getElementById("authPass").addEventListener("keydown", (e) => {-->
+<!--        if (e.key === "Enter") document.getElementById("authBtn").click();-->
+<!--    });-->
 
-    document.getElementById("logoutBtn").addEventListener("click", () => {
-        sessionStorage.removeItem("authToken");
-        sessionStorage.removeItem("authUser");
-        document.getElementById("navSection").style.display = "none";
-        document.getElementById("loginSection").style.display = "block";
-        document.getElementById("authUser").value = "";
-        document.getElementById("authPass").value = "";
-    });
+<!--    document.getElementById("logoutBtn").addEventListener("click", () => {-->
+<!--        sessionStorage.removeItem("authToken");-->
+<!--        sessionStorage.removeItem("authUser");-->
+<!--        document.getElementById("navSection").style.display = "none";-->
+<!--        document.getElementById("loginSection").style.display = "block";-->
+<!--        document.getElementById("authUser").value = "";-->
+<!--        document.getElementById("authPass").value = "";-->
+<!--    });-->
 
-    function showNav(username) {
-        document.getElementById("loginSection").style.display = "none";
-        document.getElementById("navSection").style.display = "block";
-        document.getElementById("welcomeMsg").textContent = "Simple navigation for the mocked UI prototypes. Signed in as " + username + ".";
-    }
-</script>
-</body>
-</html>
+<!--    function showNav(username) {-->
+<!--        document.getElementById("loginSection").style.display = "none";-->
+<!--        document.getElementById("navSection").style.display = "block";-->
+<!--        document.getElementById("welcomeMsg").textContent = "Simple navigation for the mocked UI prototypes. Signed in as " + username + ".";-->
+<!--    }-->
+<!--</script>-->
+<!--</body>-->
+<!--</html>-->

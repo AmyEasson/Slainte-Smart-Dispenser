@@ -28,7 +28,7 @@
         .wrap{
             max-width: 720px;
             margin: 0 auto;
-            padding: 16px;
+            padding: calc(env(safe-area-inset-top, 20px) + 54px) 16px 16px;
         }
 
         .topbar{
@@ -179,7 +179,7 @@
 <body>
 <div class="wrap">
     <div class="topbar">
-        <a class="back" href="index.html">Back</a>
+        <a class="back" href="home.html">Back</a>
         <h1>Intake Log</h1>
         <button class="signout" id="logoutBtn">Sign out</button>
     </div>
@@ -229,14 +229,14 @@
 
     const authToken = sessionStorage.getItem("authToken");
     if (!authToken) {
-        window.ReactNativeWebView.postMessage("index");
+        window.ReactNativeWebView.postMessage("login");
         throw new Error("Not authenticated");
     }
 
     document.getElementById("logoutBtn").addEventListener("click", () => {
         sessionStorage.removeItem("authToken");
         sessionStorage.removeItem("authUser");
-        window.ReactNativeWebView.postMessage("index");
+        window.ReactNativeWebView.postMessage("login");
     });
 
     let items = [];
