@@ -267,7 +267,7 @@
     <div class="topbar">
         <a class="back" href="index.html">Back</a>
         <h1>Scheduling</h1>
-        <div style="width:64px;"></div>
+        <button class="toggleBtn" id="logoutBtn" style="color:var(--muted);">Sign out</button>
     </div>
 
     <div id="loadStatus" class="muted" style="margin-top:10px;"></div>
@@ -310,7 +310,16 @@
         : "http://" + window.location.hostname + ":8080";
 
     const authToken = sessionStorage.getItem("authToken");
-    if (!authToken) window.location.href = "index.html";
+    if (!authToken) {
+        window.ReactNativeWebView.postMessage("index");
+        throw new Error("Not authenticated");
+    }
+
+    document.getElementById("logoutBtn").addEventListener("click", () => {
+        sessionStorage.removeItem("authToken");
+        sessionStorage.removeItem("authUser");
+        window.ReactNativeWebView.postMessage("index");
+    });
 
     let state = { vitamins: [] };
 

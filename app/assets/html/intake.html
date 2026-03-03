@@ -2,174 +2,225 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
-    <title>Vitamin Intake Log</title>
-
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Intake Log</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            padding: 20px;
-            max-width: 900px;
-            margin: 0 auto;
+        :root{
+            --bg:#f8fafc;
+            --panel:#ffffff;
+            --text:#111827;
+            --muted:#6b7280;
+            --border:#e5e7eb;
+            --primary:#2563eb;
+            --danger:#b42318;
+            --ok:#047857;
+            --err:#b42318;
         }
 
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 12px;
-            flex-wrap: wrap;
+        *{ box-sizing:border-box; }
+        body{
+            margin:0;
+            background:var(--bg);
+            color:var(--text);
+            font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+        }
+
+        .wrap{
+            max-width: 720px;
+            margin: 0 auto;
+            padding: 16px;
+        }
+
+        .topbar{
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            gap:12px;
             margin-bottom: 12px;
         }
-
-        select, input {
-            padding: 8px;
-            border: 1px solid #bbb;
-            border-radius: 6px;
+        .topbar h1{
+            font-size: 18px;
+            margin:0;
+            font-weight: 900;
+        }
+        .back{
+            display:inline-flex;
+            align-items:center;
+            justify-content:center;
+            padding:10px 12px;
+            border-radius: 14px;
+            border:1px solid var(--border);
+            text-decoration:none;
+            color:var(--text);
+            background:#fff;
+            min-width:64px;
             font-size: 14px;
         }
 
-        .toolbar {
-            display: flex;
-            gap: 10px;
-            align-items: center;
+        .card{
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            padding: 12px;
+            box-shadow: 0 1px 0 rgba(0,0,0,0.02);
+            margin-top: 12px;
+        }
+
+        .muted{ color: var(--muted); font-size: 14px; }
+        .ok{ color: var(--ok); font-size: 14px; }
+        .err{ color: var(--err); font-size: 14px; }
+
+        input, select, button{
+            border-radius: 14px;
+            border: 1px solid var(--border);
+            padding: 10px 12px;
+            font-size: 14px;
+            background:#fff;
+            color: var(--text);
+        }
+
+        button{
+            cursor:pointer;
+            user-select:none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .signout{
+            width:auto;
+            padding: 10px 12px;
+            font-size: 13px;
+            border-radius: 999px;
+            color: var(--muted);
+            border-color: var(--border);
+        }
+
+        .toolbar{
+            display:flex;
+            gap:10px;
             flex-wrap: wrap;
+            align-items:center;
+            padding: 4px 2px;
         }
 
-        .hint {
-            color: #666;
+        .toolbar label{
             font-size: 12px;
-            margin: 6px 0 14px;
+            color: #4b5563;
+            display:flex;
+            align-items:center;
+            gap:6px;
         }
 
-        .card {
-            border: 1px solid #e3e3e3;
+        .toolbar input, .toolbar select{
             border-radius: 10px;
-            overflow: hidden;
+            padding: 8px 10px;
+            font-size: 14px;
         }
 
-        table {
-            width: 100%;
+        .toolbar button{
+            padding: 8px 14px;
+            font-size: 13px;
+            border-radius: 999px;
+        }
+
+        table{
+            width:100%;
             border-collapse: collapse;
         }
 
-        thead th {
+        thead th{
             text-align: left;
-            font-size: 12px;
+            font-size: 11px;
             text-transform: uppercase;
-            letter-spacing: .04em;
-            background: #f6f6f6;
-            border-bottom: 1px solid #e3e3e3;
+            letter-spacing: .05em;
+            color: var(--muted);
+            font-weight: 700;
+            border-bottom: 1px solid var(--border);
             padding: 10px 12px;
-            user-select: none;
             cursor: pointer;
+            user-select: none;
             white-space: nowrap;
         }
 
-        tbody td {
-            border-bottom: 1px solid #eee;
-            padding: 10px 12px;
-            vertical-align: top;
+        thead th:hover{ color: var(--text); }
+
+        tbody td{
+            border-bottom: 1px solid var(--border);
+            padding: 12px;
+            font-size: 14px;
+            vertical-align: middle;
         }
 
-        tbody tr:hover {
-            background: #fafafa;
-        }
+        tbody tr:last-child td{ border-bottom: none; }
+        tbody tr:hover{ background: #f9fafb; }
 
-        .pill {
+        .pill{
             display: inline-block;
-            padding: 2px 8px;
+            padding: 4px 10px;
             border-radius: 999px;
             font-size: 12px;
             font-weight: 700;
-            border: 1px solid #ddd;
+            border: 1px solid;
             white-space: nowrap;
         }
 
-        .TAKEN { color: #0a7; border-color: #0a7; }
-        .MISSED { color: #d33; border-color: #d33; }
+        .TAKEN{ color: var(--ok); border-color: var(--ok); }
+        .MISSED{ color: var(--danger); border-color: var(--danger); }
 
-        .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
-        .right { text-align: right; }
+        .mono{ font-family: ui-monospace, Menlo, Monaco, Consolas, monospace; }
+        .right{ text-align: right; }
 
-        .error {
-            margin-top: 12px;
-            color: #b00;
-            font-weight: 600;
-        }
-
-        .loading {
-            margin-top: 12px;
-            color: #444;
-        }
-
-        .footer {
-            margin-top: 10px;
-            color: #666;
-            font-size: 12px;
+        .empty-row td{
+            color: var(--muted);
+            padding: 20px 12px;
+            text-align: center;
         }
     </style>
 </head>
-
 <body>
-<a href="index.html" style="
-      display:inline-block;
-      margin-bottom:12px;
-      text-decoration:none;
-      color:#000;
-      border:1px solid #aaa;
-      padding:6px 10px;
-      border-radius:6px;
-      font-size:12px;
-  ">← Back to Home</a>
-
-<header>
-    <h2 style="margin:0;">Intake Log</h2>
-
-    <div class="toolbar">
-        <label>
-            Status:
-            <select id="filter">
-                <option value="ALL">All</option>
-                <option value="TAKEN">Taken</option>
-                <option value="MISSED">Missed</option>
-            </select>
-        </label>
-
-        <label>
-            Search:
-            <input id="search" type="text" placeholder="e.g. Vitamin D, monday, 10:00" />
-        </label>
-
-        <button id="refresh" type="button" style="
-        padding:8px 12px;border:1px solid #bbb;border-radius:6px;background:#fff;cursor:pointer;
-      ">Refresh</button>
+<div class="wrap">
+    <div class="topbar">
+        <a class="back" href="index.html">Back</a>
+        <h1>Intake Log</h1>
+        <button class="signout" id="logoutBtn">Sign out</button>
     </div>
-</header>
 
-<div class="hint">
-    Click a column header to sort. Data loaded from <span class="mono">GET /api/mobile/intake</span>.
+    <div class="card">
+        <div class="toolbar">
+            <label>
+                Status:
+                <select id="filter">
+                    <option value="ALL">All</option>
+                    <option value="TAKEN">Taken</option>
+                    <option value="MISSED">Missed</option>
+                </select>
+            </label>
+            <label>
+                Search:
+                <input id="search" type="text" placeholder="vitamin, day, time…" />
+            </label>
+            <button id="refresh">Refresh</button>
+        </div>
+    </div>
+
+    <div id="loadStatus" class="muted" style="margin-top:10px;"></div>
+
+    <div class="card" style="padding:0; overflow:hidden;">
+        <table>
+            <thead>
+            <tr>
+                <th data-sort="vitaminType">Vitamin</th>
+                <th data-sort="day">Day</th>
+                <th data-sort="time">Time</th>
+                <th data-sort="numberOfPills" class="right">Pills</th>
+                <th data-sort="status">Status</th>
+            </tr>
+            </thead>
+            <tbody id="tbody"></tbody>
+        </table>
+    </div>
+
+    <div class="muted" id="count" style="margin-top:8px; padding: 0 4px;"></div>
 </div>
-
-<div id="state" class="loading" style="display:none;">Loading…</div>
-<div id="error" class="error" style="display:none;"></div>
-
-<div class="card">
-    <table>
-        <thead>
-        <tr>
-            <th data-sort="vitaminType">Vitamin</th>
-            <th data-sort="day">Day</th>
-            <th data-sort="time">Time</th>
-            <th data-sort="numberOfPills" class="right">Pills</th>
-            <th data-sort="status">Status</th>
-        </tr>
-        </thead>
-        <tbody id="tbody">
-        </tbody>
-    </table>
-</div>
-
-<div class="footer" id="count"></div>
 
 <script>
     const API_BASE = window.location.hostname === "localhost"
@@ -177,15 +228,23 @@
         : "http://" + window.location.hostname + ":8080";
 
     const authToken = sessionStorage.getItem("authToken");
-    if (!authToken) window.location.href = "index.html";
+    if (!authToken) {
+        window.ReactNativeWebView.postMessage("index");
+        throw new Error("Not authenticated");
+    }
+
+    document.getElementById("logoutBtn").addEventListener("click", () => {
+        sessionStorage.removeItem("authToken");
+        sessionStorage.removeItem("authUser");
+        window.ReactNativeWebView.postMessage("index");
+    });
 
     let items = [];
     let sortKey = "day";
     let sortDir = "asc";
 
     function normalizeStatus(row) {
-        if (row.taken === true) return "TAKEN";
-        return "MISSED";
+        return row.taken === true ? "TAKEN" : "MISSED";
     }
 
     function compare(a, b, key) {
@@ -218,31 +277,26 @@
         return 0;
     }
 
+    function escapeHtml(str) {
+        return String(str ?? "")
+            .replaceAll("&", "&amp;").replaceAll("<", "&lt;")
+            .replaceAll(">", "&gt;").replaceAll('"', "&quot;")
+            .replaceAll("'", "&#039;");
+    }
+
     function render() {
         const filter = document.getElementById("filter").value;
         const q = document.getElementById("search").value.trim().toLowerCase();
-
         const tbody = document.getElementById("tbody");
         tbody.innerHTML = "";
 
-        const enriched = items.map(r => ({
-            ...r,
-            status: normalizeStatus(r)
-        }));
+        const enriched = items.map(r => ({ ...r, status: normalizeStatus(r) }));
 
         let shown = enriched.filter(r => {
-            const statusOk = (filter === "ALL" || r.status === filter);
-            if (!statusOk) return false;
+            if (filter !== "ALL" && r.status !== filter) return false;
             if (!q) return true;
-
-            const hay = [
-                r.vitaminType,
-                r.day,
-                r.time,
-                r.numberOfPills,
-                r.status
-            ].map(x => (x ?? "").toString().toLowerCase()).join(" ");
-
+            const hay = [r.vitaminType, r.day, r.time, r.numberOfPills, r.status]
+                .map(x => (x ?? "").toString().toLowerCase()).join(" ");
             return hay.includes(q);
         });
 
@@ -251,48 +305,34 @@
             return sortDir === "asc" ? c : -c;
         });
 
-        shown.forEach(r => {
-            const tr = document.createElement("tr");
-            tr.innerHTML = `
-        <td>${escapeHtml(r.vitaminType ?? "")}</td>
-        <td>${escapeHtml(r.day ?? "")}</td>
-        <td class="mono">${escapeHtml(r.time ?? "")}</td>
-        <td class="right">${escapeHtml((r.numberOfPills ?? "").toString())}</td>
-        <td><span class="pill ${r.status}">${r.status}</span></td>
-      `;
-            tbody.appendChild(tr);
-        });
-
         if (shown.length === 0) {
             const tr = document.createElement("tr");
-            tr.innerHTML = `<td colspan="5" style="padding:14px 12px;color:#666;">No entries.</td>`;
+            tr.className = "empty-row";
+            tr.innerHTML = `<td colspan="5">No entries found.</td>`;
             tbody.appendChild(tr);
+        } else {
+            shown.forEach(r => {
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td>${escapeHtml(r.vitaminType)}</td>
+                    <td>${escapeHtml(r.day)}</td>
+                    <td class="mono">${escapeHtml(r.time)}</td>
+                    <td class="right">${escapeHtml(r.numberOfPills)}</td>
+                    <td><span class="pill ${r.status}">${r.status}</span></td>
+                `;
+                tbody.appendChild(tr);
+            });
         }
 
         document.getElementById("count").textContent =
             `Showing ${shown.length} of ${items.length} entries.`;
     }
 
-    function escapeHtml(str) {
-        return str
-            .replaceAll("&", "&amp;")
-            .replaceAll("<", "&lt;")
-            .replaceAll(">", "&gt;")
-            .replaceAll('"', "&quot;")
-            .replaceAll("'", "&#039;");
-    }
-
-    function setState({ loading, error }) {
-        const state = document.getElementById("state");
-        const err = document.getElementById("error");
-
-        state.style.display = loading ? "block" : "none";
-        err.style.display = error ? "block" : "none";
-        err.textContent = error || "";
-    }
-
     async function load() {
-        setState({ loading: true, error: "" });
+        const loadStatus = document.getElementById("loadStatus");
+        loadStatus.className = "muted";
+        loadStatus.textContent = "Loading...";
+
         try {
             const res = await fetch(API_BASE + "/api/mobile/intake", {
                 headers: {
@@ -303,28 +343,25 @@
 
             if (!res.ok) {
                 const text = await res.text();
-                throw new Error(`Failed to load intake (${res.status}): ${text}`);
+                loadStatus.className = "err";
+                loadStatus.textContent = `Failed to load (${res.status}): ${text}`;
+                return;
             }
 
             const payload = await res.json();
-            const data = payload?.data ?? [];
-
-            if (!Array.isArray(data)) {
-                throw new Error("Unexpected response shape: expected payload.data to be an array");
-            }
-
-            items = data;
+            items = payload?.data ?? [];
 
             if (payload?.message) {
-                setState({ loading: false, error: payload.message });
+                loadStatus.className = "muted";
+                loadStatus.textContent = payload.message;
             } else {
-                setState({ loading: false, error: "" });
+                loadStatus.textContent = "";
             }
 
             render();
         } catch (e) {
-            console.error(e);
-            setState({ loading: false, error: e.message || "Unknown error" });
+            loadStatus.className = "err";
+            loadStatus.textContent = "Network error: " + (e?.message || String(e));
             items = [];
             render();
         }
@@ -338,7 +375,7 @@
         th.addEventListener("click", () => {
             const key = th.getAttribute("data-sort");
             if (sortKey === key) {
-                sortDir = (sortDir === "asc") ? "desc" : "asc";
+                sortDir = sortDir === "asc" ? "desc" : "asc";
             } else {
                 sortKey = key;
                 sortDir = "asc";
@@ -349,6 +386,5 @@
 
     load();
 </script>
-
 </body>
 </html>

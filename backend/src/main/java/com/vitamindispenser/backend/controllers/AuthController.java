@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -36,11 +37,15 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody AuthRequest request){
-        User user = userRepository.findByUsername(request.getUsername())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        Optional<User> userOpt = userRepository.findByUsername(request.getUsername());
+        if (userOpt.isEmpty()){
+            return ResponseEntity.status(401).body("Invalid credentials");
+        }
+        User user = userOpt.get();
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())){
             return ResponseEntity.status(401).body("Invalid credentials");
         }
+
         String token = jwtUtil.generateToken(user.getUsername());
         return ResponseEntity.ok(Map.of("token", token));
     }
