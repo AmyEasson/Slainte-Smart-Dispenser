@@ -127,6 +127,8 @@
         document.getElementById("tabRegister").classList.toggle("active", tab === "register");
         document.getElementById("authBtn").textContent = tab === "login" ? "Sign in" : "Register";
         document.getElementById("authMsg").style.display = "none";
+        document.getElementById("authUser").value = "";
+        document.getElementById("authPass").value = "";
     }
 
     document.getElementById("authBtn").addEventListener("click", async () => {
