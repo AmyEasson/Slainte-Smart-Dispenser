@@ -2,74 +2,178 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Intake Log</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,700;0,9..144,900;1,9..144,400&family=DM+Sans:wght@400;500;600;700&display=swap');
-
         :root{
-            --bg:#F5F0E8;
-            --panel:#FEFCF8;
-            --text:#1A2E1A;
-            --muted:#4A6B4A;
-            --border:#D4C5A9;
-            --primary:#1E4D2B;
-            --danger:#C04030;
-            --ok:#2D6A4F;
-            --err:#C04030;
+            --bg:#f8fafc;
+            --panel:#ffffff;
+            --text:#111827;
+            --muted:#6b7280;
+            --border:#e5e7eb;
+            --primary:#2563eb;
+            --danger:#b42318;
+            --ok:#047857;
+            --err:#b42318;
         }
 
         *{ box-sizing:border-box; }
-        body{ margin:0; background:var(--bg); color:var(--text); font-family: 'DM Sans', system-ui, sans-serif; }
+        body{
+            margin:0;
+            background:var(--bg);
+            color:var(--text);
+            font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+        }
 
-        .wrap{ max-width: 720px; margin: 0 auto; padding: calc(env(safe-area-inset-top, 20px) + 69px) 16px 16px; }
+        .wrap{
+            max-width: 720px;
+            margin: 0 auto;
+            padding: calc(env(safe-area-inset-top, 20px) + 69px) 16px 16px;
+        }
 
-        .topbar{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom: 12px; animation: fade-up 0.5s ease-out 0.1s both; }
-        .topbar h1{ font-size: 20px; margin:0; font-weight: 900; font-family: 'Fraunces', serif; color: var(--text); }
-        .back{ display:inline-flex; align-items:center; justify-content:center; padding:10px 12px; border-radius: 14px; border:1px solid var(--border); text-decoration:none; color:var(--text); background:var(--panel); min-width:64px; font-size: 14px; font-family: 'DM Sans', sans-serif; box-shadow: 0 1px 4px rgba(0,0,0,0.04); transition: all 0.25s ease; }
-        .back:active{ transform: scale(0.95); }
+        .topbar{
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            gap:12px;
+            margin-bottom: 12px;
+        }
+        .topbar h1{
+            font-size: 18px;
+            margin:0;
+            font-weight: 900;
+        }
+        .back{
+            display:inline-flex;
+            align-items:center;
+            justify-content:center;
+            padding:10px 12px;
+            border-radius: 14px;
+            border:1px solid var(--border);
+            text-decoration:none;
+            color:var(--text);
+            background:#fff;
+            min-width:64px;
+            font-size: 14px;
+        }
 
-        .card{ background: var(--panel); border: 1px solid rgba(30,77,43,0.08); border-radius: 22px; padding: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.03); margin-top: 12px; animation: fade-up 0.5s ease-out 0.2s both; }
+        .card{
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            padding: 12px;
+            box-shadow: 0 1px 0 rgba(0,0,0,0.02);
+            margin-top: 12px;
+        }
 
         .muted{ color: var(--muted); font-size: 14px; }
         .ok{ color: var(--ok); font-size: 14px; }
         .err{ color: var(--err); font-size: 14px; }
 
-        input, select, button{ border-radius: 16px; border: 2px solid transparent; padding: 10px 12px; font-size: 14px; background:var(--panel); color: var(--text); font-family: 'DM Sans', sans-serif; box-shadow: 0 1px 4px rgba(0,0,0,0.04); transition: all 0.25s ease; }
-        input:focus, select:focus{ border-color: #52B788; box-shadow: 0 0 0 4px rgba(82,183,136,0.15), 0 2px 8px rgba(0,0,0,0.06); outline: none; }
+        input, select, button{
+            border-radius: 14px;
+            border: 1px solid var(--border);
+            padding: 10px 12px;
+            font-size: 14px;
+            background:#fff;
+            color: var(--text);
+        }
 
-        button{ cursor:pointer; user-select:none; -webkit-tap-highlight-color: transparent; }
+        button{
+            cursor:pointer;
+            user-select:none;
+            -webkit-tap-highlight-color: transparent;
+        }
 
-        .toolbar{ display:flex; gap:10px; flex-wrap: wrap; align-items:center; padding: 4px 2px; }
-        .toolbar label{ font-size: 12px; color: var(--muted); display:flex; align-items:center; gap:6px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
-        .toolbar input, .toolbar select{ border-radius: 12px; padding: 8px 10px; font-size: 14px; }
-        .toolbar button{ padding: 8px 14px; font-size: 13px; border-radius: 999px; background: linear-gradient(135deg, #1E4D2B, #2D6A4F); color: #FEFCF8; border-color: transparent; box-shadow: 0 2px 8px rgba(30,77,43,0.25); font-weight: 600; }
-        .toolbar button:active{ transform: scale(0.95); }
+        .signout{
+            width:auto;
+            padding: 10px 12px;
+            font-size: 13px;
+            border-radius: 999px;
+            color: var(--muted);
+            border-color: var(--border);
+        }
 
-        table{ width:100%; border-collapse: collapse; }
+        .toolbar{
+            display:flex;
+            gap:10px;
+            flex-wrap: wrap;
+            align-items:center;
+            padding: 4px 2px;
+        }
 
-        thead th{ text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); font-weight: 700; border-bottom: 1px solid var(--border); padding: 10px 12px; cursor: pointer; user-select: none; white-space: nowrap; font-family: 'DM Sans', sans-serif; transition: color 0.2s ease; }
+        .toolbar label{
+            font-size: 12px;
+            color: #4b5563;
+            display:flex;
+            align-items:center;
+            gap:6px;
+        }
+
+        .toolbar input, .toolbar select{
+            border-radius: 10px;
+            padding: 8px 10px;
+            font-size: 14px;
+        }
+
+        .toolbar button{
+            padding: 8px 14px;
+            font-size: 13px;
+            border-radius: 999px;
+        }
+
+        table{
+            width:100%;
+            border-collapse: collapse;
+        }
+
+        thead th{
+            text-align: left;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: .05em;
+            color: var(--muted);
+            font-weight: 700;
+            border-bottom: 1px solid var(--border);
+            padding: 10px 12px;
+            cursor: pointer;
+            user-select: none;
+            white-space: nowrap;
+        }
+
         thead th:hover{ color: var(--text); }
 
-        tbody td{ border-bottom: 1px solid rgba(30,77,43,0.06); padding: 12px; font-size: 14px; vertical-align: middle; }
-        tbody tr:last-child td{ border-bottom: none; }
-        tbody tr:hover{ background: #EDE8DD; }
-        tbody tr{ animation: fade-in 0.3s ease-out both; }
+        tbody td{
+            border-bottom: 1px solid var(--border);
+            padding: 12px;
+            font-size: 14px;
+            vertical-align: middle;
+        }
 
-        .pill{ display: inline-block; padding: 5px 12px; border-radius: 999px; font-size: 12px; font-weight: 700; border: none; white-space: nowrap; }
-        .TAKEN{ color: var(--ok); background: #D8F3DC; }
-        .MISSED{ color: var(--danger); background: #FEF2F2; }
+        tbody tr:last-child td{ border-bottom: none; }
+        tbody tr:hover{ background: #f9fafb; }
+
+        .pill{
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 700;
+            border: 1px solid;
+            white-space: nowrap;
+        }
+
+        .TAKEN{ color: var(--ok); border-color: var(--ok); }
+        .MISSED{ color: var(--danger); border-color: var(--danger); }
 
         .mono{ font-family: ui-monospace, Menlo, Monaco, Consolas, monospace; }
         .right{ text-align: right; }
 
-        .empty-row td{ color: var(--muted); padding: 28px 12px; text-align: center; font-size: 15px; }
-
-        #count{ font-size: 13px; color: var(--muted); margin-top: 10px; padding: 0 4px; font-style: italic; animation: fade-up 0.4s ease-out 0.4s both; }
-        #loadStatus{ margin-top: 10px; animation: fade-in 0.3s ease-out both; }
-
-        @keyframes fade-up { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+        .empty-row td{
+            color: var(--muted);
+            padding: 20px 12px;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
@@ -77,7 +181,7 @@
     <div class="topbar">
         <a class="back" href="home.html">Back</a>
         <h1>Intake Log</h1>
-        <div style="min-width:64px;"></div>
+        <button class="signout" id="logoutBtn">Sign out</button>
     </div>
 
     <div class="card">
@@ -115,7 +219,7 @@
         </table>
     </div>
 
-    <div id="count" style="margin-top:8px; padding: 0 4px;"></div>
+    <div class="muted" id="count" style="margin-top:8px; padding: 0 4px;"></div>
 </div>
 
 <script>
@@ -125,11 +229,15 @@
 
     const authToken = sessionStorage.getItem("authToken");
     if (!authToken) {
-        if (window.ReactNativeWebView) {
-            window.ReactNativeWebView.postMessage("login");
-        }
+        window.ReactNativeWebView.postMessage("login");
         throw new Error("Not authenticated");
     }
+
+    document.getElementById("logoutBtn").addEventListener("click", () => {
+        sessionStorage.removeItem("authToken");
+        sessionStorage.removeItem("authUser");
+        window.ReactNativeWebView.postMessage("login");
+    });
 
     let items = [];
     let sortKey = "day";

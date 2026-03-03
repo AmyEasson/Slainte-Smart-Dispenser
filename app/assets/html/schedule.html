@@ -29,8 +29,8 @@
         .wrap{
             max-width: 720px;
             margin: 0 auto;
-            /*padding: 50px 16px 16px;*/
-            padding: calc(env(safe-area-inset-top, 20px) + 54px) 16px 16px;
+            /*padding: 100px 16px 16px;*/
+            padding: calc(env(safe-area-inset-top, 20px) + 69px) 16px 16px;
         }
 
         .topbar{
@@ -173,7 +173,18 @@
         .inputErr{ border-color: rgba(180,35,24,0.5) !important; outline: none; }
 
         /* ── View mode ── */
-        .view-empty{ color: var(--muted); font-size: 14px; padding: 8px 2px; }
+        .view-empty{
+            color: var(--muted);
+            font-size: 15px;
+            padding: 28px 20px;
+            text-align: center;
+            background: var(--panel);
+            border: 1px solid rgba(30,77,43,0.08);
+            border-radius: 22px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+            line-height: 1.5;
+            animation: fade-up 0.4s ease-out 0.2s both;
+        }
 
         .view-card{
             border: 1px solid rgba(30,77,43,0.08);
@@ -342,8 +353,8 @@
 
         if (state.vitamins.length === 0) {
             const d = document.createElement("div");
-            d.className = "view-empty card";
-            d.textContent = "No schedule set yet. Press 'Edit schedule' to add vitamins.";
+            d.className = "view-empty";
+            d.innerHTML = "<div style='font-size:32px; margin-bottom:10px;'>🌱</div><div style='font-family:Fraunces,serif; font-weight:700; font-size:17px; color:#1A2E1A; margin-bottom:6px;'>No schedule yet</div><div>Tap <strong style=\"color:#1E4D2B;\">Edit schedule</strong> below to start adding your vitamins.</div>";
             root.appendChild(d);
             return;
         }

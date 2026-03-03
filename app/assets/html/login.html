@@ -243,6 +243,35 @@
       0 2px 8px rgba(0,0,0,0.06);
   }
 
+  .field-password {
+      position: relative;
+  }
+
+  .field-password .field-input {
+      padding-right: 50px;
+  }
+
+  .toggle-pw {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      font-size: 13px;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 8px;
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 600;
+      -webkit-tap-highlight-color: transparent;
+  }
+
+  .toggle-pw:active {
+      background: var(--cream-dark);
+  }
+
   /* Submit button */
   .submit-btn {
     width: 100%;
@@ -508,10 +537,13 @@
     <input class="field-input" id="authUser" type="text" placeholder="Enter your username" autocomplete="username" />
   </div>
 
-  <div class="field">
-    <label class="field-label">Password</label>
-    <input class="field-input" id="authPass" type="password" placeholder="Enter your password" autocomplete="current-password" />
-  </div>
+    <div class="field">
+        <label class="field-label">Password</label>
+        <div class="field-password">
+            <input class="field-input" id="authPass" type="password" placeholder="Enter your password" autocomplete="current-password" />
+            <button class="toggle-pw" id="togglePw" type="button">Show</button>
+        </div>
+    </div>
 
   <!-- Submit -->
   <button class="submit-btn" id="authBtn">
@@ -563,6 +595,7 @@
 
     msg.className = "msg";
     msg.style.display = "none";
+
     document.getElementById("authUser").value = "";
     document.getElementById("authPass").value = "";
   }
@@ -631,6 +664,19 @@
 
   document.getElementById("authPass").addEventListener("keydown", function(e) {
     if (e.key === "Enter") document.getElementById("authBtn").click();
+  });
+
+  var togglePw = document.getElementById("togglePw");
+
+  togglePw.addEventListener("click", function() {
+      var passInput = document.getElementById("authPass");
+      if (passInput.type === "password") {
+          passInput.type = "text";
+          togglePw.textContent = "Hide";
+      } else {
+          passInput.type = "password";
+          togglePw.textContent = "Show";
+      }
   });
 </script>
 </body>
