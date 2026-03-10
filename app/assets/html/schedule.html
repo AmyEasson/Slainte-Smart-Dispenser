@@ -1,0 +1,898 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Scheduling</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,700;0,9..144,900;1,9..144,400&family=DM+Sans:wght@400;500;600;700&display=swap');
+        :root{
+            --bg:#F5F0E8;
+            --panel:#FEFCF8;
+            --text:#1A2E1A;
+            --muted:#4A6B4A;
+            --border:#D4C5A9;
+            --primary:#1E4D2B;
+            --danger:#C04030;
+            --ok:#2D6A4F;
+            --err:#C04030;
+        }
+
+        *{ box-sizing:border-box; }
+        body{
+            margin:0;
+            background:var(--bg);
+            color:var(--text);
+            font-family: 'DM Sans', system-ui, sans-serif;
+        }
+
+        .wrap{
+            max-width: 720px;
+            margin: 0 auto;
+            /*padding: 100px 16px 16px;*/
+            padding: calc(env(safe-area-inset-top, 20px) + 69px) 16px 16px;
+        }
+
+        .topbar{
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            gap:12px;
+            margin-bottom: 12px;
+            animation: fade-up 0.5s ease-out 0.1s both;
+        }
+        .topbar h1{ font-size: 20px; margin:0; font-weight: 900; font-family: 'Fraunces', serif; color: var(--text); }
+
+        .back{
+            display:inline-flex;
+            align-items:center;
+            justify-content:center;
+            padding:10px 12px;
+            border-radius: 14px;
+            border:1px solid var(--border);
+            text-decoration:none;
+            color:var(--text);
+            background:var(--panel);
+            min-width:64px;
+            font-size: 14px;
+            font-family: 'DM Sans', sans-serif;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+        }
+
+        .card{
+            background: var(--panel);
+            border: 1px solid rgba(30,77,43,0.08);
+            border-radius: 22px;
+            padding: 14px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+            margin-top: 12px;
+            animation: fade-up 0.5s ease-out 0.2s both;
+        }
+
+        .muted{ color: var(--muted); font-size: 14px; }
+        .ok{ color: var(--ok); font-size: 14px; }
+        .err{ color: var(--err); font-size: 14px; }
+
+        label{ display:block; font-size: 12px; color: var(--muted); margin-bottom: 6px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
+
+        input, button{
+            width:100%;
+            border-radius: 16px;
+            border: 2px solid transparent;
+            padding: 14px 16px;
+            font-size: 16px;
+            background:var(--panel);
+            color: var(--text);
+            font-family: 'DM Sans', sans-serif;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+            transition: all 0.25s ease;
+        }
+
+        input:focus{
+            border-color: #52B788;
+            box-shadow: 0 0 0 4px rgba(82,183,136,0.15), 0 2px 8px rgba(0,0,0,0.06);
+            outline: none;
+        }
+
+        input[type="number"]{ font-variant-numeric: tabular-nums; }
+        input[type="time"]{ font-variant-numeric: tabular-nums; }
+
+        button{
+            cursor:pointer;
+            background:#fff;
+            user-select:none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .primary{
+            background: linear-gradient(135deg, #1E4D2B, #2D6A4F);
+            color:#FEFCF8;
+            border-color: transparent;
+            box-shadow: 0 4px 16px rgba(30,77,43,0.35);
+        }
+        .danger{ border-color: transparent; color: var(--danger); background: #FEF2F2; box-shadow: none; }
+
+        .grid2{ display:grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        @media (max-width: 520px){ .grid2{ grid-template-columns: 1fr; } }
+
+        .btnRow{ display:flex; gap:10px; flex-wrap: wrap; align-items:center; }
+        .btnRow button{ width:auto; padding:10px 12px; font-size: 14px; }
+
+        .pillRow{ display:flex; gap:8px; flex-wrap: wrap; margin-top: 8px; }
+        .pillRow button{ width:auto; border-radius: 999px; padding: 10px 12px; font-size: 13px; }
+
+        .cardHeader{
+            display:flex; align-items:flex-start; justify-content:space-between;
+            gap:12px; padding: 6px 2px 10px 2px;
+        }
+        .titleLine{ min-width: 0; }
+        .vitName{ font-weight: 900; font-size: 17px; line-height: 1.15; word-break: break-word; font-family: 'Fraunces', serif; }
+        .vitSummary{ margin-top: 4px; color: var(--muted); font-size: 13px; }
+
+        .toggleBtn{ width:auto; padding: 10px 12px; font-size: 13px; border-radius: 999px; }
+        .content.hidden{ display:none; }
+
+        .dayGrid{ display:grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin-top: 8px; }
+        @media (max-width: 520px){ .dayGrid{ grid-template-columns: repeat(4, 1fr); } }
+
+        .dayBtn{
+            height: 44px; padding: 0; border-radius: 14px; font-size: 12px;
+            font-weight: 700; text-align:center; border: 2px solid var(--border); background:var(--panel);
+            font-family: 'DM Sans', sans-serif; box-shadow: none;
+        }
+        .dayBtn.selected{ background: linear-gradient(135deg, #1E4D2B, #2D6A4F); color:#FEFCF8; border-color: transparent; }
+        .dayBtn.selected{ background: var(--primary); color:#fff; border-color: var(--primary); }
+        .back:active{ transform: scale(0.95); }
+        .primary:active{ transform: scale(0.97); box-shadow: 0 2px 8px rgba(30,77,43,0.25); }
+        .dayBtn:active{ transform: scale(0.92); }
+        .toggleBtn:active{ transform: scale(0.95); }
+        .chip .x:active{ transform: scale(0.9); }
+
+        .dayBlock{
+            margin-top: 12px; padding: 12px; border-radius: 18px;
+            border:1px solid rgba(30,77,43,0.08); background: #EDE8DD;
+            animation: fade-up 0.3s ease-out both;
+        }
+        .dayHead{ display:flex; justify-content: space-between; align-items:center; gap:10px; margin-bottom: 8px; }
+        .dayHead .name{ font-weight: 950; font-size: 14px; }
+        .dayHead button{ width:auto; padding: 10px 12px; font-size: 13px; }
+
+        .chips{ display:flex; flex-wrap: wrap; gap:8px; margin-top: 8px; }
+        .chip{
+            display:inline-flex; align-items:center; gap:8px; padding: 8px 12px;
+            border-radius: 999px; border: 1px solid rgba(30,77,43,0.1); background:var(--panel); font-size: 13px;
+            font-family: ui-monospace, monospace; box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+            animation: fade-in 0.3s ease-out both;
+        }
+        .chip .x{ width:auto; padding: 6px 10px; font-size: 12px; border-radius: 999px; }
+
+        .addTimeRow{ display:grid; grid-template-columns: 1fr auto; gap:10px; align-items:end; margin-top: 10px; }
+        .addTimeRow button{ width:auto; padding: 12px 14px; font-size: 14px; border-radius: 14px; }
+
+        .inlineHint{ margin-top: 8px; font-size: 13px; }
+        .inputErr{ border-color: rgba(180,35,24,0.5) !important; outline: none; }
+
+        /* ── View mode ── */
+        .view-empty{
+            color: var(--muted);
+            font-size: 15px;
+            padding: 28px 20px;
+            text-align: center;
+            background: var(--panel);
+            border: 1px solid rgba(30,77,43,0.08);
+            border-radius: 22px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+            line-height: 1.5;
+            animation: fade-up 0.4s ease-out 0.2s both;
+        }
+
+        .view-card{
+            border: 1px solid rgba(30,77,43,0.08);
+            border-radius: 22px;
+            padding: 16px;
+            margin-top: 10px;
+            background: var(--panel);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+            animation: fade-up 0.4s ease-out both;
+        }
+
+        .view-card-header{
+            display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px;
+        }
+        .view-card-name{ font-weight: 900; font-size: 16px; font-family: 'Fraunces', serif; }
+        .view-card-pills{ color: var(--muted); font-size: 13px; margin-top: 2px; }
+
+        .view-day-row{
+            display:flex; align-items: baseline; gap: 8px;
+            padding: 6px 0; border-bottom: 1px solid var(--border); font-size: 14px;
+        }
+        .view-day-row:last-child{ border-bottom: none; }
+        .view-day-label{ font-weight: 700; min-width: 90px; font-size: 13px; }
+        .view-times{ display:flex; flex-wrap:wrap; gap:6px; }
+        .view-time-chip{
+            padding: 4px 12px; border-radius: 999px; border: 1px solid rgba(30,77,43,0.1);
+            font-size: 13px; background: #EDE8DD; font-family: ui-monospace, monospace;
+        }
+
+        /* ── Daily time picker modal ── */
+        .modal-overlay{
+            display:none; position:fixed; inset:0;
+            background: rgba(11,26,15,0.4); z-index: 100;
+            align-items:center; justify-content:center;
+        }
+        .modal-overlay.open{ display:flex; animation: fade-in 0.2s ease-out; }
+        .modal-overlay.open .modal{ animation: slide-down 0.3s ease-out; }
+        .modal{
+            background: var(--bg); border-radius: 24px; padding: 22px;
+            width: min(340px, 90vw); box-shadow: 0 12px 40px rgba(11,26,15,0.25);
+            border: 1px solid rgba(30,77,43,0.08);
+        }
+        .modal h2{ font-size: 18px; margin: 0 0 6px; font-weight: 900; font-family: 'Fraunces', serif; }
+        .modal p{ font-size: 13px; color: var(--muted); margin: 0 0 14px; }
+        .modal input[type="time"]{ margin-bottom: 14px; width: auto; }
+        .modal-btns{ display:flex; gap:10px; }
+        .modal-btns button{ flex:1; padding: 12px; font-size: 15px; }
+
+        .signout{ width:auto; padding: 10px 12px; font-size: 13px; border-radius: 999px; color: var(--muted); background: none; border: none; box-shadow: none; }
+
+
+        @keyframes fade-up {
+            from { opacity: 0; transform: translateY(14px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fade-in {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slide-down {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+    </style>
+</head>
+<body>
+<div class="wrap">
+    <div class="topbar">
+        <a class="back" href="home.html">Back</a>
+        <h1>Scheduling</h1>
+        <button class="signout toggleBtn" id="logoutBtn">Sign out</button>
+    </div>
+
+    <div id="loadStatus" class="muted" style="margin-top:10px;"></div>
+
+    <!-- VIEW MODE -->
+    <div id="viewMode">
+        <div id="viewList"></div>
+        <div class="card" style="margin-top:12px;">
+            <div class="btnRow">
+                <button id="editBtn" class="primary" style="width:auto;">Edit schedule</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- EDIT MODE -->
+    <div id="editMode" style="display:none;">
+        <!-- Add vitamin -->
+        <div class="card">
+            <div class="grid2">
+                <div>
+                    <label>Vitamin type</label>
+                    <input id="newVitaminName" placeholder="e.g. Vitamin D" />
+                    <div id="addVitErr" class="err inlineHint" style="display:none;"></div>
+                </div>
+                <div>
+                    <label>Pills per intake</label>
+                    <input id="newVitaminPills" type="number" min="1" step="1" value="1" />
+                </div>
+            </div>
+            <div class="btnRow" style="margin-top:10px; justify-content:flex-end;">
+                <button id="addVitaminBtn" class="primary" style="width:auto;">Add vitamin</button>
+            </div>
+        </div>
+
+        <div id="vitaminList"></div>
+
+        <!-- Save / Cancel -->
+        <div class="card">
+            <div class="btnRow">
+                <button id="save" class="primary" style="width:auto;">Save</button>
+                <button id="cancelEdit" style="width:auto;">Cancel</button>
+            </div>
+            <div id="status" class="muted" style="margin-top:10px;"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Daily time picker modal -->
+<div class="modal-overlay" id="dailyModal">
+    <div class="modal">
+        <h2>Set daily time</h2>
+        <p>Choose a time to use for all 7 days.</p>
+        <label>Time</label>
+        <input type="time" id="dailyTimeInput" value="09:00" />
+        <div class="modal-btns">
+            <button id="dailyCancel">Cancel</button>
+            <button id="dailyConfirm" class="primary">Apply</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const DAYS = ["MONDAY","TUESDAY","WEDNESDAY","THURSDAY","FRIDAY","SATURDAY","SUNDAY"];
+    const DAY_LABEL = { MONDAY:"Mon",TUESDAY:"Tue",WEDNESDAY:"Wed",THURSDAY:"Thu",FRIDAY:"Fri",SATURDAY:"Sat",SUNDAY:"Sun" };
+    const DAY_FULL = { MONDAY:"Monday",TUESDAY:"Tuesday",WEDNESDAY:"Wednesday",THURSDAY:"Thursday",FRIDAY:"Friday",SATURDAY:"Saturday",SUNDAY:"Sunday" };
+
+    const API_BASE = window.location.hostname === "localhost"
+        ? "http://localhost:8080"
+        : "http://" + window.location.hostname + ":8080";
+
+    const authToken = sessionStorage.getItem("authToken");
+    if (!authToken) {
+        window.ReactNativeWebView && window.ReactNativeWebView.postMessage("login");
+        throw new Error("Not authenticated");
+    }
+
+    document.getElementById("logoutBtn").addEventListener("click", () => {
+        sessionStorage.removeItem("authToken");
+        sessionStorage.removeItem("authUser");
+        window.ReactNativeWebView && window.ReactNativeWebView.postMessage("login");
+    });
+
+    let state = { vitamins: [] };
+    let pendingFocus = null;
+    let pendingDailyIdx = null; // vitamin index waiting for daily modal
+
+    // ── View mode ────────────────────────────────────────────────
+
+    function renderView() {
+        const root = document.getElementById("viewList");
+        root.innerHTML = "";
+
+        if (state.vitamins.length === 0) {
+            const d = document.createElement("div");
+            d.className = "view-empty";
+            d.innerHTML = "<div style='font-size:32px; margin-bottom:10px;'>🌱</div><div style='font-family:Fraunces,serif; font-weight:700; font-size:17px; color:#1A2E1A; margin-bottom:6px;'>No schedule yet</div><div>Tap <strong style=\"color:#1E4D2B;\">Edit schedule</strong> below to start adding your vitamins.</div>";
+            root.appendChild(d);
+            return;
+        }
+
+        state.vitamins.forEach(v => {
+            const card = document.createElement("div");
+            card.className = "view-card";
+
+            const days = DAYS.filter(d => d in v.schedule && (v.schedule[d] || []).length > 0);
+
+            card.innerHTML = `
+                <div class="view-card-header">
+                    <div>
+                        <div class="view-card-name">${escapeHtml(v.vitaminType)}</div>
+                        <div class="view-card-pills">${v.numberOfPills} pill${v.numberOfPills === 1 ? "" : "s"} per intake</div>
+                    </div>
+                </div>
+                <div id="view-days-${escapeHtml(v.vitaminType.replace(/\s+/g,'_'))}"></div>
+            `;
+            root.appendChild(card);
+
+            const daysRoot = card.querySelector(`[id^="view-days-"]`);
+
+            if (days.length === 0) {
+                daysRoot.innerHTML = `<div class="muted" style="font-size:13px;">No days scheduled.</div>`;
+            } else {
+                days.forEach(day => {
+                    const times = (v.schedule[day] || []).slice().sort();
+                    const row = document.createElement("div");
+                    row.className = "view-day-row";
+                    row.innerHTML = `
+                        <div class="view-day-label">${DAY_FULL[day]}</div>
+                        <div class="view-times">${times.map(t => `<span class="view-time-chip">${escapeHtml(t)}</span>`).join("")}</div>
+                    `;
+                    daysRoot.appendChild(row);
+                });
+            }
+        });
+    }
+
+    function showViewMode() {
+        document.getElementById("viewMode").style.display = "block";
+        document.getElementById("editMode").style.display = "none";
+        renderView();
+    }
+
+    function showEditMode() {
+        document.getElementById("viewMode").style.display = "none";
+        document.getElementById("editMode").style.display = "block";
+        render();
+        setStatusFromValidation();
+    }
+
+    document.getElementById("editBtn").addEventListener("click", showEditMode);
+
+    document.getElementById("cancelEdit").addEventListener("click", () => {
+        // reload state from backend to discard unsaved changes
+        load();
+    });
+
+    // ── Daily modal ───────────────────────────────────────────────
+
+    function openDailyModal(vIdx) {
+        pendingDailyIdx = vIdx;
+        document.getElementById("dailyTimeInput").value = "09:00";
+        document.getElementById("dailyModal").classList.add("open");
+    }
+
+    document.getElementById("dailyCancel").addEventListener("click", () => {
+        document.getElementById("dailyModal").classList.remove("open");
+        pendingDailyIdx = null;
+    });
+
+    document.getElementById("dailyConfirm").addEventListener("click", () => {
+        const time = document.getElementById("dailyTimeInput").value;
+        if (!time || pendingDailyIdx === null) {
+            document.getElementById("dailyModal").classList.remove("open");
+            return;
+        }
+        const v = state.vitamins[pendingDailyIdx];
+        v.schedule = {};
+        DAYS.forEach(d => v.schedule[d] = [time]);
+        document.getElementById("dailyModal").classList.remove("open");
+        pendingDailyIdx = null;
+        render();
+        setStatusFromValidation();
+    });
+
+    // ── Edit mode helpers ─────────────────────────────────────────
+
+    function escapeHtml(s){
+        return String(s ?? "")
+            .replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;")
+            .replaceAll('"',"&quot;").replaceAll("'","&#039;");
+    }
+
+    function normalizeTime(t){
+        const s = (t || "").trim();
+        if (!/^\d{2}:\d{2}$/.test(s)) return "";
+        return s;
+    }
+
+    function ensureDay(vIdx, day){
+        if (!state.vitamins[vIdx].schedule[day]) state.vitamins[vIdx].schedule[day] = [];
+    }
+
+    function addTime(vIdx, day, time){
+        const t = normalizeTime(time);
+        if (!t) return;
+        ensureDay(vIdx, day);
+        const arr = state.vitamins[vIdx].schedule[day];
+        if (arr.includes(t)) return;
+        arr.push(t);
+        arr.sort();
+    }
+
+    function removeTime(vIdx, day, time){
+        const arr = state.vitamins[vIdx].schedule[day] || [];
+        state.vitamins[vIdx].schedule[day] = arr.filter(x => x !== time);
+    }
+
+    function toggleDay(vIdx, day){
+        const v = state.vitamins[vIdx];
+        if (day in v.schedule) { delete v.schedule[day]; return; }
+        v.schedule[day] = [];
+    }
+
+    function summarizeVitamin(v){
+        const days = DAYS.filter(d => d in v.schedule);
+        if (days.length === 0) return "No days selected";
+        const timeCount = days.reduce((a,d)=>a + (v.schedule[d]?.length||0), 0);
+        if (timeCount === 0) return `${days.map(d=>DAY_LABEL[d]).join(" ")} · no times yet`;
+        if (days.length === 7) return `Daily · ${timeCount} time${timeCount===1?"":"s"}`;
+        if (days.length === 5 && ["MONDAY","TUESDAY","WEDNESDAY","THURSDAY","FRIDAY"].every(d=>days.includes(d)))
+            return `Weekdays · ${timeCount} time${timeCount===1?"":"s"}`;
+        return `${days.map(d=>DAY_LABEL[d]).join(" ")} · ${timeCount} time${timeCount===1?"":"s"}`;
+    }
+
+    function applyPreset(vIdx, preset){
+        const v = state.vitamins[vIdx];
+        if (preset === "clear") { v.schedule = {}; return; }
+        if (preset === "daily") { openDailyModal(vIdx); return; }
+        if (preset === "weekdays"){
+            const templateDays = Object.keys(v.schedule);
+            const templateTimes = templateDays.length ? (v.schedule[templateDays[0]] || []).slice() : [];
+            v.schedule = {};
+            ["MONDAY","TUESDAY","WEDNESDAY","THURSDAY","FRIDAY"].forEach(d => v.schedule[d] = templateTimes.slice());
+        }
+    }
+
+    function toBackendPayload(){
+        return {
+            vitamins: state.vitamins
+                .filter(v => (v.vitaminType || "").trim().length > 0)
+                .map(v => ({
+                    vitaminType: v.vitaminType.trim(),
+                    numberOfPills: Number(v.numberOfPills) >= 1 ? Math.floor(Number(v.numberOfPills)) : 1,
+                    schedule: Object.keys(v.schedule)
+                        .map(day => ({
+                            day: day.toLowerCase(),
+                            times: (v.schedule[day] || []).filter(t => typeof t === "string" && t.trim().length > 0)
+                        }))
+                        .filter(e => e.times.length > 0)
+                }))
+        };
+    }
+
+    function fromBackendPayload(payload){
+        const vitamins = Array.isArray(payload?.vitamins) ? payload.vitamins : [];
+        return {
+            vitamins: vitamins
+                .filter(v => typeof v?.vitaminType === "string" && v.vitaminType.trim().length > 0)
+                .map(v => {
+                    const uiSchedule = {};
+                    for (const e of (Array.isArray(v.schedule) ? v.schedule : [])) {
+                        const day = (typeof e?.day === "string" ? e.day.trim() : "").toUpperCase();
+                        if (!DAYS.includes(day)) continue;
+                        const cleaned = (Array.isArray(e?.times) ? e.times : [])
+                            .filter(t => typeof t === "string" && t.trim().length > 0)
+                            .map(t => normalizeTime(t)).filter(Boolean);
+                        if (cleaned.length === 0) continue;
+                        uiSchedule[day] = Array.from(new Set((uiSchedule[day] || []).concat(cleaned))).sort();
+                    }
+                    const pills = Number(v?.numberOfPills);
+                    return {
+                        vitaminType: v.vitaminType.trim(),
+                        numberOfPills: Number.isFinite(pills) && pills >= 1 ? Math.floor(pills) : 1,
+                        schedule: uiSchedule,
+                        ui: { collapsed: false }
+                    };
+                })
+        };
+    }
+
+    function validatePayload(payload){
+        const errors = [];
+        if (!payload || !Array.isArray(payload.vitamins)) { errors.push("Payload must contain vitamins[]."); return errors; }
+        payload.vitamins.forEach((v,i)=>{
+            if (!v.vitaminType) errors.push(`Vitamins[${i}].vitaminType invalid.`);
+            if (!Number.isInteger(v.numberOfPills) || v.numberOfPills < 1) errors.push(`Vitamins[${i}].numberOfPills must be >=1.`);
+            if (!Array.isArray(v.schedule)) { errors.push(`Vitamins[${i}].schedule must be array.`); return; }
+            v.schedule.forEach((e,j)=>{
+                if (!e.day) errors.push(`Vitamins[${i}].schedule[${j}].day invalid.`);
+                if (!Array.isArray(e.times) || e.times.length === 0) errors.push(`Vitamins[${i}].schedule[${j}].times empty.`);
+            });
+        });
+        return errors;
+    }
+
+    function findEmptySelectedDays(){
+        const issues = [];
+        state.vitamins.forEach(v => {
+            for (const day of Object.keys(v.schedule)) {
+                if ((v.schedule[day] || []).length === 0)
+                    issues.push(`${(v.vitaminType || "(Unnamed)").trim()}: ${day}`);
+            }
+        });
+        return issues;
+    }
+
+    function setStatusFromValidation(){
+        const status = document.getElementById("status");
+        if (!status) return;
+        const emptyDays = findEmptySelectedDays();
+        if (emptyDays.length) {
+            status.className = "err";
+            status.textContent = "Selected days with no times (won't be saved): " + emptyDays.join(", ");
+            return;
+        }
+        const errs = validatePayload(toBackendPayload());
+        if (errs.length === 0) { status.className = "ok"; status.textContent = "Ready to save."; }
+        else { status.className = "err"; status.textContent = "Fix: " + errs.join(" "); }
+    }
+
+    function removeVitamin(i){ state.vitamins.splice(i,1); render(); }
+
+    function setCollapsed(i, collapsed){
+        state.vitamins[i].ui = state.vitamins[i].ui || {};
+        state.vitamins[i].ui.collapsed = !!collapsed;
+    }
+
+    function focusPendingTime(){
+        if (!pendingFocus) return;
+        const { idx, day } = pendingFocus;
+        pendingFocus = null;
+        const root = document.getElementById("vitaminList");
+        if (!root) return;
+        const inp = root.querySelector(`input[data-kind='time'][data-idx='${idx}'][data-day='${day}']`);
+        if (!inp) return;
+        inp.scrollIntoView({ behavior: "smooth", block: "center" });
+        inp.focus({ preventScroll: true });
+        if (typeof inp.showPicker === "function") { try { inp.showPicker(); } catch (_) {} }
+    }
+
+    function render(){
+        const root = document.getElementById("vitaminList");
+        root.innerHTML = "";
+
+        state.vitamins.forEach((v, idx)=>{
+            v.ui = v.ui || { collapsed:false };
+            const collapsed = !!v.ui.collapsed;
+            const card = document.createElement("div");
+            card.className = "card";
+            const name = (v.vitaminType || "").trim() || "(Unnamed vitamin)";
+
+            card.innerHTML = `
+                <div class="cardHeader">
+                  <div class="titleLine">
+                    <div class="vitName">${escapeHtml(name)}</div>
+                    <div class="vitSummary">${escapeHtml(summarizeVitamin(v))}</div>
+                  </div>
+                  <button class="toggleBtn" data-kind="toggle" data-idx="${idx}">${collapsed ? "Show" : "Hide"}</button>
+                </div>
+
+                <div class="content ${collapsed ? "hidden":""}" id="content-${idx}">
+                  <div class="grid2">
+                    <div>
+                      <label>Vitamin type</label>
+                      <input data-kind="name" data-idx="${idx}" value="${escapeHtml(v.vitaminType)}" />
+                    </div>
+                    <div>
+                      <label>Pills per intake</label>
+                      <input data-kind="pills" data-idx="${idx}" type="number" min="1" step="1" value="${escapeHtml(v.numberOfPills)}" />
+                    </div>
+                  </div>
+
+                  <div style="margin-top:10px;">
+                    <label>Preset</label>
+                    <div class="pillRow">
+                      <button data-kind="preset" data-idx="${idx}" data-preset="daily">Daily</button>
+                      <button data-kind="preset" data-idx="${idx}" data-preset="weekdays">Weekdays</button>
+                      <button data-kind="preset" data-idx="${idx}" data-preset="clear">Clear</button>
+                      <button data-kind="remove-vit" data-idx="${idx}" class="danger">Remove</button>
+                    </div>
+                  </div>
+
+                  <div style="margin-top:12px;">
+                    <label>Select days</label>
+                    <div class="dayGrid" id="dayGrid-${idx}"></div>
+                  </div>
+                  <div id="days-${idx}"></div>
+                </div>
+            `;
+
+            root.appendChild(card);
+
+            const dayGrid = card.querySelector(`#dayGrid-${idx}`);
+            DAYS.forEach(day=>{
+                const b = document.createElement("button");
+                b.className = "dayBtn" + ((day in v.schedule) ? " selected":"");
+                b.textContent = DAY_LABEL[day];
+                b.setAttribute("data-kind","day");
+                b.setAttribute("data-idx", String(idx));
+                b.setAttribute("data-day", day);
+                dayGrid.appendChild(b);
+            });
+
+            const daysRoot = card.querySelector(`#days-${idx}`);
+            const selected = DAYS.filter(d => d in v.schedule);
+
+            if (selected.length === 0){
+                const d = document.createElement("div");
+                d.className = "muted"; d.style.marginTop = "10px";
+                d.textContent = "Select days above, then add times.";
+                daysRoot.appendChild(d);
+            } else {
+                selected.forEach(day=>{
+                    const times = (v.schedule[day] || []).slice().sort();
+                    const block = document.createElement("div");
+                    block.className = "dayBlock";
+                    block.innerHTML = `
+                        <div class="dayHead">
+                          <div class="name">${escapeHtml(day.charAt(0) + day.slice(1).toLowerCase())}</div>
+                          <button data-kind="remove-day" data-idx="${idx}" data-day="${day}">Remove day</button>
+                        </div>
+                        <div class="chips" id="chips-${idx}-${day}"></div>
+                        <div class="addTimeRow">
+                          <div>
+                            <label>Add time</label>
+                            <input data-kind="time" data-idx="${idx}" data-day="${day}" type="time" />
+                          </div>
+                          <button class="primary" data-kind="add-time" data-idx="${idx}" data-day="${day}">Add</button>
+                        </div>
+                    `;
+                    daysRoot.appendChild(block);
+
+                    const chips = block.querySelector(`#chips-${idx}-${day}`);
+                    if (times.length === 0){
+                        const m = document.createElement("div");
+                        m.className = "err";
+                        m.textContent = "Add at least one time, otherwise this day won't be saved.";
+                        chips.appendChild(m);
+                    } else {
+                        times.forEach(t=>{
+                            const chip = document.createElement("div");
+                            chip.className = "chip";
+                            chip.innerHTML = `<span>${escapeHtml(t)}</span><button class="x" data-kind="rm-time" data-idx="${idx}" data-day="${day}" data-time="${escapeHtml(t)}">x</button>`;
+                            chips.appendChild(chip);
+                        });
+                    }
+                });
+            }
+        });
+
+        // wire events
+        root.querySelectorAll("button[data-kind='toggle']").forEach(btn=>{
+            btn.addEventListener("click", (e)=>{
+                e.stopPropagation();
+                const idx = Number(e.currentTarget.getAttribute("data-idx"));
+                setCollapsed(idx, !state.vitamins[idx].ui?.collapsed);
+                render(); setStatusFromValidation();
+            });
+        });
+        root.querySelectorAll("input[data-kind='name']").forEach(inp=>{
+            inp.addEventListener("input",(e)=>{
+                state.vitamins[Number(e.target.dataset.idx)].vitaminType = e.target.value;
+                setStatusFromValidation();
+            });
+        });
+        root.querySelectorAll("input[data-kind='pills']").forEach(inp=>{
+            inp.addEventListener("change",(e)=>{
+                const idx = Number(e.target.dataset.idx);
+                const n = Number(e.target.value);
+                state.vitamins[idx].numberOfPills = Number.isFinite(n) && n >= 1 ? Math.floor(n) : 1;
+                e.target.value = String(state.vitamins[idx].numberOfPills);
+                setStatusFromValidation();
+            });
+            inp.addEventListener("blur",(e)=>{
+                if (String(e.target.value || "").trim() === "") {
+                    const idx = Number(e.target.dataset.idx);
+                    state.vitamins[idx].numberOfPills = 1;
+                    e.target.value = "1";
+                    setStatusFromValidation();
+                }
+            });
+        });
+        root.querySelectorAll("button[data-kind='remove-vit']").forEach(btn=>{
+            btn.addEventListener("click",(e)=>{ e.stopPropagation(); removeVitamin(Number(e.target.dataset.idx)); setStatusFromValidation(); });
+        });
+        root.querySelectorAll("button[data-kind='preset']").forEach(btn=>{
+            btn.addEventListener("click",(e)=>{
+                e.stopPropagation();
+                const idx = Number(e.target.dataset.idx);
+                applyPreset(idx, e.target.getAttribute("data-preset"));
+                setCollapsed(idx, false);
+                // Daily opens modal — don't re-render yet, modal confirm will
+                if (e.target.getAttribute("data-preset") !== "daily") { render(); setStatusFromValidation(); }
+            });
+        });
+        root.querySelectorAll("button[data-kind='day']").forEach(btn=>{
+            btn.addEventListener("click",(e)=>{
+                e.stopPropagation();
+                const idx = Number(e.target.dataset.idx);
+                const day = e.target.dataset.day;
+                toggleDay(idx, day);
+                if (day in state.vitamins[idx].schedule) { setCollapsed(idx, false); pendingFocus = { idx, day }; }
+                render(); setStatusFromValidation();
+            });
+        });
+        root.querySelectorAll("button[data-kind='remove-day']").forEach(btn=>{
+            btn.addEventListener("click",(e)=>{
+                e.stopPropagation();
+                const idx = Number(e.target.dataset.idx);
+                delete state.vitamins[idx].schedule[e.target.dataset.day];
+                render(); setStatusFromValidation();
+            });
+        });
+        root.querySelectorAll("button[data-kind='add-time']").forEach(btn=>{
+            btn.addEventListener("click",(e)=>{
+                e.stopPropagation();
+                const idx = Number(e.target.dataset.idx);
+                const day = e.target.dataset.day;
+                const inp = root.querySelector(`input[data-kind='time'][data-idx='${idx}'][data-day='${day}']`);
+                addTime(idx, day, inp?.value || "");
+                if (inp) inp.value = "";
+                render(); setStatusFromValidation();
+            });
+        });
+        root.querySelectorAll("button[data-kind='rm-time']").forEach(btn=>{
+            btn.addEventListener("click",(e)=>{
+                e.stopPropagation();
+                removeTime(Number(e.target.dataset.idx), e.target.dataset.day, e.target.dataset.time);
+                render(); setStatusFromValidation();
+            });
+        });
+
+        setTimeout(focusPendingTime, 0);
+    }
+
+    document.getElementById("addVitaminBtn").addEventListener("click", ()=>{
+        const nameInp = document.getElementById("newVitaminName");
+        const pillsInp = document.getElementById("newVitaminPills");
+        const err = document.getElementById("addVitErr");
+        const name = (nameInp.value || "").trim();
+        if (!name){
+            err.style.display = "block";
+            err.textContent = "Vitamin type is required.";
+            nameInp.classList.add("inputErr");
+            nameInp.focus();
+            return;
+        }
+        err.style.display = "none";
+        nameInp.classList.remove("inputErr");
+        const n = Number(pillsInp.value);
+        state.vitamins.push({
+            vitaminType: name,
+            numberOfPills: Number.isFinite(n) && n >= 1 ? Math.floor(n) : 1,
+            schedule: {},
+            ui: { collapsed: false }
+        });
+        nameInp.value = "";
+        pillsInp.value = "1";
+        render(); setStatusFromValidation();
+        setTimeout(()=>{ document.getElementById("vitaminList").lastElementChild?.scrollIntoView({ behavior:"smooth", block:"start" }); }, 0);
+    });
+
+    document.getElementById("newVitaminName").addEventListener("input", ()=>{
+        document.getElementById("addVitErr").style.display = "none";
+        document.getElementById("newVitaminName").classList.remove("inputErr");
+    });
+
+    document.getElementById("save").addEventListener("click", async ()=>{
+        const payload = toBackendPayload();
+        const status = document.getElementById("status");
+
+        const emptyDays = findEmptySelectedDays();
+        if (emptyDays.length){ status.className = "err"; status.textContent = "Not sending. Add times for: " + emptyDays.join(", "); return; }
+
+        const errs = validatePayload(payload);
+        if (errs.length){ status.className = "err"; status.textContent = "Not sending. Fix: " + errs.join(" "); return; }
+
+        status.className = "muted"; status.textContent = "Saving...";
+
+        try{
+            const res = await fetch(API_BASE + "/api/mobile/schedule", {
+                method: "POST",
+                headers: { "Content-Type":"application/json", "Authorization": "Bearer " + authToken },
+                body: JSON.stringify(payload)
+            });
+            const text = await res.text();
+            if (!res.ok){ status.className = "err"; status.textContent = `Save failed (${res.status}): ${text}`; return; }
+            status.className = "ok"; status.textContent = text || "Saved successfully";
+            setTimeout(() => showViewMode(), 800);
+        } catch (e){
+            status.className = "err"; status.textContent = "Network error: " + (e?.message || String(e));
+        }
+    });
+
+    async function load(){
+        const loadStatus = document.getElementById("loadStatus");
+        loadStatus.className = "muted";
+        loadStatus.textContent = "Loading schedule...";
+
+        try{
+            const res = await fetch(API_BASE + "/api/mobile/getSchedule", {
+                headers: { "Authorization": "Bearer " + authToken }
+            });
+            if (!res.ok){
+                const text = await res.text();
+                loadStatus.className = "err";
+                loadStatus.textContent = `Failed to load schedule (${res.status}): ${text}`;
+                state = { vitamins: [] };
+                showViewMode();
+                return;
+            }
+            const payload = await res.json();
+            state = fromBackendPayload(payload);
+            loadStatus.textContent = "";
+            showViewMode();
+        } catch(e){
+            loadStatus.className = "err";
+            loadStatus.textContent = "Network error loading schedule: " + (e?.message || String(e));
+            state = { vitamins: [] };
+            showViewMode();
+        }
+    }
+
+    load();
+</script>
+</body>
+</html>

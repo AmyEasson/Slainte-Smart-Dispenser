@@ -1,7 +1,8 @@
 package com.vitamindispenser.backend.domain.logging;
 
 import com.vitamindispenser.backend.dto.logging.IntakeForRawDashboard;
-import com.vitamindispenser.backend.dto.logging.LoggingDatabase;
+import com.vitamindispenser.backend.model.LoggingDatabase;
+import com.vitamindispenser.backend.model.User;
 import com.vitamindispenser.backend.repository.DispenseEventLogRepository;
 import org.springframework.stereotype.Service;
 
@@ -17,8 +18,8 @@ public class LoggingExportService {
     }
 
     /** Full export (with IDs) – used by /logs/export.csv */
-    public String exportAllLogsAsCsv() {
-        List<LoggingDatabase> rows = repo.findAll();
+    public String exportAllLogsAsCsv(User user) {
+        List<LoggingDatabase> rows = repo.findByUser(user);
 
         StringBuilder sb = new StringBuilder();
 
@@ -51,8 +52,8 @@ public class LoggingExportService {
     }
 
     /** RAW dashboard export (NO IDs) – used by /intake */
-    public List<IntakeForRawDashboard> exportDashboardJson() {
-        return repo.findAll().stream()
+    public List<IntakeForRawDashboard> exportDashboardJson(User user) {
+        return repo.findByUser(user).stream()
                 .map(r -> new IntakeForRawDashboard(
                         r.getVitaminType(),
                         r.getDay(),

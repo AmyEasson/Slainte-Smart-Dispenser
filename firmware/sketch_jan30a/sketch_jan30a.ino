@@ -4,12 +4,12 @@
 #include <ArduinoJson.h>
 
 // --- NETWORK SETTINGS ---
-char ssid[] = "Xinrui_iPhone";      // Your Network Name
-char pass[] = "hxr:))))";               // Your Network Password
+char ssid[] = "acheesylion";      // Your Network Name
+char pass[] = "batman123";               // Your Network Password
 int status = WL_IDLE_STATUS;
 
 // IP Address of your computer (Laptop on Hotspot)
-IPAddress serverAddress(172, 20, 10, 7);
+IPAddress serverAddress(172, 20, 10, 4);
 int serverPort = 8080;
 
 WiFiClient client;
@@ -26,7 +26,7 @@ const unsigned long TIME_WAIT_AFTER_DISPENSE = 3000;
 const unsigned long TIME_READ_SENSOR = 2000;         
 const unsigned long TIME_ALARM_DURATION = 5000;      
 const unsigned long TIME_SNOOZE_DURATION = 3000;     
-const int DEGREES = 150;
+const float DEGREES = 98;
 const int SENSOR_THRESHOLD = 50; 
 
 // --- OBJECTS ---
@@ -188,7 +188,7 @@ bool checkSensorForTime(unsigned long duration) {
 
 void checkServerForCommands() {
   if (client.connect(serverAddress, serverPort)) {
-    client.println("GET /api/firmware/poll HTTP/1.1");
+    client.println("GET /api/firmware/poll?deviceId=DISPENSER_001 HTTP/1.1");
     client.print("Host: "); client.println(serverAddress);
     client.println("Connection: close");
     client.println();

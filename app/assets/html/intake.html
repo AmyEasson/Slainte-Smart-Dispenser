@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Intake Log</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,700;0,9..144,900;1,9..144,400&family=DM+Sans:wght@400;500;600;700&display=swap');
+
+        :root{
+            --bg:#F5F0E8;
+            --panel:#FEFCF8;
+            --text:#1A2E1A;
+            --muted:#4A6B4A;
+            --border:#D4C5A9;
+            --primary:#1E4D2B;
+            --danger:#C04030;
+            --ok:#2D6A4F;
+            --err:#C04030;
+        }
+
+        *{ box-sizing:border-box; }
+        body{ margin:0; background:var(--bg); color:var(--text); font-family: 'DM Sans', system-ui, sans-serif; }
+
+        .wrap{ max-width: 720px; margin: 0 auto; padding: calc(env(safe-area-inset-top, 20px) + 69px) 16px 16px; }
+
+        .topbar{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom: 12px; animation: fade-up 0.5s ease-out 0.1s both; }
+        .topbar h1{ font-size: 20px; margin:0; font-weight: 900; font-family: 'Fraunces', serif; color: var(--text); }
+        .back{ display:inline-flex; align-items:center; justify-content:center; padding:10px 12px; border-radius: 14px; border:1px solid var(--border); text-decoration:none; color:var(--text); background:var(--panel); min-width:64px; font-size: 14px; font-family: 'DM Sans', sans-serif; box-shadow: 0 1px 4px rgba(0,0,0,0.04); transition: all 0.25s ease; }
+        .back:active{ transform: scale(0.95); }
+
+        .card{ background: var(--panel); border: 1px solid rgba(30,77,43,0.08); border-radius: 22px; padding: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.03); margin-top: 12px; animation: fade-up 0.5s ease-out 0.2s both; }
+
+        .muted{ color: var(--muted); font-size: 14px; }
+        .ok{ color: var(--ok); font-size: 14px; }
+        .err{ color: var(--err); font-size: 14px; }
+
+        input, select, button{ border-radius: 16px; border: 2px solid transparent; padding: 10px 12px; font-size: 14px; background:var(--panel); color: var(--text); font-family: 'DM Sans', sans-serif; box-shadow: 0 1px 4px rgba(0,0,0,0.04); transition: all 0.25s ease; }
+        input:focus, select:focus{ border-color: #52B788; box-shadow: 0 0 0 4px rgba(82,183,136,0.15), 0 2px 8px rgba(0,0,0,0.06); outline: none; }
+
+        button{ cursor:pointer; user-select:none; -webkit-tap-highlight-color: transparent; }
+
+        .toolbar{ display:flex; gap:10px; flex-wrap: wrap; align-items:center; padding: 4px 2px; }
+        .toolbar label{ font-size: 12px; color: var(--muted); display:flex; align-items:center; gap:6px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
+        .toolbar input, .toolbar select{ border-radius: 12px; padding: 8px 10px; font-size: 14px; }
+        .toolbar button{ padding: 8px 14px; font-size: 13px; border-radius: 999px; background: linear-gradient(135deg, #1E4D2B, #2D6A4F); color: #FEFCF8; border-color: transparent; box-shadow: 0 2px 8px rgba(30,77,43,0.25); font-weight: 600; }
+        .toolbar button:active{ transform: scale(0.95); }
+
+        table{ width:100%; border-collapse: collapse; }
+
+        thead th{ text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); font-weight: 700; border-bottom: 1px solid var(--border); padding: 10px 12px; cursor: pointer; user-select: none; white-space: nowrap; font-family: 'DM Sans', sans-serif; transition: color 0.2s ease; }
+        thead th:hover{ color: var(--text); }
+
+        tbody td{ border-bottom: 1px solid rgba(30,77,43,0.06); padding: 12px; font-size: 14px; vertical-align: middle; }
+        tbody tr:last-child td{ border-bottom: none; }
+        tbody tr:hover{ background: #EDE8DD; }
+        tbody tr{ animation: fade-in 0.3s ease-out both; }
+
+        .pill{ display: inline-block; padding: 5px 12px; border-radius: 999px; font-size: 12px; font-weight: 700; border: none; white-space: nowrap; }
+        .TAKEN{ color: var(--ok); background: #D8F3DC; }
+        .MISSED{ color: var(--danger); background: #FEF2F2; }
+
+        .mono{ font-family: ui-monospace, Menlo, Monaco, Consolas, monospace; }
+        .right{ text-align: right; }
+
+        .empty-row td{ color: var(--muted); padding: 28px 12px; text-align: center; font-size: 15px; }
+
+        #count{ font-size: 13px; color: var(--muted); margin-top: 10px; padding: 0 4px; font-style: italic; animation: fade-up 0.4s ease-out 0.4s both; }
+        #loadStatus{ margin-top: 10px; animation: fade-in 0.3s ease-out both; }
+
+        @keyframes fade-up { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+    </style>
+</head>
+<body>
+<div class="wrap">
+    <div class="topbar">
+        <a class="back" href="home.html">Back</a>
+        <h1>Intake Log</h1>
+        <div style="min-width:64px;"></div>
+    </div>
+
+    <div class="card">
+        <div class="toolbar">
+            <label>
+                Status:
+                <select id="filter">
+                    <option value="ALL">All</option>
+                    <option value="TAKEN">Taken</option>
+                    <option value="MISSED">Missed</option>
+                </select>
+            </label>
+            <label>
+                Search:
+                <input id="search" type="text" placeholder="vitamin, day, time…" />
+            </label>
+            <button id="refresh">Refresh</button>
+        </div>
+    </div>
+
+    <div id="loadStatus" class="muted" style="margin-top:10px;"></div>
+
+    <div class="card" style="padding:0; overflow:hidden;">
+        <table>
+            <thead>
+            <tr>
+                <th data-sort="vitaminType">Vitamin</th>
+                <th data-sort="day">Day</th>
+                <th data-sort="time">Time</th>
+                <th data-sort="numberOfPills" class="right">Pills</th>
+                <th data-sort="status">Status</th>
+            </tr>
+            </thead>
+            <tbody id="tbody"></tbody>
+        </table>
+    </div>
+
+    <div id="count" style="margin-top:8px; padding: 0 4px;"></div>
+</div>
+
+<script>
+    const API_BASE = window.location.hostname === "localhost"
+        ? "http://localhost:8080"
+        : "http://" + window.location.hostname + ":8080";
+
+    const authToken = sessionStorage.getItem("authToken");
+    if (!authToken) {
+        if (window.ReactNativeWebView) {
+            window.ReactNativeWebView.postMessage("login");
+        }
+        throw new Error("Not authenticated");
+    }
+
+    let items = [];
+    let sortKey = "day";
+    let sortDir = "asc";
+
+    function normalizeStatus(row) {
+        return row.taken === true ? "TAKEN" : "MISSED";
+    }
+
+    function compare(a, b, key) {
+        const av = a[key];
+        const bv = b[key];
+
+        if (typeof av === "number" && typeof bv === "number") return av - bv;
+
+        const as = (av ?? "").toString().toLowerCase();
+        const bs = (bv ?? "").toString().toLowerCase();
+
+        if (key === "time") {
+            const toMins = (t) => {
+                const m = /^(\d{1,2}):(\d{2})$/.exec(t ?? "");
+                if (!m) return Number.POSITIVE_INFINITY;
+                return parseInt(m[1], 10) * 60 + parseInt(m[2], 10);
+            };
+            return toMins(av) - toMins(bv);
+        }
+
+        if (key === "day") {
+            const order = { monday:1, tuesday:2, wednesday:3, thursday:4, friday:5, saturday:6, sunday:7 };
+            const ao = order[as] ?? 999;
+            const bo = order[bs] ?? 999;
+            if (ao !== bo) return ao - bo;
+        }
+
+        if (as < bs) return -1;
+        if (as > bs) return 1;
+        return 0;
+    }
+
+    function escapeHtml(str) {
+        return String(str ?? "")
+            .replaceAll("&", "&amp;").replaceAll("<", "&lt;")
+            .replaceAll(">", "&gt;").replaceAll('"', "&quot;")
+            .replaceAll("'", "&#039;");
+    }
+
+    function render() {
+        const filter = document.getElementById("filter").value;
+        const q = document.getElementById("search").value.trim().toLowerCase();
+        const tbody = document.getElementById("tbody");
+        tbody.innerHTML = "";
+
+        const enriched = items.map(r => ({ ...r, status: normalizeStatus(r) }));
+
+        let shown = enriched.filter(r => {
+            if (filter !== "ALL" && r.status !== filter) return false;
+            if (!q) return true;
+            const hay = [r.vitaminType, r.day, r.time, r.numberOfPills, r.status]
+                .map(x => (x ?? "").toString().toLowerCase()).join(" ");
+            return hay.includes(q);
+        });
+
+        shown.sort((a, b) => {
+            const c = compare(a, b, sortKey);
+            return sortDir === "asc" ? c : -c;
+        });
+
+        if (shown.length === 0) {
+            const tr = document.createElement("tr");
+            tr.className = "empty-row";
+            tr.innerHTML = `<td colspan="5">No entries found.</td>`;
+            tbody.appendChild(tr);
+        } else {
+            shown.forEach(r => {
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td>${escapeHtml(r.vitaminType)}</td>
+                    <td>${escapeHtml(r.day)}</td>
+                    <td class="mono">${escapeHtml(r.time)}</td>
+                    <td class="right">${escapeHtml(r.numberOfPills)}</td>
+                    <td><span class="pill ${r.status}">${r.status}</span></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        document.getElementById("count").textContent =
+            `Showing ${shown.length} of ${items.length} entries.`;
+    }
+
+    async function load() {
+        const loadStatus = document.getElementById("loadStatus");
+        loadStatus.className = "muted";
+        loadStatus.textContent = "Loading...";
+
+        try {
+            const res = await fetch(API_BASE + "/api/mobile/intake", {
+                headers: {
+                    "Accept": "application/json",
+                    "Authorization": "Bearer " + authToken
+                }
+            });
+
+            if (!res.ok) {
+                const text = await res.text();
+                loadStatus.className = "err";
+                loadStatus.textContent = `Failed to load (${res.status}): ${text}`;
+                return;
+            }
+
+            const payload = await res.json();
+            items = payload?.data ?? [];
+
+            if (payload?.message) {
+                loadStatus.className = "muted";
+                loadStatus.textContent = payload.message;
+            } else {
+                loadStatus.textContent = "";
+            }
+
+            render();
+        } catch (e) {
+            loadStatus.className = "err";
+            loadStatus.textContent = "Network error: " + (e?.message || String(e));
+            items = [];
+            render();
+        }
+    }
+
+    document.getElementById("filter").addEventListener("change", render);
+    document.getElementById("search").addEventListener("input", render);
+    document.getElementById("refresh").addEventListener("click", load);
+
+    document.querySelectorAll("thead th[data-sort]").forEach(th => {
+        th.addEventListener("click", () => {
+            const key = th.getAttribute("data-sort");
+            if (sortKey === key) {
+                sortDir = sortDir === "asc" ? "desc" : "asc";
+            } else {
+                sortKey = key;
+                sortDir = "asc";
+            }
+            render();
+        });
+    });
+
+    load();
+</script>
+</body>
+</html>
