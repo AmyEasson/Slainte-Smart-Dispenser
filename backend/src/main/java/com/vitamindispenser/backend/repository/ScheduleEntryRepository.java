@@ -10,6 +10,6 @@ import java.util.List;
 public interface ScheduleEntryRepository extends JpaRepository<ScheduleEntry, Integer> {
     List<ScheduleEntry> findByUser(User user);
     List<ScheduleEntry> findByIdIn(List<Integer> ids);
-    List<ScheduleEntry> findByUserAndSlot(User user, Slot slot);
+    List<ScheduleEntry> findByUserAndDayAndTime(User user, String day, String time);
     void deleteByUser(User user);
 }

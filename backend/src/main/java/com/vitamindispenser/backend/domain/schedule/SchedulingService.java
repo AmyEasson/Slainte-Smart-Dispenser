@@ -64,7 +64,6 @@ public class SchedulingService {
         initialiseSlots(user);
         scheduleEntryRepository.saveAll(entries);
         assignSlots(entries, user);
-        scheduleEntryRepository.saveAll(entries); // save again with slot links
         if (user.getLastFillDate() != null) {
             user.setScheduleChanged(true);
             userRepository.save(user);
@@ -127,64 +126,58 @@ public class SchedulingService {
 
     /**
      * After saving schedule entries, group them by unique (day, time) pairs and
-     * assign them to slots 1-14 in order.
+     * repeatedly assign the weekly schedule to slots 1-14 until all slots are filled
      * @param entries schedule entries inputted by the user
      * @param user the user who sent the schedule
      */
-    private void assignSlots(List<ScheduleEntry> entries, User user){
-        // get the 14 assignable slots
+    private void assignSlots(List<ScheduleEntry> entries, User user) {
         List<Slot> slots = slotRepository.findByUserOrderBySlotNumber(user)
                 .stream()
                 .filter(s -> !s.getReserved())
                 .toList();
 
-        // get unique (day, time) pairs in a stable order
         List<String[]> uniqueTimes = entries.stream()
                 .map(e -> e.getDay() + "|" + e.getTime())
                 .distinct()
                 .map(s -> s.split("\\|"))
                 .toList();
 
-        if (uniqueTimes.size() > 14){
+        if (uniqueTimes.isEmpty()) {
+            throw new IllegalArgumentException("NO_SCHEDULE");
+        }
+
+        if (uniqueTimes.size() > 14) {
             throw new IllegalArgumentException("SCHEDULE_TOO_LARGE");
         }
 
-        // clear existing assignments
         slots.forEach(s -> {
             s.setAssignedDay(null);
             s.setAssignedTime(null);
         });
 
-        // assign each unique (day, time) to a slot
-        for (int i = 0; i < uniqueTimes.size(); i++){
-            Slot slot = slots.get(i);
-            slot.setAssignedDay(uniqueTimes.get(i)[0]);
-            slot.setAssignedTime(uniqueTimes.get(i)[1]);
+        for (int i = 0; i < 14; i++) {
+            String[] dayTime = uniqueTimes.get(i % uniqueTimes.size());
+            slots.get(i).setAssignedDay(dayTime[0]);
+            slots.get(i).setAssignedTime(dayTime[1]);
         }
         slotRepository.saveAll(slots);
-
-        // link each entry to its slot
-        for (ScheduleEntry entry : entries){
-            slots.stream()
-                    .filter(s -> s.getAssignedDay().equals(entry.getDay())
-                            && s.getAssignedTime().equals(entry.getTime()))
-                    .findFirst()
-                    .ifPresent(entry::setSlot);
-        }
     }
 
-    public Map<String, Object> getSlots(User user){
+    public Map<String, Object> getSlots(User user) {
         List<Slot> slots = slotRepository.findByUserOrderBySlotNumber(user);
 
-        List<Map<String, Object>> slotList = slots.stream().map(slot ->{
+        List<Map<String, Object>> slotList = slots.stream().map(slot -> {
             Map<String, Object> slotMap = new LinkedHashMap<>();
             slotMap.put("slotNumber", slot.getSlotNumber());
             slotMap.put("reserved", slot.getReserved());
             slotMap.put("assignedDay", slot.getAssignedDay());
             slotMap.put("assignedTime", slot.getAssignedTime());
 
-            List<Map<String, Object>> vitamins = scheduleEntryRepository
-                    .findByUserAndSlot(user, slot)
+            // look up vitamins by day+time
+            List<Map<String, Object>> vitamins = (slot.getAssignedDay() == null)
+                    ? List.of()
+                    : scheduleEntryRepository
+                    .findByUserAndDayAndTime(user, slot.getAssignedDay(), slot.getAssignedTime())
                     .stream()
                     .map(e -> {
                         Map<String, Object> v = new LinkedHashMap<>();
@@ -192,7 +185,8 @@ public class SchedulingService {
                         v.put("numberOfPills", e.getNumberOfPills());
                         return v;
                     })
-                    .collect(Collectors.toList());
+                    .toList();
+
             slotMap.put("vitamins", vitamins);
             return slotMap;
         }).toList();

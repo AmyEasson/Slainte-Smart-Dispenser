@@ -2,8 +2,10 @@ package com.vitamindispenser.backend.domain.schedule;
 
 import com.vitamindispenser.backend.dto.firmware.PollCommandResult;
 import com.vitamindispenser.backend.model.ScheduleEntry;
+import com.vitamindispenser.backend.model.Slot;
 import com.vitamindispenser.backend.model.User;
 import com.vitamindispenser.backend.repository.ScheduleEntryRepository;
+import com.vitamindispenser.backend.repository.SlotRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.DayOfWeek;
@@ -29,12 +31,14 @@ public class PollCommandService {
     private static final long DISPENSE_COOLDOWN_MINUTES = 5;
 
     private final ScheduleEntryRepository scheduleEntryRepository;
+    private final SlotRepository slotRepository;
 
     private volatile String pendingCommand;
     private final Map<Integer, Long> lastDispenseSentAt = new ConcurrentHashMap<>();
 
-    public PollCommandService(ScheduleEntryRepository scheduleEntryRepository) {
+    public PollCommandService(ScheduleEntryRepository scheduleEntryRepository, SlotRepository slotRepository) {
         this.scheduleEntryRepository = scheduleEntryRepository;
+        this.slotRepository = slotRepository;
     }
 
     public PollCommandResult getPollingResults(User user) {
@@ -66,11 +70,17 @@ public class PollCommandService {
         }
 
         if (!intakeIds.isEmpty()) {
-            // get slot number from the first matching entry
+            // get slot number by finding the slot that matches the first entry's day+time
             Integer slotNumber = entries.stream()
                     .filter(e -> intakeIds.contains(e.getId()))
                     .findFirst()
-                    .map(e -> e.getSlot() != null ? e.getSlot().getSlotNumber() : null)
+                    .flatMap(e -> slotRepository
+                            .findByUserOrderBySlotNumber(user)
+                            .stream()
+                            .filter(s -> e.getDay().equals(s.getAssignedDay())
+                                    && e.getTime().equals(s.getAssignedTime()))
+                            .findFirst()
+                            .map(Slot::getSlotNumber))
                     .orElse(null);
             return new PollCommandResult("DISPENSE", intakeIds, slotNumber);
         }
