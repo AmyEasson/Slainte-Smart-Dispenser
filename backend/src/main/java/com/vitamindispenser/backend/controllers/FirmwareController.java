@@ -47,6 +47,7 @@ public class FirmwareController {
         Map<String, Object> body = new HashMap<>();
         body.put("command", result.getCommand());
         body.put("intakeIds", result.getIntakeIds());
+        body.put("slotNumber", result.getSlotNumber());
         return ResponseEntity.ok(body);
     }
 

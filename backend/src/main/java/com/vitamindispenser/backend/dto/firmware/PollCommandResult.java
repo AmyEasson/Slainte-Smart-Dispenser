@@ -11,4 +11,5 @@ import java.util.List;
 public class PollCommandResult {
     private final String command;
     private final List<Integer> intakeIds;
+    private final Integer slotNumber;
 }

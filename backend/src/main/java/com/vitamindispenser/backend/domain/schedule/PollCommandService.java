@@ -41,7 +41,7 @@ public class PollCommandService {
         if (pendingCommand != null) {
             String cmd = pendingCommand;
             pendingCommand = null;
-            return new PollCommandResult(cmd, Collections.emptyList());
+            return new PollCommandResult(cmd, Collections.emptyList(), null);
         }
 
         String today = DayOfWeek.from(java.time.LocalDate.now())
@@ -66,9 +66,15 @@ public class PollCommandService {
         }
 
         if (!intakeIds.isEmpty()) {
-            return new PollCommandResult("DISPENSE", intakeIds);
+            // get slot number from the first matching entry
+            Integer slotNumber = entries.stream()
+                    .filter(e -> intakeIds.contains(e.getId()))
+                    .findFirst()
+                    .map(e -> e.getSlot() != null ? e.getSlot().getSlotNumber() : null)
+                    .orElse(null);
+            return new PollCommandResult("DISPENSE", intakeIds, slotNumber);
         }
-        return new PollCommandResult("IDLE", Collections.emptyList());
+        return new PollCommandResult("IDLE", Collections.emptyList(), null);
     }
 
     public void setPendingCommand(String command) {

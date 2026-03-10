@@ -89,6 +89,27 @@ public class MobileAppController {
         return ResponseEntity.ok(schedulingService.retrieveSchedule(user));
     }
 
+    @GetMapping("/slots")
+    public ResponseEntity<?> getSlots(Principal principal) {
+        User user = userRepository.findByUsername(principal.getName())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        return ResponseEntity.ok(schedulingService.getSlots(user));
+    }
+
+    @GetMapping("/slots/refill-info")
+    public ResponseEntity<?> getRefillIndoors(Principal principal) {
+        User user = userRepository.findByUsername(principal.getName())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        return ResponseEntity.ok(schedulingService.getRefillInfo(user));
+    }
+
+    @PostMapping("/slots/confirm-fill")
+    public ResponseEntity<?> confirmFill(Principal principal) {
+        User user = userRepository.findByUsername(principal.getName())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        return ResponseEntity.ok(schedulingService.confirmFill(user));
+    }
+
     // Mobile app gets vitamin intake data
     @GetMapping("/logs/export.csv")
     public ResponseEntity<String> exportCsv(Principal principal) {

@@ -22,4 +22,8 @@ public class ScheduleEntry {
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
+
+    @ManyToOne
+    @JoinColumn(name = "slot_id")
+    private Slot slot;
 }
