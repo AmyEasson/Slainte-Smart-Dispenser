@@ -33,6 +33,7 @@ public class User implements UserDetails {
     private String role = "ROLE_USER";
 
     private LocalDate lastFillDate;
+    @Column(nullable = false)
     private boolean scheduleChanged = false;
 
     @Override

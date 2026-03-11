@@ -194,6 +194,8 @@ public class SchedulingService {
 
         long totalSlotsNeeded = slots.stream()
                 .filter(s -> !s.getReserved() && s.getAssignedDay() != null)
+                .map(s -> s.getAssignedDay() + "|" + s.getAssignedTime())
+                .distinct()
                 .count();
 
         Map<String, Object> result = new LinkedHashMap<>();

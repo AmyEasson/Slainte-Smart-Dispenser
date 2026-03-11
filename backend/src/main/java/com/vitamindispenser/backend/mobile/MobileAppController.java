@@ -76,8 +76,12 @@ public class MobileAppController {
     public ResponseEntity<String> createSchedule(@RequestBody ScheduleRequest request, Principal principal) {
         User user = userRepository.findByUsername(principal.getName())
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        schedulingService.saveSchedule(request, user);
-        return ResponseEntity.ok("Schedule has been sent");
+        try {
+            schedulingService.saveSchedule(request, user);
+            return ResponseEntity.ok("Schedule has been sent");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     @GetMapping("/getSchedule")
