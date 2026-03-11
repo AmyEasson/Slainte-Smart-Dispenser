@@ -1,7 +1,7 @@
 package com.vitamindispenser.backend.config;
 
-import com.vitamindispenser.backend.model.Device;
-import com.vitamindispenser.backend.repository.DeviceRepository;
+import com.vitamindispenser.backend.device.Device;
+import com.vitamindispenser.backend.device.DeviceRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
