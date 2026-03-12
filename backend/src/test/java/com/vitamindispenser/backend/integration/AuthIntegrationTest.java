@@ -10,6 +10,8 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.transaction.annotation.Transactional;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -19,6 +21,8 @@ import java.util.Map;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
+@ActiveProfiles("test")
+@Transactional
 class AuthIntegrationTest {
 
     @Autowired
@@ -29,11 +33,6 @@ class AuthIntegrationTest {
 
     @Autowired
     private UserRepository userRepository;
-
-    @BeforeEach
-    void cleanUp() {
-        userRepository.deleteAll();
-    }
 
     @Test
     void registerAndLogin_returnsToken() throws Exception {
