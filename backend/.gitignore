@@ -2,6 +2,10 @@
 target/
 *.class
 
+data/
+*.mv.db
+*.trace.db
+
 # Maven
 .mvn/
 

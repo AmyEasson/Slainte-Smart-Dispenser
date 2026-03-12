@@ -3,6 +3,7 @@ package com.vitamindispenser.backend.integration;
 import com.vitamindispenser.backend.device.DeviceRepository;
 import com.vitamindispenser.backend.schedule.ScheduleEntryRepository;
 import com.vitamindispenser.backend.user.UserRepository;
+import com.vitamindispenser.backend.schedule.SlotRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -35,12 +36,15 @@ class ScheduleIntegrationTest {
 
     @Autowired
     private ScheduleEntryRepository scheduleEntryRepository;
+    @Autowired
+    private SlotRepository slotRepository;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
     private String token;
 
     @BeforeEach
     void setUp() throws Exception {
+        slotRepository.deleteAll();
         scheduleEntryRepository.deleteAll();
         deviceRepository.deleteAll();
         userRepository.deleteAll();
