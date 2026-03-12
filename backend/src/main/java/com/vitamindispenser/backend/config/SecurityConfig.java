@@ -1,6 +1,6 @@
 package com.vitamindispenser.backend.config;
 
-import com.vitamindispenser.backend.repository.UserRepository;
+import com.vitamindispenser.backend.user.UserRepository;
 import com.vitamindispenser.backend.security.JwtFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;

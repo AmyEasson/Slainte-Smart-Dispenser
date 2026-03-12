@@ -1,0 +1,99 @@
+package com.vitamindispenser.backend.firmware;
+
+import com.vitamindispenser.backend.firmware.dto.PollCommandResult;
+import com.vitamindispenser.backend.schedule.ScheduleEntry;
+import com.vitamindispenser.backend.schedule.Slot;
+import com.vitamindispenser.backend.user.User;
+import com.vitamindispenser.backend.schedule.ScheduleEntryRepository;
+import com.vitamindispenser.backend.schedule.SlotRepository;
+import org.springframework.stereotype.Service;
+
+import java.time.DayOfWeek;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.TextStyle;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+/**
+ * Decides which command (IDLE, DISPENSE, SNOOZE) to send to the firmware when it polls.
+ * DISPENSE only when current day+time matches a schedule slot; SNOOZE when app requested it; else IDLE.
+ * The mobile app may only set SNOOZE, not DISPENSE.
+ */
+@Service
+public class PollCommandService {
+
+    private static final DateTimeFormatter TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm");
+    private static final long DISPENSE_COOLDOWN_MINUTES = 5;
+
+    private final ScheduleEntryRepository scheduleEntryRepository;
+    private final SlotRepository slotRepository;
+
+    private volatile String pendingCommand;
+    private final Map<Integer, Long> lastDispenseSentAt = new ConcurrentHashMap<>();
+
+    public PollCommandService(ScheduleEntryRepository scheduleEntryRepository, SlotRepository slotRepository) {
+        this.scheduleEntryRepository = scheduleEntryRepository;
+        this.slotRepository = slotRepository;
+    }
+
+    public PollCommandResult getPollingResults(User user) {
+        if (pendingCommand != null) {
+            String cmd = pendingCommand;
+            pendingCommand = null;
+            return new PollCommandResult(cmd, Collections.emptyList(), null);
+        }
+
+        String today = DayOfWeek.from(java.time.LocalDate.now())
+                .getDisplayName(TextStyle.FULL, Locale.ENGLISH)
+                .toLowerCase(Locale.ENGLISH);
+        String nowTime = LocalTime.now().format(TIME_FORMAT);
+
+        List<ScheduleEntry> entries = scheduleEntryRepository.findByUser(user);
+        long nowMs = System.currentTimeMillis();
+        List<Integer> intakeIds = new ArrayList<>();
+
+        for (ScheduleEntry e : entries) {
+            if (!e.getDay().equalsIgnoreCase(today)) continue;
+            if (!e.getTime().equals(nowTime)) continue;
+
+            Long last = lastDispenseSentAt.get(e.getId());
+            if (last != null && (nowMs - last) < DISPENSE_COOLDOWN_MINUTES * 60 * 1000) {
+                continue;
+            }
+            lastDispenseSentAt.put(e.getId(), nowMs);
+            intakeIds.add(e.getId());
+        }
+
+        if (!intakeIds.isEmpty()) {
+            // get slot number by finding the slot that matches the first entry's day+time
+            Integer slotNumber = entries.stream()
+                    .filter(e -> intakeIds.contains(e.getId()))
+                    .findFirst()
+                    .flatMap(e -> slotRepository
+                            .findByUserOrderBySlotNumber(user)
+                            .stream()
+                            .filter(s -> e.getDay().equals(s.getAssignedDay())
+                                    && e.getTime().equals(s.getAssignedTime()))
+                            .findFirst()
+                            .map(Slot::getSlotNumber))
+                    .orElse(null);
+            return new PollCommandResult("DISPENSE", intakeIds, slotNumber);
+        }
+        return new PollCommandResult("IDLE", Collections.emptyList(), null);
+    }
+
+    public void setPendingCommand(String command) {
+        if (command == null || command.isBlank() || "IDLE".equalsIgnoreCase(command) || "DISPENSE".equalsIgnoreCase(command)) {
+            pendingCommand = null;
+            return;
+        }
+        if ("SNOOZE".equalsIgnoreCase(command)) {
+            pendingCommand = "SNOOZE";
+        }
+    }
+}

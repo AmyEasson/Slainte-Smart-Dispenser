@@ -857,6 +857,16 @@
             const text = await res.text();
             if (!res.ok){ status.className = "err"; status.textContent = `Save failed (${res.status}): ${text}`; return; }
             status.className = "ok"; status.textContent = text || "Saved successfully";
+
+            if (window.ReactNativeWebView) {
+                window.ReactNativeWebView.postMessage(JSON.stringify({
+                    type: "scheduleUpdated",
+                    schedule: payload,
+                    authToken: authToken,
+                    apiBase: API_BASE
+                }));
+            }
+
             setTimeout(() => showViewMode(), 800);
         } catch (e){
             status.className = "err"; status.textContent = "Network error: " + (e?.message || String(e));
