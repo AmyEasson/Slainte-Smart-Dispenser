@@ -1,6 +1,5 @@
 package com.vitamindispenser.backend.schedule;
 
-
 import com.vitamindispenser.backend.schedule.dto.DaySchedule;
 import com.vitamindispenser.backend.schedule.dto.ScheduleRequest;
 import com.vitamindispenser.backend.schedule.dto.VitaminSchedule;
@@ -10,8 +9,9 @@ import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-
+import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 
@@ -23,54 +23,61 @@ public class SchedulingService {
     private final UserRepository userRepository;
 
     @Autowired
-    public SchedulingService(ScheduleEntryRepository scheduleEntryRepository, SlotRepository slotRepository, UserRepository userRepository) {
+    public SchedulingService(ScheduleEntryRepository scheduleEntryRepository,
+                             SlotRepository slotRepository,
+                             UserRepository userRepository) {
         this.scheduleEntryRepository = scheduleEntryRepository;
         this.slotRepository = slotRepository;
         this.userRepository = userRepository;
     }
 
-    /**
-     * Saves a schedule request by flattening the nested structure into individual DispenseEvents
-     * @param request The schedule request from the mobile app
-     */
-
     @Transactional
     public void saveSchedule(ScheduleRequest request, User user) {
-        // delete existing schedule for this user first
+
         scheduleEntryRepository.deleteByUser(user);
         slotRepository.deleteByUser(user);
+
+        user.setFillCycleOffset(0);
+
+        if (user.getLastFillDate() != null) {
+            user.setScheduleChanged(true);
+        }
+
+        userRepository.save(user);
 
         List<ScheduleEntry> entries = new ArrayList<>();
 
         for (VitaminSchedule vitamin : request.getVitamins()) {
             for (DaySchedule daySchedule : vitamin.getSchedule()) {
                 for (String time : daySchedule.getTimes()) {
+
                     ScheduleEntry entry = new ScheduleEntry();
                     entry.setVitaminType(vitamin.getVitaminType());
                     entry.setNumberOfPills(vitamin.getNumberOfPills());
                     entry.setDay(daySchedule.getDay());
                     entry.setTime(time);
                     entry.setUser(user);
+
                     entries.add(entry);
                 }
             }
         }
 
         initialiseSlots(user);
+
         scheduleEntryRepository.saveAll(entries);
+
         assignSlots(entries, user);
-        if (user.getLastFillDate() != null) {
-            user.setScheduleChanged(true);
-            userRepository.save(user);
-        }
     }
 
     public ScheduleRequest retrieveSchedule(User user) {
+
         List<ScheduleEntry> entries = scheduleEntryRepository.findByUser(user);
 
         Map<String, VitaminSchedule> vitaminMap = new HashMap<>();
 
         for (ScheduleEntry entry : entries) {
+
             String vitaminKey = entry.getVitaminType() + "-" + entry.getNumberOfPills();
 
             VitaminSchedule vitaminSchedule =
@@ -98,34 +105,29 @@ public class SchedulingService {
 
         ScheduleRequest request = new ScheduleRequest();
         request.setVitamins(new ArrayList<>(vitaminMap.values()));
+
         return request;
     }
 
-    /**
-     * Helper that creates 15 slots for a user the first time they save a schedule.
-     * Slot 15 is reserved as it is the empty slot that faces the dispensing hole.
-     * @param user the User that corresponds to the schedule sent
-     */
-    private void initialiseSlots(User user){
+    private void initialiseSlots(User user) {
+
         List<Slot> slots = new ArrayList<>();
-        for (int i =1; i <= 15; i++){
+
+        for (int i = 1; i <= 15; i++) {
+
             Slot slot = new Slot();
             slot.setSlotNumber(i);
             slot.setReserved(i == 15);
             slot.setUser(user);
+
             slots.add(slot);
         }
+
         slotRepository.saveAll(slots);
     }
 
-
-    /**
-     * After saving schedule entries, group them by unique (day, time) pairs and
-     * repeatedly assign the weekly schedule to slots 1-14 until all slots are filled
-     * @param entries schedule entries inputted by the user
-     * @param user the user who sent the schedule
-     */
     private void assignSlots(List<ScheduleEntry> entries, User user) {
+
         List<Slot> slots = slotRepository.findByUserOrderBySlotNumber(user)
                 .stream()
                 .filter(s -> !s.getReserved())
@@ -141,9 +143,51 @@ public class SchedulingService {
             throw new IllegalArgumentException("NO_SCHEDULE");
         }
 
-        if (uniqueTimes.size() > 14) {
-            throw new IllegalArgumentException("SCHEDULE_TOO_LARGE");
-        }
+        int offset = user.getFillCycleOffset() % uniqueTimes.size();
+
+        DayOfWeek today = LocalDate.now().getDayOfWeek();
+        LocalTime now = LocalTime.now();
+
+        Map<String, Integer> dayOrder = Map.of(
+                "monday", 0,
+                "tuesday", 1,
+                "wednesday", 2,
+                "thursday", 3,
+                "friday", 4,
+                "saturday", 5,
+                "sunday", 6
+        );
+
+        int todayIndex = today.getValue() - 1;
+
+        List<String[]> sorted = uniqueTimes.stream()
+                .sorted((a, b) -> {
+
+                    int dayA = dayOrder.get(a[0]);
+                    int dayB = dayOrder.get(b[0]);
+
+                    LocalTime timeA = LocalTime.parse(a[1]);
+                    LocalTime timeB = LocalTime.parse(b[1]);
+
+                    int minutesA =
+                            ((dayA - todayIndex + 7) % 7) * 24 * 60
+                                    + timeA.toSecondOfDay() / 60;
+
+                    int minutesB =
+                            ((dayB - todayIndex + 7) % 7) * 24 * 60
+                                    + timeB.toSecondOfDay() / 60;
+
+                    if (dayA == todayIndex && timeA.isBefore(now)) {
+                        minutesA += 7 * 24 * 60;
+                    }
+
+                    if (dayB == todayIndex && timeB.isBefore(now)) {
+                        minutesB += 7 * 24 * 60;
+                    }
+
+                    return Integer.compare(minutesA, minutesB);
+                })
+                .toList();
 
         slots.forEach(s -> {
             s.setAssignedDay(null);
@@ -151,113 +195,123 @@ public class SchedulingService {
         });
 
         for (int i = 0; i < 14; i++) {
-            String[] dayTime = uniqueTimes.get(i % uniqueTimes.size());
+
+            String[] dayTime = sorted.get((offset + i) % sorted.size());
+
             slots.get(i).setAssignedDay(dayTime[0]);
             slots.get(i).setAssignedTime(dayTime[1]);
         }
+
         slotRepository.saveAll(slots);
     }
 
     public Map<String, Object> getSlots(User user) {
+
         List<Slot> slots = slotRepository.findByUserOrderBySlotNumber(user);
 
         List<Map<String, Object>> slotList = slots.stream().map(slot -> {
+
             Map<String, Object> slotMap = new LinkedHashMap<>();
+
             slotMap.put("slotNumber", slot.getSlotNumber());
             slotMap.put("reserved", slot.getReserved());
             slotMap.put("assignedDay", slot.getAssignedDay());
             slotMap.put("assignedTime", slot.getAssignedTime());
 
-            // look up vitamins by day+time
-            List<Map<String, Object>> vitamins = (slot.getAssignedDay() == null)
-                    ? List.of()
-                    : scheduleEntryRepository
-                    .findByUserAndDayAndTime(user, slot.getAssignedDay(), slot.getAssignedTime())
-                    .stream()
-                    .map(e -> {
-                        Map<String, Object> v = new LinkedHashMap<>();
-                        v.put("vitaminType", e.getVitaminType());
-                        v.put("numberOfPills", e.getNumberOfPills());
-                        return v;
-                    })
-                    .toList();
+            List<Map<String, Object>> vitamins =
+                    (slot.getAssignedDay() == null)
+                            ? List.of()
+                            : scheduleEntryRepository
+                            .findByUserAndDayAndTime(user,
+                                    slot.getAssignedDay(),
+                                    slot.getAssignedTime())
+                            .stream()
+                            .map(e -> {
+
+                                Map<String, Object> v = new LinkedHashMap<>();
+                                v.put("vitaminType", e.getVitaminType());
+                                v.put("numberOfPills", e.getNumberOfPills());
+
+                                return v;
+
+                            }).toList();
 
             slotMap.put("vitamins", vitamins);
+
             return slotMap;
+
         }).toList();
 
         return Map.of("slots", slotList);
     }
 
     public Map<String, Object> getRefillInfo(User user) {
-        List<Slot> slots = slotRepository.findByUserOrderBySlotNumber(user);
 
-        long totalSlotsNeeded = slots.stream()
-                .filter(s -> !s.getReserved() && s.getAssignedDay() != null)
-                .map(s -> s.getAssignedDay() + "|" + s.getAssignedTime())
-                .distinct()
-                .count();
+        List<ScheduleEntry> entries = scheduleEntryRepository.findByUser(user);
 
         Map<String, Object> result = new LinkedHashMap<>();
 
-        if (totalSlotsNeeded == 0) {
+        if (entries.isEmpty()) {
+
             result.put("lastFillDate", null);
             result.put("refillDate", null);
             result.put("daysUntilRefill", null);
             result.put("warning", "NO_SCHEDULE");
+
             return result;
         }
 
-        if (totalSlotsNeeded > 14) {
-            result.put("lastFillDate", null);
-            result.put("refillDate", null);
-            result.put("daysUntilRefill", null);
-            result.put("warning", "SCHEDULE_TOO_LARGE");
-            return result;
+        long uniqueTimes = entries.stream()
+                .map(e -> e.getDay() + "|" + e.getTime())
+                .distinct()
+                .count();
+
+        LocalDate lastFillDate = user.getLastFillDate();
+
+        if (lastFillDate == null) {
+            lastFillDate = LocalDate.now();
         }
 
-        long daysPerFill = (14 / totalSlotsNeeded) * 7;
-        // Cap at 90 days
-        daysPerFill = Math.min(daysPerFill, 90);
+        long daysUntilRefill = (long) Math.ceil((14.0 / uniqueTimes) * 7);
 
-        LocalDate lastFillDate = user.getLastFillDate() != null
-                ? user.getLastFillDate()
-                : LocalDate.now();
-
-        LocalDate refillDate = lastFillDate.plusDays(daysPerFill);
-        long daysUntilRefill = ChronoUnit.DAYS.between(LocalDate.now(), refillDate);
+        LocalDate refillDate = lastFillDate.plusDays(daysUntilRefill);
 
         result.put("lastFillDate", lastFillDate.toString());
         result.put("refillDate", refillDate.toString());
-        result.put("daysUntilRefill", daysUntilRefill);
-        result.put("warning", user.isScheduleChanged() ? "SCHEDULE_CHANGED" : null);
+
+        result.put("daysUntilRefill",
+                ChronoUnit.DAYS.between(LocalDate.now(), refillDate));
+
+        result.put("warning",
+                user.isScheduleChanged() ? "SCHEDULE_CHANGED" : null);
 
         return result;
     }
 
     public Map<String, Object> confirmFill(User user) {
-        user.setLastFillDate(LocalDate.now());
-        user.setScheduleChanged(false);
-        userRepository.save(user);
 
-        List<Slot> slots = slotRepository.findByUserOrderBySlotNumber(user);
-        long totalSlotsNeeded = slots.stream()
-                .filter(s -> !s.getReserved() && s.getAssignedDay() != null)
+        List<ScheduleEntry> entries = scheduleEntryRepository.findByUser(user);
+
+        long totalUniqueTimes = entries.stream()
+                .map(e -> e.getDay() + "|" + e.getTime())
+                .distinct()
                 .count();
 
-        long daysPerFill = totalSlotsNeeded > 0
-                ? Math.min((14 / totalSlotsNeeded) * 7, 90)
-                : 0;
+        if (totalUniqueTimes > 0) {
 
-        LocalDate refillDate = LocalDate.now().plusDays(daysPerFill);
+            int newOffset =
+                    (int) ((user.getFillCycleOffset() + 14) % totalUniqueTimes);
 
-        Map<String, Object> result = new LinkedHashMap<>();
-        result.put("lastFillDate", LocalDate.now().toString());
-        result.put("refillDate", refillDate.toString());
-        result.put("daysUntilRefill", daysPerFill);
-        return result;
+            user.setFillCycleOffset(newOffset);
+        }
+
+        user.setLastFillDate(LocalDate.now());
+        user.setScheduleChanged(false);
+
+        userRepository.save(user);
+
+        assignSlots(entries, user);
+
+        return getRefillInfo(user);
     }
-
 }
-
-

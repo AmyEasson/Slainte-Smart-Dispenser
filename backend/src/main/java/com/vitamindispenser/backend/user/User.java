@@ -36,6 +36,9 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private boolean scheduleChanged = false;
 
+    @Column(nullable = false)
+    private int fillCycleOffset = 0;
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities(){
         return List.of(new SimpleGrantedAuthority(role));
