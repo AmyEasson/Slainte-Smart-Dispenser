@@ -3,14 +3,18 @@ package com.vitamindispenser.backend.firmware;
 import com.vitamindispenser.backend.logging.LoggingService;
 import com.vitamindispenser.backend.firmware.dto.IntakeReport;
 import com.vitamindispenser.backend.device.Device;
+import com.vitamindispenser.backend.schedule.ScheduleEntry;
+import com.vitamindispenser.backend.schedule.ScheduleEntryRepository;
 import com.vitamindispenser.backend.user.User;
 import com.vitamindispenser.backend.device.DeviceRepository;
+import com.vitamindispenser.backend.user.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Slf4j
@@ -30,6 +34,8 @@ public class FirmwareController {
     private PollCommandService pollCommandService;
     @Autowired
     private DeviceRepository deviceRepository;
+    @Autowired
+    private ScheduleEntryRepository scheduleEntryRepository;
 
     /**
      * Poll endpoint: returns command and, for DISPENSE, the intake/slot ids to report back in POST /status.
