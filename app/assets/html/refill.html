@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Refill Instructions</title>
+    <style>
+        :root{
+            --bg:#f7f4ee;
+            --panel:#ffffff;
+            --text:#1f2937;
+            --muted:#6b7280;
+            --border:#e5e7eb;
+            --ok:#166534;
+            --warn:#92400e;
+            --danger:#991b1b;
+            --accent:#4A6B4A;
+        }
+
+        *{ box-sizing:border-box; }
+        body{
+            margin:0;
+            background:var(--bg);
+            color:var(--text);
+            font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        .wrap{
+            max-width: 560px;
+            margin: 0 auto;
+            padding: 16px;
+        }
+
+        .topbar{
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            margin-bottom:16px;
+        }
+
+        .back, .ghost-btn, .primary-btn{
+            display:inline-block;
+            padding:10px 14px;
+            border-radius:14px;
+            text-decoration:none;
+            border:1px solid var(--border);
+            background:#fff;
+            color:var(--text);
+            cursor:pointer;
+            font-size:14px;
+        }
+
+        .primary-btn{
+            background: var(--accent);
+            color: #fff;
+            border-color: var(--accent);
+        }
+
+        h1{
+            margin: 0;
+            font-size: 22px;
+        }
+
+        .card{
+            background:var(--panel);
+            border:1px solid var(--border);
+            border-radius:20px;
+            padding:16px;
+            margin-bottom:14px;
+        }
+
+        .muted{ color:var(--muted); font-size:14px; }
+        .ok{ color:var(--ok); }
+        .warn{ color:var(--warn); }
+        .err{ color:var(--danger); }
+
+        .banner-title{
+            font-weight:700;
+            margin-bottom:6px;
+        }
+
+        .slot-grid{
+            display:grid;
+            grid-template-columns: 1fr;
+            gap:12px;
+        }
+
+        .slot{
+            border:1px solid var(--border);
+            border-radius:16px;
+            padding:14px;
+            background:#fcfcfc;
+        }
+
+        .slot-header{
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            margin-bottom:8px;
+        }
+
+        .slot-number{
+            font-weight:800;
+            font-size:16px;
+        }
+
+        .slot-tag{
+            font-size:12px;
+            color:var(--muted);
+            border:1px solid var(--border);
+            border-radius:999px;
+            padding:4px 10px;
+            background:#fff;
+        }
+
+        .vit-list{
+            margin:8px 0 0 0;
+            padding-left:18px;
+        }
+
+        .actions{
+            display:flex;
+            gap:10px;
+            flex-wrap:wrap;
+            margin-top:12px;
+        }
+
+        #status{
+            margin-top:10px;
+            font-size:14px;
+        }
+    </style>
+</head>
+<body>
+<div class="wrap">
+    <div class="topbar">
+        <a class="back" href="home.html">Back</a>
+        <button class="ghost-btn" id="logoutBtn">Sign out</button>
+    </div>
+
+    <h1>Refill Instructions</h1>
+    <p class="muted">See what to place in each dispenser slot and confirm when refill is complete.</p>
+
+    <div class="card">
+        <div class="banner-title">Refill Status</div>
+        <div id="refillBanner" class="muted">Loading refill info...</div>
+        <div class="actions">
+            <button class="primary-btn" id="confirmFillBtn">I've filled the dispenser</button>
+            <button class="ghost-btn" id="refreshBtn">Refresh</button>
+        </div>
+        <div id="status"></div>
+    </div>
+
+    <div class="card">
+        <div class="banner-title">Slot Guide</div>
+        <div id="slotGuide" class="slot-grid">
+            <div class="muted">Loading slots...</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const API_BASE = window.location.hostname === "localhost"
+        ? "http://localhost:8080"
+        : "http://" + window.location.hostname + ":8080";
+
+    const authToken = sessionStorage.getItem("authToken");
+    if (!authToken) {
+        window.ReactNativeWebView && window.ReactNativeWebView.postMessage("login");
+        throw new Error("Not authenticated");
+    }
+
+    document.getElementById("logoutBtn").addEventListener("click", () => {
+        sessionStorage.removeItem("authToken");
+        sessionStorage.removeItem("authUser");
+        window.ReactNativeWebView && window.ReactNativeWebView.postMessage("login");
+    });
+
+    function authHeaders(extra = {}) {
+        return {
+            ...extra,
+            "Authorization": "Bearer " + authToken
+        };
+    }
+
+    function escapeHtml(str) {
+        return String(str ?? "")
+            .replaceAll("&", "&amp;")
+            .replaceAll("<", "&lt;")
+            .replaceAll(">", "&gt;")
+            .replaceAll('"', "&quot;")
+            .replaceAll("'", "&#39;");
+    }
+
+    function formatDate(dateStr) {
+        if (!dateStr) return "—";
+        const d = new Date(dateStr + "T00:00:00");
+        return d.toLocaleDateString(undefined, { year:"numeric", month:"short", day:"numeric" });
+    }
+
+    function renderRefillInfo(info) {
+        const el = document.getElementById("refillBanner");
+
+        if (info.warning === "SCHEDULE_CHANGED") {
+            el.className = "warn";
+            el.textContent = "Your schedule changed — your new refill date is " + formatDate(info.refillDate) + ".";
+            return;
+        }
+
+        if (info.warning === "SCHEDULE_TOO_LARGE") {
+            el.className = "err";
+            el.textContent = "Your schedule requires more slots than the dispenser has. Please simplify your schedule.";
+            return;
+        }
+
+        if (info.warning === "NO_SCHEDULE") {
+            el.className = "warn";
+            el.textContent = "No schedule found. Create a schedule first.";
+            return;
+        }
+
+        el.className = "muted";
+        el.innerHTML =
+            "Last fill date: <strong>" + escapeHtml(formatDate(info.lastFillDate)) + "</strong><br>" +
+            "Next refill date: <strong>" + escapeHtml(formatDate(info.refillDate)) + "</strong><br>" +
+            "Days until refill: <strong>" + escapeHtml(info.daysUntilRefill) + "</strong>";
+    }
+
+    function renderSlots(slots) {
+        const root = document.getElementById("slotGuide");
+        root.innerHTML = "";
+
+        if (!Array.isArray(slots) || slots.length === 0) {
+            root.innerHTML = '<div class="muted">No slot information available.</div>';
+            return;
+        }
+
+        slots.forEach(slot => {
+            const card = document.createElement("div");
+            card.className = "slot";
+
+            let bodyHtml = "";
+
+            if (slot.reserved) {
+                bodyHtml = `
+          <div class="muted">Leave empty (dispense opening)</div>
+        `;
+            } else if (!slot.vitamins || slot.vitamins.length === 0) {
+                bodyHtml = `
+          <div class="muted">Unused slot</div>
+        `;
+            } else {
+                const when = `${escapeHtml(slot.assignedDay || "")} ${escapeHtml(slot.assignedTime || "")}`.trim();
+                bodyHtml = `
+          <div class="muted">${when || "Assigned slot"}</div>
+          <ul class="vit-list">
+            ${slot.vitamins.map(v => `
+              <li>${escapeHtml(v.vitaminType)} × ${escapeHtml(v.numberOfPills)}</li>
+            `).join("")}
+          </ul>
+        `;
+            }
+
+            card.innerHTML = `
+        <div class="slot-header">
+          <div class="slot-number">Slot ${escapeHtml(slot.slotNumber)}</div>
+          <div class="slot-tag">${slot.reserved ? "Reserved" : "Active"}</div>
+        </div>
+        ${bodyHtml}
+      `;
+
+            root.appendChild(card);
+        });
+    }
+
+    async function loadRefillInfo() {
+        const res = await fetch(API_BASE + "/api/mobile/slots/refill-info", {
+            headers: authHeaders()
+        });
+        if (!res.ok) {
+            throw new Error("Failed to load refill info (" + res.status + ")");
+        }
+        return await res.json();
+    }
+
+    async function loadSlots() {
+        const res = await fetch(API_BASE + "/api/mobile/slots", {
+            headers: authHeaders()
+        });
+        if (!res.ok) {
+            throw new Error("Failed to load slots (" + res.status + ")");
+        }
+        return await res.json();
+    }
+
+    async function confirmFill() {
+        const res = await fetch(API_BASE + "/api/mobile/slots/confirm-fill", {
+            method: "POST",
+            headers: authHeaders()
+        });
+        if (!res.ok) {
+            const text = await res.text();
+            throw new Error(text || ("Confirm fill failed (" + res.status + ")"));
+        }
+        return await res.json();
+    }
+
+    async function loadPage() {
+        const status = document.getElementById("status");
+        status.className = "muted";
+        status.textContent = "";
+
+        try {
+            const [refillInfo, slotRes] = await Promise.all([
+                loadRefillInfo(),
+                loadSlots()
+            ]);
+
+            renderRefillInfo(refillInfo);
+            renderSlots(slotRes.slots || []);
+        } catch (e) {
+            document.getElementById("refillBanner").className = "err";
+            document.getElementById("refillBanner").textContent = e.message || String(e);
+            document.getElementById("slotGuide").innerHTML = '<div class="err">Could not load slot guide.</div>';
+        }
+    }
+
+    document.getElementById("refreshBtn").addEventListener("click", loadPage);
+
+    document.getElementById("confirmFillBtn").addEventListener("click", async () => {
+        const status = document.getElementById("status");
+        status.className = "muted";
+        status.textContent = "Confirming refill...";
+
+        try {
+            const updated = await confirmFill();
+            status.className = "ok";
+            status.textContent = "Refill confirmed. Next refill date: " + formatDate(updated.refillDate);
+            await loadPage();
+        } catch (e) {
+            status.className = "err";
+            status.textContent = e.message || String(e);
+        }
+    });
+
+    loadPage();
+</script>
+</body>
+</html>

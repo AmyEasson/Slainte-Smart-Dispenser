@@ -63,7 +63,7 @@ async function scheduleAllNotifications(payload: any, authToken: string, apiBase
         });
     }
 
-    // ── Refill reminder notifications ──
+    // ── Refill reminder notification ──
     try {
         const res = await fetch(`${apiBase}/api/mobile/slots/refill-info`, {
             headers: { Authorization: `Bearer ${authToken}` },
@@ -115,14 +115,17 @@ async function scheduleAllNotifications(payload: any, authToken: string, apiBase
     }
 }
 
+type Page = "login" | "home" | "intake" | "schedule" | "refill";
+
 export default function HomeScreen() {
-    const [page, setPage] = useState<"login" | "home" | "intake" | "schedule">("login");
+    const [page, setPage] = useState<Page>("login");
 
     const sources = {
         login: require("../../assets/html/login.html"),
         home: require("../../assets/html/home.html"),
         intake: require("../../assets/html/intake.html"),
         schedule: require("../../assets/html/schedule.html"),
+        refill: require("../../assets/html/refill.html"),
     };
 
     const injectedJS = `
@@ -131,17 +134,47 @@ export default function HomeScreen() {
             if (!link) return;
             var href = link.getAttribute('href');
             if (!href) return;
-            if (href.endsWith('login.html')) { e.preventDefault(); window.ReactNativeWebView.postMessage('login'); }
-            if (href.endsWith('home.html')) { e.preventDefault(); window.ReactNativeWebView.postMessage('home'); }
-            if (href.endsWith('intake.html')) { e.preventDefault(); window.ReactNativeWebView.postMessage('intake'); }
-            if (href.endsWith('schedule.html')) { e.preventDefault(); window.ReactNativeWebView.postMessage('schedule'); }
+
+            if (href.endsWith('login.html')) {
+                e.preventDefault();
+                window.ReactNativeWebView.postMessage('login');
+                return;
+            }
+
+            if (href.endsWith('home.html')) {
+                e.preventDefault();
+                window.ReactNativeWebView.postMessage('home');
+                return;
+            }
+
+            if (href.endsWith('intake.html')) {
+                e.preventDefault();
+                window.ReactNativeWebView.postMessage('intake');
+                return;
+            }
+
+            if (href.endsWith('schedule.html')) {
+                e.preventDefault();
+                window.ReactNativeWebView.postMessage('schedule');
+                return;
+            }
+
+            if (href.endsWith('refill.html')) {
+                e.preventDefault();
+                window.ReactNativeWebView.postMessage('refill');
+                return;
+            }
         }, true);
         true;
     `;
 
     return (
         <View style={{ flex: 1, backgroundColor: "#F5F0E8" }}>
-            <StatusBar barStyle="light-content" backgroundColor="transparent" translucent={true} />
+            <StatusBar
+                barStyle="light-content"
+                backgroundColor="transparent"
+                translucent={true}
+            />
             <WebView
                 originWhitelist={["*"]}
                 source={sources[page]}
@@ -166,6 +199,7 @@ export default function HomeScreen() {
                     if (msg === "home") setPage("home");
                     if (msg === "intake") setPage("intake");
                     if (msg === "schedule") setPage("schedule");
+                    if (msg === "refill") setPage("refill");
                 }}
             />
         </View>
