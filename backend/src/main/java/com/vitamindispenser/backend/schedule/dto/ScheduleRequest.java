@@ -8,7 +8,6 @@ import java.util.List;
 
 /**
  * Request body for creating/updating vitamin schedule from mobile app
- *
  * Example JSON:
  * {
  *   "vitamins": [

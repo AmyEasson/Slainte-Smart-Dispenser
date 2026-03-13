@@ -13,6 +13,9 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestClient;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 import java.security.Principal;
 import java.util.List;
@@ -142,5 +145,32 @@ public class MobileAppController {
         return ResponseEntity.ok(
                 new IntakeResponseForRawDashboard(data, null)
         );
+    }
+
+    /**
+     * endpoint to receive barcode to lookup vitamin information,
+     * for automatic data entry and schedule suggestions
+     */
+    @GetMapping("/barcode/{barcode}")
+    public ResponseEntity<?> lookupBarcode(@PathVariable String barcode) {
+        String url = "https://world.openfoodfacts.org/api/v0/product/" + barcode +".json";
+        RestClient restClient = RestClient.create();
+        String response = restClient.get()
+                .uri(url)
+                .retrieve()
+                .body(String.class);
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode root = mapper.readTree(response);
+
+            if (root.path("status").asInt() == 0) {
+                return ResponseEntity.status(404).body(Map.of("error", "Product not found"));
+            }
+
+            String productName = root.path("product").path("product_name").asText("Unknown");
+            return ResponseEntity.ok(Map.of("name", productName));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of("error", "Failed to parse product"));
+        }
     }
 }

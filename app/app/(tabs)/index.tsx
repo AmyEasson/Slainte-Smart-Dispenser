@@ -1,7 +1,8 @@
-import { View, StatusBar } from "react-native";
+import { View, StatusBar, Modal } from "react-native";
 import { WebView } from "react-native-webview";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import * as Notifications from "expo-notifications";
+import { CameraView, useCameraPermissions } from "expo-camera";
 
 Notifications.setNotificationHandler({
     handleNotification: async () => ({
@@ -27,8 +28,6 @@ async function scheduleAllNotifications(payload: any, authToken: string, apiBase
         return;
     }
 
-    // ── Dispense notifications ──
-// Group all vitamins by day+time
     const timeSlotMap = new Map<string, string[]>();
 
     for (const vitamin of payload.vitamins ?? []) {
@@ -63,7 +62,6 @@ async function scheduleAllNotifications(payload: any, authToken: string, apiBase
         });
     }
 
-    // ── Refill reminder notification ──
     try {
         const res = await fetch(`${apiBase}/api/mobile/slots/refill-info`, {
             headers: { Authorization: `Bearer ${authToken}` },
@@ -119,6 +117,13 @@ type Page = "login" | "home" | "intake" | "schedule" | "refill";
 
 export default function HomeScreen() {
     const [page, setPage] = useState<Page>("login");
+    const [showCamera, setShowCamera] = useState(false);
+    const [permission, requestPermission] = useCameraPermissions();
+
+    const webViewRef = useRef<any>(null);
+    const authTokenRef = useRef<string>("");
+    const apiBaseRef = useRef<string>("");
+    const scannedRef = useRef(false);
 
     const sources = {
         login: require("../../assets/html/login.html"),
@@ -168,6 +173,28 @@ export default function HomeScreen() {
         true;
     `;
 
+    const handleBarcodeScanned = async ({ data }: { data: string }) => {
+        if (scannedRef.current) return;
+        scannedRef.current = true;
+        setShowCamera(false);
+
+        try {
+            const res = await fetch(
+                `${apiBaseRef.current}/api/mobile/barcode/${data}`,
+                { headers: { Authorization: `Bearer ${authTokenRef.current}` } }
+            );
+            const json = await res.json();
+            const name = json.name ?? null;
+            webViewRef.current?.injectJavaScript(
+                `window.onBarcodeResult(${JSON.stringify(name)}); true;`
+            );
+        } catch (e) {
+            webViewRef.current?.injectJavaScript(
+                `window.onBarcodeResult(null); true;`
+            );
+        }
+    };
+
     return (
         <View style={{ flex: 1, backgroundColor: "#F5F0E8" }}>
             <StatusBar
@@ -176,15 +203,17 @@ export default function HomeScreen() {
                 translucent={true}
             />
             <WebView
+                ref={webViewRef}
                 originWhitelist={["*"]}
                 source={sources[page]}
                 style={{ flex: 1 }}
                 injectedJavaScript={injectedJS}
-                onMessage={(event) => {
+                onMessage={async (event) => {
                     const msg = event.nativeEvent.data;
 
                     try {
                         const parsed = JSON.parse(msg);
+
                         if (parsed.type === "scheduleUpdated") {
                             scheduleAllNotifications(
                                 parsed.schedule,
@@ -193,6 +222,18 @@ export default function HomeScreen() {
                             );
                             return;
                         }
+
+                        if (parsed.type === "scanBarcode") {
+                            authTokenRef.current = parsed.authToken;
+                            apiBaseRef.current = parsed.apiBase;
+                            scannedRef.current = false;
+                            if (!permission?.granted) {
+                                await requestPermission();
+                            }
+                            setShowCamera(true);
+                            return;
+                        }
+
                     } catch (_) {}
 
                     if (msg === "login") setPage("login");
@@ -202,6 +243,18 @@ export default function HomeScreen() {
                     if (msg === "refill") setPage("refill");
                 }}
             />
+
+            <Modal visible={showCamera} animationType="slide">
+                <View style={{ flex: 1, backgroundColor: "black" }}>
+                    {permission?.granted && (
+                        <CameraView
+                            style={{ flex: 1 }}
+                            facing="back"
+                            onBarcodeScanned={handleBarcodeScanned}
+                        />
+                    )}
+                </View>
+            </Modal>
         </View>
     );
 }

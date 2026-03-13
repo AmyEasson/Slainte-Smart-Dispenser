@@ -289,6 +289,7 @@
                 </div>
             </div>
             <div class="btnRow" style="margin-top:10px; justify-content:flex-end;">
+                <button id="scanBtn" style="width:auto;">📷 Scan barcode</button>
                 <button id="addVitaminBtn" class="primary" style="width:auto;">Add vitamin</button>
             </div>
         </div>
@@ -903,6 +904,28 @@
     }
 
     load();
+
+    document.getElementById("scanBtn").addEventListener("click", () => {
+        if (window.ReactNativeWebView) {
+            window.ReactNativeWebView.postMessage(JSON.stringify({
+                type: "scanBarcode",
+                authToken: authToken,
+                apiBase: API_BASE
+            }));
+        }
+    });
+
+    window.onBarcodeResult = function(name) {
+        if (name) {
+            document.getElementById("newVitaminName").value = name;
+            document.getElementById("addVitErr").style.display = "none";
+            document.getElementById("newVitaminName").classList.remove("inputErr");
+        } else {
+            const err = document.getElementById("addVitErr");
+            err.style.display = "block";
+            err.textContent = "Product not found — try entering the name manually.";
+        }
+    };
 </script>
 </body>
 </html>

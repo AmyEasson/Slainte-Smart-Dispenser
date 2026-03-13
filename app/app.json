@@ -26,6 +26,12 @@
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow Sláinte to access your camera to scan vitamin barcodes."
+        }
+      ],
       "expo-router",
       [
         "expo-splash-screen",
