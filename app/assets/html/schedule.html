@@ -321,6 +321,22 @@
     </div>
 </div>
 
+<!-- Dosage suggestion modal -->
+<div class="modal-overlay" id="dosageModal">
+    <div class="modal">
+        <h2 id="dosageModalName"></h2>
+        <p id="dosageModalSummary"></p>
+        <div style="margin-bottom: 14px;">
+            <label>Time</label>
+            <input type="time" id="dosageModalTime" />
+        </div>
+        <div class="modal-btns">
+            <button id="dosageModalSkip">Skip</button>
+            <button id="dosageModalConfirm" class="primary">Add with this schedule</button>
+        </div>
+    </div>
+</div>
+
 <script>
     const DAYS = ["MONDAY","TUESDAY","WEDNESDAY","THURSDAY","FRIDAY","SATURDAY","SUNDAY"];
     const DAY_LABEL = { MONDAY:"Mon",TUESDAY:"Tue",WEDNESDAY:"Wed",THURSDAY:"Thu",FRIDAY:"Fri",SATURDAY:"Sat",SUNDAY:"Sun" };
@@ -915,11 +931,65 @@
         }
     });
 
-    window.onBarcodeResult = function(name) {
-        if (name) {
-            document.getElementById("newVitaminName").value = name;
+    window.onBarcodeResult = function(result) {
+        if (result && result.name) {
+            document.getElementById("newVitaminName").value = result.name;
             document.getElementById("addVitErr").style.display = "none";
             document.getElementById("newVitaminName").classList.remove("inputErr");
+
+            if (result.suggestedDosage) {
+                const { numberOfPills, times } = result.suggestedDosage;
+                const frequencyText = times.length === 1 ? "once daily" : times.length === 2 ? "twice daily" : "three times daily";
+
+                // Populate modal
+                document.getElementById("dosageModalName").textContent = result.name;
+                document.getElementById("dosageModalSummary").textContent =
+                    `Suggested: take ${numberOfPills} pill${numberOfPills === 1 ? "" : "s"} ${frequencyText}. Adjust the time below or skip to set your own schedule.`;
+                document.getElementById("dosageModalTime").value = times[0];
+
+                // Open modal
+                document.getElementById("dosageModal").classList.add("open");
+
+                // Confirm handler
+                document.getElementById("dosageModalConfirm").onclick = () => {
+                    const adjustedTime = document.getElementById("dosageModalTime").value || times[0];
+                    const adjustedTimes = times.map((_, i) => {
+                        // Offset subsequent times relative to adjustment
+                        if (i === 0) return adjustedTime;
+                        const [h, m] = adjustedTime.split(":").map(Number);
+                        const offset = i * Math.round(12 / times.length);
+                        const newH = (h + offset) % 24;
+                        return String(newH).padStart(2, "0") + ":" + String(m).padStart(2, "0");
+                    });
+
+                    const schedule = {};
+                    DAYS.forEach(day => schedule[day] = [...adjustedTimes]);
+
+                    state.vitamins.push({
+                        vitaminType: result.name,
+                        numberOfPills: numberOfPills,
+                        schedule: schedule,
+                        ui: { collapsed: false }
+                    });
+
+                    document.getElementById("newVitaminName").value = "";
+                    document.getElementById("newVitaminPills").value = "1";
+                    document.getElementById("dosageModal").classList.remove("open");
+
+                    showEditMode();
+                    setStatusFromValidation();
+                    setTimeout(() => {
+                        document.getElementById("vitaminList").lastElementChild?.scrollIntoView({ behavior: "smooth", block: "start" });
+                    }, 0);
+                };
+
+                // Skip handler — just populate the name/pills fields, let user set schedule manually
+                document.getElementById("dosageModalSkip").onclick = () => {
+                    document.getElementById("newVitaminPills").value = numberOfPills;
+                    document.getElementById("dosageModal").classList.remove("open");
+                };
+
+            }
         } else {
             const err = document.getElementById("addVitErr");
             err.style.display = "block";

@@ -5,29 +5,46 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 @Service
 public class BarcodeService {
 
     private final RestClient restClient = RestClient.create();
     private final ObjectMapper mapper = new ObjectMapper();
 
-    public String lookupBarcode(String barcode) {
-        String rawName = fetchFromUpcItemDb(barcode);
-        if (rawName == null) rawName = fetchFromOpenFoodFacts(barcode);
-        if (rawName == null) return null;
-        return extractVitaminName(rawName);
+    public Map<String, Object> lookupBarcode(String barcode) {
+        JsonNode item = fetchFromUpcItemDb(barcode);
+
+        if (item != null) {
+            String rawName = item.path("title").asText("");
+            String description = item.path("description").asText("");
+            if (!rawName.isBlank()) {
+                Map<String, Object> result = new HashMap<>();
+                result.put("name", extractVitaminName(rawName));
+                Map<String, Object> dosage = parseDosage(description);
+                if (dosage != null) result.put("suggestedDosage", dosage);
+                return result;
+            }
+        }
+
+        String rawName = fetchFromOpenFoodFacts(barcode);
+        if (rawName != null) {
+            return Map.of("name", extractVitaminName(rawName));
+        }
+
+        return null;
     }
 
-    private String fetchFromUpcItemDb(String barcode) {
+    private JsonNode fetchFromUpcItemDb(String barcode) {
         try {
             String url = "https://api.upcitemdb.com/prod/trial/lookup?upc=" + barcode;
             String response = restClient.get().uri(url).retrieve().body(String.class);
             JsonNode root = mapper.readTree(response);
             JsonNode items = root.path("items");
-            if (!items.isEmpty()) {
-                String title = items.get(0).path("title").asText("");
-                if (!title.isBlank()) return title;
-            }
+            if (!items.isEmpty()) return items.get(0);
         } catch (Exception e) {
             System.out.println("UPC Item DB lookup failed: " + e.getMessage());
         }
@@ -51,8 +68,6 @@ public class BarcodeService {
 
     private String extractVitaminName(String rawName) {
         if (rawName == null || rawName.isBlank()) return rawName;
-
-        System.out.println("Raw: " + rawName);
 
         String[] cutoffs = {
                 " - ", ", ", " Supplement", " Softgel", " Capsule", " Tablet",
@@ -93,5 +108,56 @@ public class BarcodeService {
         }
 
         return result.trim();
+    }
+
+    public Map<String, Object> parseDosage(String description) {
+        if (description == null || description.isBlank()) return null;
+
+        String lower = description.toLowerCase();
+
+        // Find "take X" pattern
+        java.util.regex.Pattern takePattern = java.util.regex.Pattern.compile(
+                "take\\s+(one|two|three|1|2|3)\\s+.{0,50}?\\s+(daily|twice\\s+daily|twice\\s+a\\s+day|three\\s+times\\s+daily|three\\s+times\\s+a\\s+day|once\\s+a\\s+day|once\\s+daily)"
+        );
+        java.util.regex.Matcher matcher = takePattern.matcher(lower);
+        boolean matched = matcher.find();
+        if (!matched) return null;
+
+        String quantityStr = matcher.group(1);
+        String frequencyStr = matcher.group(2);
+
+        // Parse quantity
+        int quantity = switch (quantityStr) {
+            case "one", "1" -> 1;
+            case "two", "2" -> 2;
+            case "three", "3" -> 3;
+            default -> 1;
+        };
+
+        // Parse frequency into times
+        List<String> times = switch (frequencyStr) {
+            case "daily", "once daily", "once a day" -> List.of("09:00");
+            case "twice daily", "twice a day" -> List.of("09:00", "21:00");
+            case "three times daily", "three times a day" -> List.of("09:00", "13:00", "21:00");
+            default -> null;
+        };
+
+        if (times == null) return null;
+
+        // Check for meal timing hints
+        boolean withMeal = lower.contains("with a meal") || lower.contains("with food") || lower.contains("with meals");
+        if (withMeal) {
+            times = switch (times.size()) {
+                case 1 -> List.of("08:00"); // breakfast
+                case 2 -> List.of("08:00", "18:00"); // breakfast + dinner
+                case 3 -> List.of("08:00", "12:00", "18:00"); // breakfast + lunch + dinner
+                default -> times;
+            };
+        }
+
+        return Map.of(
+                "numberOfPills", quantity,
+                "times", times
+        );
     }
 }

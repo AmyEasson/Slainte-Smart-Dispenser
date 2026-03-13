@@ -156,10 +156,10 @@ public class MobileAppController {
 
     @GetMapping("/barcode/{barcode}")
     public ResponseEntity<?> lookupBarcode(@PathVariable String barcode) {
-        String name = barcodeService.lookupBarcode(barcode);
-        if (name == null) {
+        Map<String, Object> result = barcodeService.lookupBarcode(barcode);
+        if (result == null) {
             return ResponseEntity.status(404).body(Map.of("error", "Product not found"));
         }
-        return ResponseEntity.ok(Map.of("name", name));
+        return ResponseEntity.ok(result);
     }
 }
