@@ -184,9 +184,9 @@ export default function HomeScreen() {
                 { headers: { Authorization: `Bearer ${authTokenRef.current}` } }
             );
             const json = await res.json();
-            const name = json.name ?? null;
+            const result = res.ok ? json : null;
             webViewRef.current?.injectJavaScript(
-                `window.onBarcodeResult(${JSON.stringify(name)}); true;`
+                `window.onBarcodeResult(${JSON.stringify(result)}); true;`
             );
         } catch (e) {
             webViewRef.current?.injectJavaScript(

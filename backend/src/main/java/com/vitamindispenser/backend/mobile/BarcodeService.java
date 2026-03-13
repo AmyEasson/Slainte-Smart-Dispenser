@@ -16,52 +16,92 @@ public class BarcodeService {
     private final ObjectMapper mapper = new ObjectMapper();
 
     public Map<String, Object> lookupBarcode(String barcode) {
-        JsonNode item = fetchFromUpcItemDb(barcode);
+        String rawName = null;
+        String description = null;
 
-        if (item != null) {
-            String rawName = item.path("title").asText("");
-            String description = item.path("description").asText("");
-            if (!rawName.isBlank()) {
-                Map<String, Object> result = new HashMap<>();
-                result.put("name", extractVitaminName(rawName));
-                Map<String, Object> dosage = parseDosage(description);
-                if (dosage != null) result.put("suggestedDosage", dosage);
-                return result;
+        // Try UPC Item DB
+        JsonNode upcItem = fetchFromUpcItemDb(barcode);
+        if (upcItem != null) {
+            rawName = upcItem.path("title").asText("");
+            description = upcItem.path("description").asText("");
+        }
+
+        // Try Open Food Facts
+        if (rawName == null || rawName.isBlank()) {
+            JsonNode offProduct = fetchProductNode(
+                    "https://world.openfoodfacts.org/api/v0/product/" + barcode + ".json"
+            );
+            if (offProduct != null) {
+                rawName = offProduct.path("product_name").asText("");
+                description = offProduct.path("ingredients_text").asText("");
+                System.out.println("Description: " + description);
             }
         }
 
-        String rawName = fetchFromOpenFoodFacts(barcode);
-        if (rawName != null) {
-            return Map.of("name", extractVitaminName(rawName));
+        // Try Open Beauty Facts
+        if (rawName == null || rawName.isBlank()) {
+            JsonNode obfProduct = fetchProductNode(
+                    "https://world.openbeautyfacts.org/api/v0/product/" + barcode + ".json"
+            );
+            if (obfProduct != null) {
+                rawName = obfProduct.path("product_name").asText("");
+                description = obfProduct.path("ingredients_text").asText("");
+                System.out.println("Description: " + description);
+            }
         }
 
+        // Try Open Products Facts
+        if (rawName == null || rawName.isBlank()) {
+            JsonNode opfProduct = fetchProductNode(
+                    "https://world.openproductsfacts.org/api/v0/product/" + barcode + ".json"
+            );
+            if (opfProduct != null) {
+                rawName = opfProduct.path("product_name").asText("");
+                description = opfProduct.path("ingredients_text").asText("");
+                System.out.println("Description: " + description);
+            }
+        }
+
+        if (rawName == null || rawName.isBlank()) return null;
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("name", extractVitaminName(rawName));
+
+        Map<String, Object> dosage = parseDosage(description);
+        if (dosage != null) result.put("suggestedDosage", dosage);
+
+        return result;
+    }
+
+    // Shared helper for Open Food Facts / Open Beauty Facts
+    private JsonNode fetchProductNode(String url) {
+        try {
+            System.out.println("Fetching: " + url);
+            String response = restClient.get().uri(url).retrieve().body(String.class);
+            JsonNode root = mapper.readTree(response);
+            if (root.path("status").asInt() == 1) {
+                return root.path("product");
+            }
+        } catch (Exception e) {
+            System.out.println("Fetch failed for " + url + ": " + e.getMessage());
+        }
         return null;
     }
 
     private JsonNode fetchFromUpcItemDb(String barcode) {
         try {
             String url = "https://api.upcitemdb.com/prod/trial/lookup?upc=" + barcode;
-            String response = restClient.get().uri(url).retrieve().body(String.class);
+            String response = restClient.get()
+                    .uri(url)
+                    .retrieve()
+                    .onStatus(status -> status.isError(), (req, res) -> {})
+                    .body(String.class);
+            if (response == null) return null;
             JsonNode root = mapper.readTree(response);
             JsonNode items = root.path("items");
             if (!items.isEmpty()) return items.get(0);
         } catch (Exception e) {
-            System.out.println("UPC Item DB lookup failed: " + e.getMessage());
-        }
-        return null;
-    }
-
-    private String fetchFromOpenFoodFacts(String barcode) {
-        try {
-            String url = "https://world.openfoodfacts.org/api/v0/product/" + barcode + ".json";
-            String response = restClient.get().uri(url).retrieve().body(String.class);
-            JsonNode root = mapper.readTree(response);
-            if (root.path("status").asInt() == 1) {
-                String title = root.path("product").path("product_name").asText("");
-                if (!title.isBlank()) return title;
-            }
-        } catch (Exception e) {
-            System.out.println("Open Food Facts lookup failed: " + e.getMessage());
+            System.out.println("UPC Item DB exception: " + e.getMessage());
         }
         return null;
     }
