@@ -49,14 +49,16 @@ public class MobileAppController {
      */
     private final SchedulingService schedulingService;
     private final LoggingExportService exportService;
+    private final BarcodeService barcodeService;
     private final UserRepository userRepository;
     private final DeviceRepository deviceRepository;
 
-    public MobileAppController(SchedulingService schedulingService, LoggingExportService exportService, UserRepository userRepository, DeviceRepository deviceRepository) {
+    public MobileAppController(SchedulingService schedulingService, LoggingExportService exportService, UserRepository userRepository, DeviceRepository deviceRepository, BarcodeService barcodeService) {
         this.schedulingService = schedulingService;
         this.exportService = exportService;
         this.userRepository = userRepository;
         this.deviceRepository = deviceRepository;
+        this.barcodeService = barcodeService;
     }
 
     @PostMapping("/claim-device")
@@ -151,26 +153,13 @@ public class MobileAppController {
      * endpoint to receive barcode to lookup vitamin information,
      * for automatic data entry and schedule suggestions
      */
+
     @GetMapping("/barcode/{barcode}")
     public ResponseEntity<?> lookupBarcode(@PathVariable String barcode) {
-        String url = "https://world.openfoodfacts.org/api/v0/product/" + barcode +".json";
-        RestClient restClient = RestClient.create();
-        String response = restClient.get()
-                .uri(url)
-                .retrieve()
-                .body(String.class);
-        try {
-            ObjectMapper mapper = new ObjectMapper();
-            JsonNode root = mapper.readTree(response);
-
-            if (root.path("status").asInt() == 0) {
-                return ResponseEntity.status(404).body(Map.of("error", "Product not found"));
-            }
-
-            String productName = root.path("product").path("product_name").asText("Unknown");
-            return ResponseEntity.ok(Map.of("name", productName));
-        } catch (Exception e) {
-            return ResponseEntity.status(500).body(Map.of("error", "Failed to parse product"));
+        String name = barcodeService.lookupBarcode(barcode);
+        if (name == null) {
+            return ResponseEntity.status(404).body(Map.of("error", "Product not found"));
         }
+        return ResponseEntity.ok(Map.of("name", name));
     }
 }
