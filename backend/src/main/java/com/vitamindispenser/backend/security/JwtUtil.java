@@ -17,9 +17,10 @@ import java.util.Date;
 public class JwtUtil {
     @Value("${jwt.secret}")
     private String SECRET;
-    private final long EXPIRY = 100 * 60 * 60 *24; //24 hours
 
     public String generateToken(String username){
+        //24 hours
+        long EXPIRY = 100 * 60 * 60 * 24;
         return Jwts.builder()
                 .setSubject(username)
                 .setIssuedAt(new Date())

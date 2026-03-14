@@ -3,18 +3,15 @@ package com.vitamindispenser.backend.firmware;
 import com.vitamindispenser.backend.logging.LoggingService;
 import com.vitamindispenser.backend.firmware.dto.IntakeReport;
 import com.vitamindispenser.backend.device.Device;
-import com.vitamindispenser.backend.schedule.ScheduleEntry;
 import com.vitamindispenser.backend.schedule.ScheduleEntryRepository;
 import com.vitamindispenser.backend.user.User;
 import com.vitamindispenser.backend.device.DeviceRepository;
-import com.vitamindispenser.backend.user.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @Slf4j
@@ -90,8 +87,8 @@ public class FirmwareController {
     public ResponseEntity<String> reportStatus(@RequestBody IntakeReport request, @RequestParam(defaultValue = "DISPENSER_001") String deviceId) {
         Device device = deviceRepository.findByDeviceId(deviceId)
                 .orElseThrow(() -> new RuntimeException("Unknown device"));
-        log.info("Intake IDs: " + request.getIntakeIds());
-        log.info("Dispense status: " + request.getDispenseEventStatus());
+        log.info("Intake IDs: {}", request.getIntakeIds());
+        log.info("Dispense status: {}", request.getDispenseEventStatus());
         loggingService.handleStatus(request.getIntakeIds(),
                     request.getDispenseEventStatus(), device.getOwner());
         return ResponseEntity.ok("Status processing completed");

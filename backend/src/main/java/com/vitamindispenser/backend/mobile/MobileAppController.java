@@ -13,6 +13,9 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestClient;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 import java.security.Principal;
 import java.util.List;
@@ -46,14 +49,16 @@ public class MobileAppController {
      */
     private final SchedulingService schedulingService;
     private final LoggingExportService exportService;
+    private final BarcodeService barcodeService;
     private final UserRepository userRepository;
     private final DeviceRepository deviceRepository;
 
-    public MobileAppController(SchedulingService schedulingService, LoggingExportService exportService, UserRepository userRepository, DeviceRepository deviceRepository) {
+    public MobileAppController(SchedulingService schedulingService, LoggingExportService exportService, UserRepository userRepository, DeviceRepository deviceRepository, BarcodeService barcodeService) {
         this.schedulingService = schedulingService;
         this.exportService = exportService;
         this.userRepository = userRepository;
         this.deviceRepository = deviceRepository;
+        this.barcodeService = barcodeService;
     }
 
     @PostMapping("/claim-device")
@@ -142,5 +147,19 @@ public class MobileAppController {
         return ResponseEntity.ok(
                 new IntakeResponseForRawDashboard(data, null)
         );
+    }
+
+    /**
+     * endpoint to receive barcode to lookup vitamin information,
+     * for automatic data entry and schedule suggestions
+     */
+
+    @GetMapping("/barcode/{barcode}")
+    public ResponseEntity<?> lookupBarcode(@PathVariable String barcode) {
+        Map<String, Object> result = barcodeService.lookupBarcode(barcode);
+        if (result == null) {
+            return ResponseEntity.status(404).body(Map.of("error", "Product not found"));
+        }
+        return ResponseEntity.ok(result);
     }
 }
