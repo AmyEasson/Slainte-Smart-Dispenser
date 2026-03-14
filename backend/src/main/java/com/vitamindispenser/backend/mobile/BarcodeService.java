@@ -34,7 +34,6 @@ public class BarcodeService {
             if (offProduct != null) {
                 rawName = offProduct.path("product_name").asText("");
                 description = offProduct.path("ingredients_text").asText("");
-                System.out.println("Description: " + description);
             }
         }
 
@@ -46,7 +45,6 @@ public class BarcodeService {
             if (obfProduct != null) {
                 rawName = obfProduct.path("product_name").asText("");
                 description = obfProduct.path("ingredients_text").asText("");
-                System.out.println("Description: " + description);
             }
         }
 
@@ -58,7 +56,6 @@ public class BarcodeService {
             if (opfProduct != null) {
                 rawName = opfProduct.path("product_name").asText("");
                 description = opfProduct.path("ingredients_text").asText("");
-                System.out.println("Description: " + description);
             }
         }
 
@@ -76,7 +73,6 @@ public class BarcodeService {
     // Shared helper for Open Food Facts / Open Beauty Facts
     private JsonNode fetchProductNode(String url) {
         try {
-            System.out.println("Fetching: " + url);
             String response = restClient.get().uri(url).retrieve().body(String.class);
             JsonNode root = mapper.readTree(response);
             if (root.path("status").asInt() == 1) {
