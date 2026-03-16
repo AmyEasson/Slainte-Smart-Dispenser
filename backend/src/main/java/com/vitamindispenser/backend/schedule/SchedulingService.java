@@ -68,7 +68,9 @@ public class SchedulingService {
 
         scheduleEntryRepository.saveAll(entries);
 
-        assignSlots(entries, user);
+        if (!entries.isEmpty()) {
+            assignSlots(entries, user);
+        }
     }
 
     public ScheduleRequest retrieveSchedule(User user) {
@@ -141,7 +143,7 @@ public class SchedulingService {
                 .toList();
 
         if (uniqueTimes.isEmpty()) {
-            throw new IllegalArgumentException("NO_SCHEDULE");
+            return;
         }
 
         int offset = user.getFillCycleOffset() % uniqueTimes.size();
