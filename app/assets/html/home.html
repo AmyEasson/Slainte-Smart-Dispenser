@@ -89,6 +89,57 @@
             from { opacity: 0; transform: translateY(14px); }
             to { opacity: 1; transform: translateY(0); }
         }
+
+        .pause-card {
+            background: var(--warm-white);
+            border: 1px solid rgba(30,77,43,0.08);
+            border-radius: 22px;
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+            animation: fade-up 0.5s ease-out 0.55s both;
+            margin-top: 14px;
+        }
+
+        .pause-icon {
+            width: 56px; height: 56px; border-radius: 16px;
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+            background: linear-gradient(145deg, #FDE8E8, #FACACA);
+            transition: background 0.3s ease;
+        }
+        .pause-icon.active {
+            background: linear-gradient(145deg, #D8F3DC, #B7E4C7);
+        }
+
+        .pause-body { flex: 1; min-width: 0; }
+        .pause-title { font-family: 'Fraunces', serif; font-weight: 700; font-size: 17px; margin-bottom: 3px; }
+        .pause-desc { font-size: 13px; color: var(--text-muted); line-height: 1.4; }
+
+        .pause-toggle {
+            flex-shrink: 0;
+            width: 50px; height: 28px;
+            border-radius: 999px;
+            background: #D0D0D0;
+            border: none;
+            cursor: pointer;
+            position: relative;
+            transition: background 0.3s ease;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .pause-toggle.active { background: var(--forest-green); }
+        .pause-toggle::after {
+            content: '';
+            position: absolute;
+            top: 3px; left: 3px;
+            width: 22px; height: 22px;
+            border-radius: 50%;
+            background: white;
+            transition: transform 0.3s ease;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+        .pause-toggle.active::after { transform: translateX(22px); }
     </style>
 </head>
 <body>
@@ -269,6 +320,20 @@
         </a>
     </div>
 
+    <div class="pause-card" id="pauseCard">
+        <div class="card-icon pause-icon" id="pauseIcon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#C04030" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" id="pauseSvg">
+                <rect x="6" y="4" width="4" height="16" rx="1"/>
+                <rect x="14" y="4" width="4" height="16" rx="1"/>
+            </svg>
+        </div>
+        <div class="pause-body">
+            <div class="pause-title" id="pauseTitle">Dispensing active</div>
+            <div class="pause-desc" id="pauseDesc">Tap to pause while you're away.</div>
+        </div>
+        <button class="pause-toggle" id="pauseToggle"></button>
+    </div>
+
     <div class="signout-row">
         <button class="signout-btn" id="logoutBtn">Sign out</button>
     </div>
@@ -302,6 +367,65 @@
             window.ReactNativeWebView.postMessage("login");
         }
     });
+
+    var API_BASE = window.location.hostname === "localhost"
+        ? "http://localhost:8080"
+        : "http://" + window.location.hostname + ":8080";
+
+    var isPaused = false;
+
+    async function fetchPauseState() {
+        try {
+            var res = await fetch(API_BASE + "/api/mobile/pause-status", {
+                headers: { "Authorization": "Bearer " + authToken }
+            });
+            if (res.ok) {
+                var data = await res.json();
+                setPauseUI(data.paused);
+            }
+        } catch (e) {}
+    }
+
+    function setPauseUI(paused) {
+        isPaused = paused;
+        var toggle = document.getElementById("pauseToggle");
+        var icon = document.getElementById("pauseIcon");
+        var title = document.getElementById("pauseTitle");
+        var desc = document.getElementById("pauseDesc");
+        var svg = document.getElementById("pauseSvg");
+
+        if (paused) {
+            toggle.classList.add("active");
+            icon.classList.add("active");
+            title.textContent = "Dispensing paused";
+            desc.textContent = "Tap to resume when you're back.";
+            svg.setAttribute("stroke", "#2D6A4F");
+            // Change to play icon
+            svg.innerHTML = '<circle cx="12" cy="12" r="9"/><polygon points="10,8 18,12 10,16" fill="#2D6A4F" stroke="none"/>';
+        } else {
+            toggle.classList.remove("active");
+            icon.classList.remove("active");
+            title.textContent = "Dispensing active";
+            desc.textContent = "Tap to pause while you're away.";
+            svg.setAttribute("stroke", "#C04030");
+            svg.innerHTML = '<rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/>';
+        }
+    }
+
+    document.getElementById("pauseToggle").addEventListener("click", async function() {
+        var endpoint = isPaused ? "/api/mobile/resume" : "/api/mobile/pause";
+        try {
+            var res = await fetch(API_BASE + endpoint, {
+                method: "POST",
+                headers: { "Authorization": "Bearer " + authToken }
+            });
+            if (res.ok) {
+                setPauseUI(!isPaused);
+            }
+        } catch (e) {}
+    });
+
+    fetchPauseState();
 </script>
 </body>
 </html>

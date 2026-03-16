@@ -18,6 +18,7 @@ import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
 import java.security.Principal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -161,5 +162,30 @@ public class MobileAppController {
             return ResponseEntity.status(404).body(Map.of("error", "Product not found"));
         }
         return ResponseEntity.ok(result);
+    }
+
+    @PostMapping("/pause")
+    public ResponseEntity<?> pause(Principal principal) {
+        User user = userRepository.findByUsername(principal.getName()).orElseThrow();
+        user.setPaused(true);
+        user.setPausedAt(LocalDateTime.now());
+        userRepository.save(user);
+        return ResponseEntity.ok("Dispensing paused");
+    }
+
+    @PostMapping("/resume")
+    public ResponseEntity<?> resume(Principal principal) {
+        User user = userRepository.findByUsername(principal.getName()).orElseThrow();
+        user.setSlotsToAdvance(schedulingService.calculateMissedSlots(user, user.getPausedAt()));
+        user.setPaused(false);
+        user.setPausedAt(null);
+        userRepository.save(user);
+        return ResponseEntity.ok("Dispensing resumed");
+    }
+
+    @GetMapping("/pause-status")
+    public ResponseEntity<?> pauseStatus(Principal principal) {
+        User user = userRepository.findByUsername(principal.getName()).orElseThrow();
+        return ResponseEntity.ok(Map.of("paused", user.isPaused()));
     }
 }

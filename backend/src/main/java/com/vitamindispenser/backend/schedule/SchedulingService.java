@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -313,5 +314,34 @@ public class SchedulingService {
         assignSlots(entries, user);
 
         return getRefillInfo(user);
+    }
+
+    public int calculateMissedSlots(User user, LocalDateTime pausedAt) {
+        if (pausedAt == null) return 0;
+
+        LocalDateTime now = LocalDateTime.now();
+        List<ScheduleEntry> entries = scheduleEntryRepository.findByUser(user);
+
+        return (int) entries.stream()
+                .map(e -> e.getDay() + "|" + e.getTime())
+                .distinct()
+                .filter(dayTime -> {
+                    String[] parts = dayTime.split("\\|");
+                    String day = parts[0];
+                    LocalTime time = LocalTime.parse(parts[1]);
+                    DayOfWeek targetDay = DayOfWeek.valueOf(day.toUpperCase());
+
+                    // Find first occurrence of this day/time on or after pausedAt
+                    LocalDateTime cursor = pausedAt.toLocalDate().atTime(time);
+                    while (cursor.getDayOfWeek() != targetDay) {
+                        cursor = cursor.plusDays(1);
+                    }
+                    if (cursor.isBefore(pausedAt)) {
+                        cursor = cursor.plusWeeks(1);
+                    }
+
+                    return cursor.isBefore(now);
+                })
+                .count();
     }
 }

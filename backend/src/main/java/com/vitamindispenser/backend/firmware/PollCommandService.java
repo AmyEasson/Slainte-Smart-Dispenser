@@ -6,6 +6,7 @@ import com.vitamindispenser.backend.schedule.Slot;
 import com.vitamindispenser.backend.user.User;
 import com.vitamindispenser.backend.schedule.ScheduleEntryRepository;
 import com.vitamindispenser.backend.schedule.SlotRepository;
+import com.vitamindispenser.backend.user.UserRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.DayOfWeek;
@@ -32,16 +33,29 @@ public class PollCommandService {
 
     private final ScheduleEntryRepository scheduleEntryRepository;
     private final SlotRepository slotRepository;
+    private final UserRepository userRepository;
 
     private volatile String pendingCommand;
     private final Map<Integer, Long> lastDispenseSentAt = new ConcurrentHashMap<>();
 
-    public PollCommandService(ScheduleEntryRepository scheduleEntryRepository, SlotRepository slotRepository) {
+    public PollCommandService(ScheduleEntryRepository scheduleEntryRepository, SlotRepository slotRepository, UserRepository userRepository) {
         this.scheduleEntryRepository = scheduleEntryRepository;
         this.slotRepository = slotRepository;
+        this.userRepository = userRepository;
     }
 
     public PollCommandResult getPollingResults(User user) {
+        // if the user has hit the 'pause dispensing' button in the app
+        if (user.isPaused()) {
+            return new PollCommandResult("IDLE", Collections.emptyList(), null);
+        }
+
+        if (user.getSlotsToAdvance() > 0) {
+            user.setSlotsToAdvance(user.getSlotsToAdvance() - 1);
+            userRepository.save(user);
+            return new PollCommandResult("ADVANCE", Collections.emptyList(), null);
+        }
+
         if (pendingCommand != null) {
             String cmd = pendingCommand;
             pendingCommand = null;
