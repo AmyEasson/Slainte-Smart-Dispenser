@@ -391,6 +391,7 @@
     var isPaused = false;
 
     async function fetchPauseState() {
+        console.log("fetchPauseState called, authToken:", authToken);
         try {
             var res = await fetch(API_BASE + "/api/mobile/pause-status", {
                 headers: { "Authorization": "Bearer " + authToken }
@@ -399,7 +400,9 @@
                 var data = await res.json();
                 setPauseUI(data.paused);
             }
-        } catch (e) {}
+        } catch (e) {
+            console.log("fetchPauseState error:", e);
+        }
     }
 
     function setPauseUI(paused) {

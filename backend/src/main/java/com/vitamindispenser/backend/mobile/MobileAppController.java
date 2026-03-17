@@ -228,6 +228,7 @@ public class MobileAppController {
     @GetMapping("/pause-status")
     public ResponseEntity<?> pauseStatus(Principal principal) {
         User user = userRepository.findByUsername(principal.getName()).orElseThrow();
+        System.out.println("Pause status check for " + user.getUsername() + ": " + user.isPaused());
         return ResponseEntity.ok(Map.of("paused", user.isPaused()));
     }
 }
