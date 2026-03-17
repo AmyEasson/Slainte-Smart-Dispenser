@@ -357,6 +357,16 @@
 
 </div>
 
+<div class="modal-overlay" id="resumeWarningModal">
+    <div class="modal">
+        <h2>⚠️ Catching up</h2>
+        <p id="resumeWarningMsg"></p>
+        <div class="modal-btns">
+            <button id="resumeWarningOk" class="primary">OK, got it</button>
+        </div>
+    </div>
+</div>
+
 <script>
     var authToken = sessionStorage.getItem("authToken");
     var authUser = sessionStorage.getItem("authUser");
@@ -486,16 +496,6 @@
 
     fetchPauseState();
 </script>
-
-<div class="modal-overlay" id="resumeWarningModal">
-    <div class="modal">
-        <h2>⚠️ Catching up</h2>
-        <p id="resumeWarningMsg"></p>
-        <div class="modal-btns">
-            <button id="resumeWarningOk" class="primary">OK, got it</button>
-        </div>
-    </div>
-</div>
 
 </body>
 </html>
