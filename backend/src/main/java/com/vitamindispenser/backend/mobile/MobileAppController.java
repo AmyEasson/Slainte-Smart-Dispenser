@@ -13,8 +13,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.RestClient;
-import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
 import java.security.Principal;
@@ -62,6 +60,12 @@ public class MobileAppController {
         this.barcodeService = barcodeService;
     }
 
+    /**
+     * ties the user account and therefore their schedule to a physical dispenser by their ids
+     * @param body device Id
+     * @param principal the JWT token of the authenticated user
+     * @return success or failure message only
+     */
     @PostMapping("/claim-device")
     public ResponseEntity<String> claimDevice(@RequestBody Map<String, String> body, Principal principal){
         String deviceId = body.get("deviceId");
@@ -90,6 +94,11 @@ public class MobileAppController {
         }
     }
 
+    /**
+     * fetches the user's currently stored schedule
+     * @param principal the JWT token of the authenticated user
+     * @return the user's currently active schedule
+     */
     @GetMapping("/getSchedule")
     public ResponseEntity<ScheduleRequest> getSchedule(Principal principal) {
         User user = userRepository.findByUsername(principal.getName())
@@ -97,6 +106,12 @@ public class MobileAppController {
         return ResponseEntity.ok(schedulingService.retrieveSchedule(user));
     }
 
+    /**
+     * gets a list of which vitamins should be in each slot number, to
+     * display to the user in the loading guide
+     * @param principal the JWT token of the authenticated user
+     * @return the list of slots and what vitamins should be in each
+     */
     @GetMapping("/slots")
     public ResponseEntity<?> getSlots(Principal principal) {
         User user = userRepository.findByUsername(principal.getName())
@@ -104,6 +119,11 @@ public class MobileAppController {
         return ResponseEntity.ok(schedulingService.getSlots(user));
     }
 
+    /**
+     * returns the refill date for the user's current schedule
+     * @param principal the JWT-token of the authenticated user
+     * @return the user's refill information
+     */
     @GetMapping("/slots/refill-info")
     public ResponseEntity<?> getRefillIndoors(Principal principal) {
         User user = userRepository.findByUsername(principal.getName())
@@ -176,11 +196,33 @@ public class MobileAppController {
     @PostMapping("/resume")
     public ResponseEntity<?> resume(Principal principal) {
         User user = userRepository.findByUsername(principal.getName()).orElseThrow();
-        user.setSlotsToAdvance(schedulingService.calculateMissedSlots(user, user.getPausedAt()));
+
+        List<String> missedQueue = schedulingService.calculateMissedSlotQueue(user, user.getPausedAt());
+        user.setSlotsToAdvance(missedQueue.size());
+
+        long immediateDispenses = missedQueue.stream()
+                .filter(e -> e.endsWith("|DISPENSE"))
+                .count();
+
+        long advanceCount = missedQueue.stream()
+                .filter(e -> e.endsWith("|ADVANCE"))
+                .count();
+
+        try {
+            user.setMissedSlotQueue(new ObjectMapper().writeValueAsString(missedQueue));
+        } catch (Exception e) {
+            user.setMissedSlotQueue("[]");
+        }
+
         user.setPaused(false);
         user.setPausedAt(null);
         userRepository.save(user);
-        return ResponseEntity.ok("Dispensing resumed");
+
+        return ResponseEntity.ok(Map.of(
+                "message", "Dispensing resumed",
+                "slotsToAdvance", advanceCount,
+                "immediateDispenses", immediateDispenses
+        ));
     }
 
     @GetMapping("/pause-status")

@@ -6,6 +6,9 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+// TODO: pause/resume state and slot tracking should move to Device entity
+// when one-to-one user-device mapping is enforced post-demo
+
 @Entity
 @Getter
 @Setter

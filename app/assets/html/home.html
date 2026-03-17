@@ -140,6 +140,22 @@
             box-shadow: 0 1px 3px rgba(0,0,0,0.2);
         }
         .pause-toggle.active::after { transform: translateX(22px); }
+
+        .modal-overlay {
+            display: none; position: fixed; inset: 0;
+            background: rgba(11,26,15,0.4); z-index: 100;
+            align-items: center; justify-content: center;
+        }
+        .modal-overlay.open { display: flex; animation: fade-in 0.2s ease-out; }
+        .modal {
+            background: var(--cream); border-radius: 24px; padding: 22px;
+            width: min(340px, 90vw); box-shadow: 0 12px 40px rgba(11,26,15,0.25);
+            border: 1px solid rgba(30,77,43,0.08);
+        }
+        .modal h2 { font-size: 18px; margin: 0 0 6px; font-weight: 900; font-family: 'Fraunces', serif; }
+        .modal p { font-size: 13px; color: var(--text-muted); margin: 0 0 14px; }
+        .modal-btns { display: flex; gap: 10px; }
+        .modal-btns button { flex: 1; padding: 12px; font-size: 15px; }
     </style>
 </head>
 <body>
@@ -413,19 +429,70 @@
     }
 
     document.getElementById("pauseToggle").addEventListener("click", async function() {
-        var endpoint = isPaused ? "/api/mobile/resume" : "/api/mobile/pause";
-        try {
-            var res = await fetch(API_BASE + endpoint, {
-                method: "POST",
-                headers: { "Authorization": "Bearer " + authToken }
-            });
-            if (res.ok) {
-                setPauseUI(!isPaused);
-            }
-        } catch (e) {}
+        if (isPaused) {
+            // resuming — check if advances needed first
+            try {
+                var res = await fetch(API_BASE + "/api/mobile/resume", {
+                    method: "POST",
+                    headers: { "Authorization": "Bearer " + authToken }
+                });
+                if (res.ok) {
+                    var data = await res.json();
+                    var advances = data.slotsToAdvance || 0;
+                    var dispenses = data.immediateDispenses || 0;
+
+                    if (advances > 0 || dispenses > 0) {
+                        showResumeWarning(advances, dispenses);
+                    } else {
+                        setPauseUI(false);
+                    }
+                }
+            } catch (e) {}
+        } else {
+            // pausing
+            try {
+                var res = await fetch(API_BASE + "/api/mobile/pause", {
+                    method: "POST",
+                    headers: { "Authorization": "Bearer " + authToken }
+                });
+                if (res.ok) setPauseUI(true);
+            } catch (e) {}
+        }
+    });
+
+    function showResumeWarning(advances, dispenses) {
+        var modal = document.getElementById("resumeWarningModal");
+        var msg = document.getElementById("resumeWarningMsg");
+
+        var text = "";
+        if (advances > 0) {
+            text += `Your dispenser needs to skip ${advances} missed slot${advances > 1 ? "s" : ""}. `;
+            text += `Pills from these slots will fall into the tray — please discard them before taking your next dose. `;
+        }
+        if (dispenses > 0) {
+            text += `Your most recent dose will be dispensed immediately.`;
+        }
+        msg.textContent = text;
+        modal.classList.add("open");
+    }
+
+    document.getElementById("resumeWarningOk").addEventListener("click", function() {
+        document.getElementById("resumeWarningModal").classList.remove("open");
+        setPauseUI(false);
     });
 
     fetchPauseState();
 </script>
+
+<div class="modal-overlay" id="resumeWarningModal">
+    <div class="modal">
+        <h2>⚠️ Catching up</h2>
+        <p id="resumeWarningMsg"></p>
+        <div class="modal-btns">
+            <button id="resumeWarningOk" class="primary">OK, got it</button>
+        </div>
+    </div>
+</div>
+
 </body>
 </html>

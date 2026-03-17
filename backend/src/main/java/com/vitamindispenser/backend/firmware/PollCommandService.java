@@ -1,6 +1,8 @@
 package com.vitamindispenser.backend.firmware;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vitamindispenser.backend.firmware.dto.PollCommandResult;
+import com.vitamindispenser.backend.logging.LoggingService;
 import com.vitamindispenser.backend.schedule.ScheduleEntry;
 import com.vitamindispenser.backend.schedule.Slot;
 import com.vitamindispenser.backend.user.User;
@@ -34,26 +36,83 @@ public class PollCommandService {
     private final ScheduleEntryRepository scheduleEntryRepository;
     private final SlotRepository slotRepository;
     private final UserRepository userRepository;
+    private final LoggingService loggingService;
 
     private volatile String pendingCommand;
     private final Map<Integer, Long> lastDispenseSentAt = new ConcurrentHashMap<>();
 
-    public PollCommandService(ScheduleEntryRepository scheduleEntryRepository, SlotRepository slotRepository, UserRepository userRepository) {
+    public PollCommandService(ScheduleEntryRepository scheduleEntryRepository,
+                              SlotRepository slotRepository,
+                              UserRepository userRepository,
+                              LoggingService loggingService) {
         this.scheduleEntryRepository = scheduleEntryRepository;
         this.slotRepository = slotRepository;
         this.userRepository = userRepository;
+        this.loggingService = loggingService;
     }
 
+    /**
+     * calculates what command to send to the Arduino based on the user's schedule and paused status.
+     * the command returned is either DISPENSE, IDLE, ADVANCE or SNOOZE
+     * @param user the user whose schedule is being polled
+     * @return the PollCommandResult to send the Arduino, including the command, intake ids and physical slot
+     */
     public PollCommandResult getPollingResults(User user) {
-        // if the user has hit the 'pause dispensing' button in the app
         if (user.isPaused()) {
             return new PollCommandResult("IDLE", Collections.emptyList(), null);
         }
 
         if (user.getSlotsToAdvance() > 0) {
             user.setSlotsToAdvance(user.getSlotsToAdvance() - 1);
-            userRepository.save(user);
-            return new PollCommandResult("ADVANCE", Collections.emptyList(), null);
+
+            try {
+                ObjectMapper mapper = new ObjectMapper();
+                List<String> queue = new ArrayList<>(List.of(
+                        mapper.readValue(user.getMissedSlotQueue() != null ? user.getMissedSlotQueue() : "[]", String[].class)
+                ));
+
+                if (!queue.isEmpty()) {
+                    String entry = queue.remove(0);
+                    String[] parts = entry.split("\\|");
+                    String day = parts[0];
+                    String time = parts[1];
+                    String type = parts.length > 2 ? parts[2] : "ADVANCE";
+
+                    List<ScheduleEntry> scheduleEntries = scheduleEntryRepository
+                            .findByUserAndDayAndTime(user, day, time);
+
+                    if (!scheduleEntries.isEmpty()) {
+                        List<Integer> ids = scheduleEntries.stream()
+                                .map(ScheduleEntry::getId)
+                                .toList();
+
+                        if ("DISPENSE".equals(type)) {
+                            user.setMissedSlotQueue(mapper.writeValueAsString(queue));
+                            userRepository.save(user);
+                            Integer slotNumber = slotRepository
+                                    .findByUserOrderBySlotNumber(user)
+                                    .stream()
+                                    .filter(s -> day.equals(s.getAssignedDay()) && time.equals(s.getAssignedTime()))
+                                    .findFirst()
+                                    .map(Slot::getSlotNumber)
+                                    .orElse(null);
+                            return new PollCommandResult("DISPENSE", ids, slotNumber);
+                        } else {
+                            loggingService.handleStatus(ids, false, user);
+                        }
+                    }
+
+                    user.setMissedSlotQueue(mapper.writeValueAsString(queue));
+                }
+
+                userRepository.save(user);
+                return new PollCommandResult("ADVANCE", Collections.emptyList(), null);
+
+            } catch (Exception e) {
+                System.out.println("Failed to process slot queue: " + e.getMessage());
+                userRepository.save(user);
+                return new PollCommandResult("ADVANCE", Collections.emptyList(), null);
+            }
         }
 
         if (pendingCommand != null) {
@@ -84,7 +143,6 @@ public class PollCommandService {
         }
 
         if (!intakeIds.isEmpty()) {
-            // get slot number by finding the slot that matches the first entry's day+time
             Integer slotNumber = entries.stream()
                     .filter(e -> intakeIds.contains(e.getId()))
                     .findFirst()
@@ -98,9 +156,14 @@ public class PollCommandService {
                     .orElse(null);
             return new PollCommandResult("DISPENSE", intakeIds, slotNumber);
         }
+
         return new PollCommandResult("IDLE", Collections.emptyList(), null);
     }
 
+    /**
+     * sets a pending one-shot command to be sent to the Arduino on the next poll
+     * @param command the command to set — only SNOOZE is permitted from the app
+     */
     public void setPendingCommand(String command) {
         if (command == null || command.isBlank() || "IDLE".equalsIgnoreCase(command) || "DISPENSE".equalsIgnoreCase(command)) {
             pendingCommand = null;
