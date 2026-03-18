@@ -1,39 +1,39 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-<title>Sláinte — Login</title>
-<style>
-  @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,700;0,9..144,900;1,9..144,400&family=DM+Sans:wght@400;500;600&display=swap');
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>Sláinte — Login</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,700;0,9..144,900;1,9..144,400&family=DM+Sans:wght@400;500;600&display=swap');
 
-  :root {
-    --forest-deep: #0B1A0F;
-    --forest-dark: #132A13;
-    --forest-mid: #1E4D2B;
-    --forest-green: #2D6A4F;
-    --forest-pale: #52B788;
-    --forest-mist: #B7E4C7;
-    --cream: #F5F0E8;
-    --cream-dark: #E8DFD0;
-    --warm-white: #FEFCF8;
-    --text-primary: #1A2E1A;
-    --text-muted: #4A6B4A;
-    --text-light: #7A9B7A;
-    --danger: #C04030;
-    --ok: #2D6A4F;
-  }
+    :root {
+      --forest-deep: #0B1A0F;
+      --forest-dark: #132A13;
+      --forest-mid: #1E4D2B;
+      --forest-green: #2D6A4F;
+      --forest-pale: #52B788;
+      --forest-mist: #B7E4C7;
+      --cream: #F5F0E8;
+      --cream-dark: #E8DFD0;
+      --warm-white: #FEFCF8;
+      --text-primary: #1A2E1A;
+      --text-muted: #4A6B4A;
+      --text-light: #7A9B7A;
+      --danger: #C04030;
+      --ok: #2D6A4F;
+    }
 
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
 
-  html, body {
+    html, body {
       height: 100%;
       overflow: hidden;
       position: fixed;
       width: 100%;
-  }
+    }
 
-  body {
+    body {
       font-family: 'DM Sans', system-ui, sans-serif;
       background: var(--cream);
       color: var(--text-primary);
@@ -41,90 +41,86 @@
       flex-direction: column;
       height: 100vh;
       height: 100dvh;
-  }
+    }
 
-  /* ── Forest Scene ── */
-  .forest-scene {
+    .forest-scene {
       position: relative;
       width: 100%;
       flex: 0 0 42%;
       overflow: hidden;
-  }
+    }
 
-  .forest-scene svg {
-    width: 100%;
-    height: 100%;
-    display: block;
-  }
+    .forest-scene svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
 
-  /* Floating fireflies */
-  .firefly {
-    position: absolute;
-    width: 4px;
-    height: 4px;
-    border-radius: 50%;
-    background: #E8C56D;
-    box-shadow: 0 0 8px 3px rgba(232, 197, 109, 0.4);
-    animation: float-firefly 6s ease-in-out infinite;
-    opacity: 0;
-  }
+    .firefly {
+      position: absolute;
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: #E8C56D;
+      box-shadow: 0 0 8px 3px rgba(232, 197, 109, 0.4);
+      animation: float-firefly 6s ease-in-out infinite;
+      opacity: 0;
+    }
 
-  .firefly:nth-child(1) { left: 15%; top: 30%; animation-delay: 0s; animation-duration: 7s; }
-  .firefly:nth-child(2) { left: 70%; top: 20%; animation-delay: 2s; animation-duration: 5s; }
-  .firefly:nth-child(3) { left: 45%; top: 45%; animation-delay: 4s; animation-duration: 8s; }
-  .firefly:nth-child(4) { left: 80%; top: 35%; animation-delay: 1s; animation-duration: 6s; }
-  .firefly:nth-child(5) { left: 25%; top: 50%; animation-delay: 3s; animation-duration: 9s; }
-  .firefly:nth-child(6) { left: 55%; top: 15%; animation-delay: 5s; animation-duration: 7.5s; }
+    .firefly:nth-child(1) { left: 15%; top: 30%; animation-delay: 0s; animation-duration: 7s; }
+    .firefly:nth-child(2) { left: 70%; top: 20%; animation-delay: 2s; animation-duration: 5s; }
+    .firefly:nth-child(3) { left: 45%; top: 45%; animation-delay: 4s; animation-duration: 8s; }
+    .firefly:nth-child(4) { left: 80%; top: 35%; animation-delay: 1s; animation-duration: 6s; }
+    .firefly:nth-child(5) { left: 25%; top: 50%; animation-delay: 3s; animation-duration: 9s; }
+    .firefly:nth-child(6) { left: 55%; top: 15%; animation-delay: 5s; animation-duration: 7.5s; }
 
-  @keyframes float-firefly {
-    0%, 100% { opacity: 0; transform: translate(0, 0) scale(0.5); }
-    15% { opacity: 0.9; }
-    50% { opacity: 0.6; transform: translate(15px, -20px) scale(1); }
-    85% { opacity: 0.8; }
-  }
+    @keyframes float-firefly {
+      0%, 100% { opacity: 0; transform: translate(0, 0) scale(0.5); }
+      15% { opacity: 0.9; }
+      50% { opacity: 0.6; transform: translate(15px, -20px) scale(1); }
+      85% { opacity: 0.8; }
+    }
 
-  /* Brand overlay on forest */
-  .brand-overlay {
-    position: absolute;
-    bottom: 50px;
-    left: 0;
-    right: 0;
-    text-align: center;
-    z-index: 10;
-    animation: fade-up 1s ease-out 0.3s both;
-  }
+    .brand-overlay {
+      position: absolute;
+      bottom: 50px;
+      left: 0;
+      right: 0;
+      text-align: center;
+      z-index: 10;
+      animation: fade-up 1s ease-out 0.3s both;
+    }
 
-  .brand-name {
-    font-family: 'Fraunces', serif;
-    font-weight: 900;
-    font-size: 48px;
-    color: var(--warm-white);
-    letter-spacing: -1px;
-    text-shadow:
-      0 2px 20px rgba(11, 26, 15, 0.5),
-      0 0 60px rgba(45, 106, 79, 0.3);
-    line-height: 1;
-  }
+    .brand-name {
+      font-family: 'Fraunces', serif;
+      font-weight: 900;
+      font-size: 48px;
+      color: var(--warm-white);
+      letter-spacing: -1px;
+      text-shadow:
+              0 2px 20px rgba(11, 26, 15, 0.5),
+              0 0 60px rgba(45, 106, 79, 0.3);
+      line-height: 1;
+    }
 
-  .brand-tagline {
-    font-family: 'Fraunces', serif;
-    font-style: italic;
-    font-weight: 400;
-    font-size: 14px;
-    color: var(--forest-mist);
-    margin-top: 6px;
-    letter-spacing: 2px;
-    text-transform: lowercase;
-    text-shadow: 0 1px 10px rgba(11, 26, 15, 0.4);
-  }
+    .brand-tagline {
+      font-family: 'Fraunces', serif;
+      font-style: italic;
+      font-weight: 400;
+      font-size: 14px;
+      color: var(--forest-mist);
+      margin-top: 6px;
+      letter-spacing: 2px;
+      text-transform: lowercase;
+      text-shadow: 0 1px 10px rgba(11, 26, 15, 0.4);
+    }
 
-  @keyframes fade-up {
-    from { opacity: 0; transform: translateY(16px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
+    @keyframes fade-up {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
 
-  /* ── Form Area ── */
-  .form-area {
+    .form-area {
       flex: 1;
       background: var(--cream);
       padding: 24px 24px env(safe-area-inset-bottom, 20px);
@@ -134,124 +130,122 @@
       z-index: 5;
       overflow: hidden;
       animation: slide-up 0.8s ease-out 0.5s both;
-  }
+    }
 
-  .form-area::before {
-    content: '';
-    position: absolute;
-    top: -24px;
-    left: 0;
-    right: 0;
-    height: 26px;
-    background: var(--cream);
-    border-radius: 26px 26px 0 0;
-    z-index: 4;
-  }
+    .form-area::before {
+      content: '';
+      position: absolute;
+      top: -24px;
+      left: 0;
+      right: 0;
+      height: 26px;
+      background: var(--cream);
+      border-radius: 26px 26px 0 0;
+      z-index: 4;
+    }
 
-  @keyframes slide-up {
-    from { opacity: 0; transform: translateY(24px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
+    @keyframes slide-up {
+      from { opacity: 0; transform: translateY(24px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
 
-  /* Tab switcher */
-  .tab-bar {
-    display: flex;
-    background: var(--cream-dark);
-    border-radius: 16px;
-    padding: 4px;
-    margin-bottom: 24px;
-    position: relative;
-  }
-
-  .tab-slider {
-    position: absolute;
-    top: 4px;
-    left: 4px;
-    width: calc(50% - 4px);
-    height: calc(100% - 8px);
-    background: var(--forest-mid);
-    border-radius: 13px;
-    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 2px 8px rgba(30, 77, 43, 0.3);
-  }
-
-  .tab-slider.register {
-    transform: translateX(100%);
-  }
-
-  .tab-btn {
-    flex: 1;
-    padding: 12px;
-    border: none;
-    background: none;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 15px;
-    font-weight: 600;
-    color: var(--text-muted);
-    cursor: pointer;
-    position: relative;
-    z-index: 2;
-    transition: color 0.3s ease;
-    -webkit-tap-highlight-color: transparent;
-  }
-
-  .tab-btn.active {
-    color: var(--warm-white);
-  }
-
-  /* Input fields */
-  .field {
-    margin-bottom: 16px;
-    animation: fade-up 0.5s ease-out both;
-  }
-
-  .field:nth-child(1) { animation-delay: 0.6s; }
-  .field:nth-child(2) { animation-delay: 0.7s; }
-
-  .field-label {
-    display: block;
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-bottom: 8px;
-  }
-
-  .field-input {
-    width: 100%;
-    padding: 16px 18px;
-    border: 2px solid transparent;
-    border-radius: 16px;
-    background: var(--warm-white);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 16px;
-    color: var(--text-primary);
-    outline: none;
-    transition: all 0.25s ease;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
-  }
-
-  .field-input::placeholder {
-    color: var(--text-light);
-  }
-
-  .field-input:focus {
-    border-color: var(--forest-pale);
-    box-shadow:
-      0 0 0 4px rgba(82, 183, 136, 0.15),
-      0 2px 8px rgba(0,0,0,0.06);
-  }
-
-  .field-password {
+    .tab-bar {
+      display: flex;
+      background: var(--cream-dark);
+      border-radius: 16px;
+      padding: 4px;
+      margin-bottom: 24px;
       position: relative;
-  }
+    }
 
-  .field-password .field-input {
+    .tab-slider {
+      position: absolute;
+      top: 4px;
+      left: 4px;
+      width: calc(50% - 4px);
+      height: calc(100% - 8px);
+      background: var(--forest-mid);
+      border-radius: 13px;
+      transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 2px 8px rgba(30, 77, 43, 0.3);
+    }
+
+    .tab-slider.register {
+      transform: translateX(100%);
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      background: none;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      position: relative;
+      z-index: 2;
+      transition: color 0.3s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .tab-btn.active {
+      color: var(--warm-white);
+    }
+
+    .field {
+      margin-bottom: 16px;
+      animation: fade-up 0.5s ease-out both;
+    }
+
+    .field:nth-child(1) { animation-delay: 0.6s; }
+    .field:nth-child(2) { animation-delay: 0.7s; }
+
+    .field-label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+    }
+
+    .field-input {
+      width: 100%;
+      padding: 16px 18px;
+      border: 2px solid transparent;
+      border-radius: 16px;
+      background: var(--warm-white);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 16px;
+      color: var(--text-primary);
+      outline: none;
+      transition: all 0.25s ease;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    }
+
+    .field-input::placeholder {
+      color: var(--text-light);
+    }
+
+    .field-input:focus {
+      border-color: var(--forest-pale);
+      box-shadow:
+              0 0 0 4px rgba(82, 183, 136, 0.15),
+              0 2px 8px rgba(0,0,0,0.06);
+    }
+
+    .field-password {
+      position: relative;
+    }
+
+    .field-password .field-input {
       padding-right: 50px;
-  }
+    }
 
-  .toggle-pw {
+    .toggle-pw {
       position: absolute;
       right: 12px;
       top: 50%;
@@ -266,127 +260,122 @@
       font-family: 'DM Sans', sans-serif;
       font-weight: 600;
       -webkit-tap-highlight-color: transparent;
-  }
+    }
 
-  .toggle-pw:active {
+    .toggle-pw:active {
       background: var(--cream-dark);
-  }
+    }
 
-  /* Submit button */
-  .submit-btn {
-    width: 100%;
-    padding: 18px;
-    border: none;
-    border-radius: 18px;
-    background: linear-gradient(135deg, var(--forest-mid), var(--forest-green));
-    color: var(--warm-white);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 17px;
-    font-weight: 600;
-    cursor: pointer;
-    margin-top: 8px;
-    position: relative;
-    overflow: hidden;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 16px rgba(30, 77, 43, 0.35);
-    -webkit-tap-highlight-color: transparent;
-    animation: fade-up 0.5s ease-out 0.8s both;
-  }
+    .submit-btn {
+      width: 100%;
+      padding: 18px;
+      border: none;
+      border-radius: 18px;
+      background: linear-gradient(135deg, var(--forest-mid), var(--forest-green));
+      color: var(--warm-white);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 17px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 8px;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 16px rgba(30, 77, 43, 0.35);
+      -webkit-tap-highlight-color: transparent;
+      animation: fade-up 0.5s ease-out 0.8s both;
+    }
 
-  .submit-btn:active {
-    transform: translateY(1px) scale(0.98);
-    box-shadow: 0 2px 8px rgba(30, 77, 43, 0.3);
-  }
+    .submit-btn:active {
+      transform: translateY(1px) scale(0.98);
+      box-shadow: 0 2px 8px rgba(30, 77, 43, 0.3);
+    }
 
-  .submit-btn::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(135deg, rgba(255,255,255,0.15), transparent);
-    border-radius: inherit;
-  }
+    .submit-btn::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.15), transparent);
+      border-radius: inherit;
+    }
 
-  /* Message */
-  .msg {
-    margin-top: 12px;
-    padding: 12px 16px;
-    border-radius: 14px;
-    font-size: 14px;
-    font-weight: 500;
-    display: none;
-  }
+    .msg {
+      margin-top: 12px;
+      padding: 12px 16px;
+      border-radius: 14px;
+      font-size: 14px;
+      font-weight: 500;
+      display: none;
+    }
 
-  .msg.err {
-    display: block;
-    background: #FEF2F2;
-    color: var(--danger);
-    border: 1px solid #FECACA;
-    animation: shake 0.4s ease;
-  }
+    .msg.err {
+      display: block;
+      background: #FEF2F2;
+      color: var(--danger);
+      border: 1px solid #FECACA;
+      animation: shake 0.4s ease;
+    }
 
-  .msg.ok {
-    display: block;
-    background: #F0FDF4;
-    color: var(--ok);
-    border: 1px solid #BBF7D0;
-  }
+    .msg.ok {
+      display: block;
+      background: #F0FDF4;
+      color: var(--ok);
+      border: 1px solid #BBF7D0;
+    }
 
-  @keyframes shake {
-    0%, 100% { transform: translateX(0); }
-    20% { transform: translateX(-6px); }
-    40% { transform: translateX(6px); }
-    60% { transform: translateX(-4px); }
-    80% { transform: translateX(4px); }
-  }
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20% { transform: translateX(-6px); }
+      40% { transform: translateX(6px); }
+      60% { transform: translateX(-4px); }
+      80% { transform: translateX(4px); }
+    }
 
-  /* Bottom text */
-  .bottom-text {
-    text-align: center;
-    margin-top: auto;
-    padding-top: 16px;
-    font-size: 13px;
-    color: var(--text-light);
-    font-family: 'Fraunces', serif;
-    font-style: italic;
-    animation: fade-up 0.5s ease-out 1s both;
-  }
+    .bottom-text {
+      text-align: center;
+      margin-top: auto;
+      padding-top: 16px;
+      font-size: 13px;
+      color: var(--text-light);
+      font-family: 'Fraunces', serif;
+      font-style: italic;
+      animation: fade-up 0.5s ease-out 1s both;
+    }
 
-  /* Loading state */
-  .submit-btn.loading {
-    pointer-events: none;
-    opacity: 0.85;
-  }
+    .submit-btn.loading {
+      pointer-events: none;
+      opacity: 0.85;
+    }
 
-  .submit-btn.loading .btn-text {
-    opacity: 0;
-  }
+    .submit-btn.loading .btn-text {
+      opacity: 0;
+    }
 
-  .spinner {
-    display: none;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 22px;
-    height: 22px;
-    border: 2.5px solid rgba(255,255,255,0.3);
-    border-top-color: white;
-    border-radius: 50%;
-    animation: spin 0.7s linear infinite;
-  }
+    .spinner {
+      display: none;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 22px;
+      height: 22px;
+      border: 2.5px solid rgba(255,255,255,0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
 
-  .submit-btn.loading .spinner {
-    display: block;
-  }
+    .submit-btn.loading .spinner {
+      display: block;
+    }
 
-  @keyframes spin {
-    to { transform: translate(-50%, -50%) rotate(360deg); }
-  }
-</style>
+    @keyframes spin {
+      to { transform: translate(-50%, -50%) rotate(360deg); }
+    }
+  </style>
 </head>
 <body>
 
-<!-- ── Vector Forest Scene ── -->
 <div class="forest-scene">
   <svg viewBox="0 0 393 340" preserveAspectRatio="xMidYMax slice" xmlns="http://www.w3.org/2000/svg">
     <defs>
@@ -410,10 +399,8 @@
       <filter id="blur-md"><feGaussianBlur stdDeviation="4"/></filter>
     </defs>
 
-    <!-- Sky -->
     <rect width="393" height="340" fill="url(#sky)"/>
 
-    <!-- Stars -->
     <g opacity="0.6">
       <circle cx="50" cy="30" r="1.2" fill="#D8F3DC"/>
       <circle cx="120" cy="55" r="0.8" fill="#B7E4C7"/>
@@ -427,15 +414,12 @@
       <circle cx="30" cy="50" r="0.8" fill="#B7E4C7"/>
     </g>
 
-    <!-- Moon -->
     <circle cx="310" cy="72" r="50" fill="url(#moonGlow)" filter="url(#blur-md)"/>
     <circle cx="310" cy="72" r="18" fill="#E8F5E0" opacity="0.95"/>
     <circle cx="310" cy="72" r="22" fill="none" stroke="#D8F3DC" stroke-width="0.5" opacity="0.4"/>
 
-    <!-- Background hill -->
     <path d="M0 200 Q60 130 120 170 Q180 120 220 160 Q280 100 350 150 L393 130 L393 340 L0 340Z" fill="#0B1F12" opacity="0.6"/>
 
-    <!-- Back tree layer -->
     <g opacity="0.5" filter="url(#blur-sm)">
       <polygon points="30,260 45,100 60,260" fill="#0D2818"/>
       <polygon points="65,260 82,120 99,260" fill="#102415"/>
@@ -447,7 +431,6 @@
       <polygon points="340,260 358,115 376,260" fill="#102415"/>
     </g>
 
-    <!-- Mid tree layer -->
     <g>
       <polygon points="20,290 50,160 80,290" fill="#132A13"/>
       <polygon points="28,260 50,180 72,260" fill="#163B20"/>
@@ -475,7 +458,6 @@
       <rect x="356" y="292" width="8" height="20" fill="#3D2B1F" rx="2"/>
     </g>
 
-    <!-- Front tree layer -->
     <g>
       <rect x="52" y="280" width="14" height="60" fill="#5C3D2E" rx="4"/>
       <polygon points="-10,310 60,150 130,310" fill="#1E4D2B"/>
@@ -495,19 +477,16 @@
       <polygon points="138,278 160,252 182,278" fill="#2D7A45"/>
     </g>
 
-    <!-- Ground bushes -->
     <ellipse cx="40" cy="315" rx="50" ry="20" fill="#1A4428" opacity="0.7"/>
     <ellipse cx="140" cy="320" rx="40" ry="16" fill="#1E4D2B" opacity="0.6"/>
     <ellipse cx="250" cy="318" rx="55" ry="18" fill="#1A4428" opacity="0.7"/>
     <ellipse cx="360" cy="315" rx="45" ry="17" fill="#1E4D2B" opacity="0.6"/>
 
-    <!-- Mist -->
     <rect x="0" y="260" width="393" height="80" fill="url(#mist)"/>
     <ellipse cx="100" cy="300" rx="120" ry="25" fill="#F5F0E8" opacity="0.15" filter="url(#blur-md)"/>
     <ellipse cx="300" cy="295" rx="100" ry="20" fill="#F5F0E8" opacity="0.12" filter="url(#blur-md)"/>
   </svg>
 
-  <!-- Fireflies -->
   <div class="firefly"></div>
   <div class="firefly"></div>
   <div class="firefly"></div>
@@ -515,59 +494,59 @@
   <div class="firefly"></div>
   <div class="firefly"></div>
 
-  <!-- Brand -->
   <div class="brand-overlay">
     <div class="brand-name">sláinte</div>
     <div class="brand-tagline">automated wellness · delivered daily</div>
   </div>
 </div>
 
-<!-- ── Login Form ── -->
 <div class="form-area">
-  <!-- Tabs -->
   <div class="tab-bar">
     <div class="tab-slider" id="tabSlider"></div>
     <button class="tab-btn active" id="tabLogin" onclick="switchTab('login')">Sign In</button>
     <button class="tab-btn" id="tabRegister" onclick="switchTab('register')">Register</button>
   </div>
 
-  <!-- Fields -->
   <div class="field">
     <label class="field-label">Username</label>
     <input class="field-input" id="authUser" type="text" placeholder="Enter your username" autocomplete="username" />
   </div>
 
-    <div class="field">
-        <label class="field-label">Password</label>
-        <div class="field-password">
-            <input class="field-input" id="authPass" type="password" placeholder="Enter your password" autocomplete="current-password" />
-            <button class="toggle-pw" id="togglePw" type="button">Show</button>
-        </div>
+  <div class="field">
+    <label class="field-label">Password</label>
+    <div class="field-password">
+      <input class="field-input" id="authPass" type="password" placeholder="Enter your password" autocomplete="current-password" />
+      <button class="toggle-pw" id="togglePw" type="button">Show</button>
     </div>
+  </div>
 
-  <!-- Submit -->
+  <div class="field" id="confirmPasswordField" style="display:none;">
+    <label class="field-label">Confirm Password</label>
+    <div class="field-password">
+      <input class="field-input" id="authPassConfirm" type="password" placeholder="Re-enter your password" autocomplete="new-password" />
+      <button class="toggle-pw" id="togglePwConfirm" type="button">Show</button>
+    </div>
+  </div>
+
   <button class="submit-btn" id="authBtn">
     <span class="btn-text">Sign In</span>
     <div class="spinner"></div>
   </button>
 
-  <!-- Message -->
   <div class="msg" id="authMsg"></div>
 
-  <!-- Bottom -->
   <div class="bottom-text">
-      Let's raise a glass to wellness
+    Let's raise a glass to wellness
   </div>
 </div>
 
 <script>
   var API_BASE = window.location.hostname === "localhost"
-    ? "http://localhost:8080"
-    : "http://" + window.location.hostname + ":8080";
+          ? "http://localhost:8080"
+          : "http://" + window.location.hostname + ":8080";
 
   var currentTab = "login";
 
-  // If already logged in, go straight to home
   var existingToken = sessionStorage.getItem("authToken");
   if (existingToken && window.ReactNativeWebView) {
     window.ReactNativeWebView.postMessage("home");
@@ -580,17 +559,26 @@
     var registerBtn = document.getElementById("tabRegister");
     var submitBtn = document.getElementById("authBtn");
     var msg = document.getElementById("authMsg");
+    var confirmField = document.getElementById("confirmPasswordField");
+    var confirmInput = document.getElementById("authPassConfirm");
+    var passInput = document.getElementById("authPass");
+    var togglePw = document.getElementById("togglePw");
+    var togglePwConfirm = document.getElementById("togglePwConfirm");
 
     if (tab === "register") {
       slider.classList.add("register");
       loginBtn.classList.remove("active");
       registerBtn.classList.add("active");
       submitBtn.querySelector(".btn-text").textContent = "Create Account";
+      confirmField.style.display = "block";
+      passInput.autocomplete = "new-password";
     } else {
       slider.classList.remove("register");
       loginBtn.classList.add("active");
       registerBtn.classList.remove("active");
       submitBtn.querySelector(".btn-text").textContent = "Sign In";
+      confirmField.style.display = "none";
+      passInput.autocomplete = "current-password";
     }
 
     msg.className = "msg";
@@ -598,11 +586,18 @@
 
     document.getElementById("authUser").value = "";
     document.getElementById("authPass").value = "";
+    confirmInput.value = "";
+
+    document.getElementById("authPass").type = "password";
+    confirmInput.type = "password";
+    togglePw.textContent = "Show";
+    togglePwConfirm.textContent = "Show";
   }
 
   document.getElementById("authBtn").addEventListener("click", async function() {
     var username = document.getElementById("authUser").value.trim();
     var password = document.getElementById("authPass").value;
+    var confirmPassword = document.getElementById("authPassConfirm").value;
     var msg = document.getElementById("authMsg");
     var btn = document.getElementById("authBtn");
 
@@ -614,6 +609,22 @@
       msg.style.display = "block";
       msg.textContent = "Please enter your username and password.";
       return;
+    }
+
+    if (currentTab === "register") {
+      if (!confirmPassword) {
+        msg.className = "msg err";
+        msg.style.display = "block";
+        msg.textContent = "Please confirm your password.";
+        return;
+      }
+
+      if (password !== confirmPassword) {
+        msg.className = "msg err";
+        msg.style.display = "block";
+        msg.textContent = "Passwords do not match.";
+        return;
+      }
     }
 
     btn.classList.add("loading");
@@ -645,18 +656,12 @@
         return;
       }
 
-      // Login success — store token and navigate to home
       var data = JSON.parse(text);
       sessionStorage.setItem("authToken", data.token);
       sessionStorage.setItem("authUser", username);
 
       if (window.ReactNativeWebView) {
-        window.ReactNativeWebView.postMessage(JSON.stringify({
-          type: "authSuccess",
-          token: data.token,
-          username: username,
-          apiBase: API_BASE
-        }));
+        window.ReactNativeWebView.postMessage("home");
       }
 
     } catch (e) {
@@ -671,17 +676,37 @@
     if (e.key === "Enter") document.getElementById("authBtn").click();
   });
 
+  document.getElementById("authPassConfirm").addEventListener("keydown", function(e) {
+    if (e.key === "Enter") document.getElementById("authBtn").click();
+  });
+
+  document.getElementById("authUser").addEventListener("keydown", function(e) {
+    if (e.key === "Enter") document.getElementById("authBtn").click();
+  });
+
   var togglePw = document.getElementById("togglePw");
+  var togglePwConfirm = document.getElementById("togglePwConfirm");
 
   togglePw.addEventListener("click", function() {
-      var passInput = document.getElementById("authPass");
-      if (passInput.type === "password") {
-          passInput.type = "text";
-          togglePw.textContent = "Hide";
-      } else {
-          passInput.type = "password";
-          togglePw.textContent = "Show";
-      }
+    var passInput = document.getElementById("authPass");
+    if (passInput.type === "password") {
+      passInput.type = "text";
+      togglePw.textContent = "Hide";
+    } else {
+      passInput.type = "password";
+      togglePw.textContent = "Show";
+    }
+  });
+
+  togglePwConfirm.addEventListener("click", function() {
+    var confirmInput = document.getElementById("authPassConfirm");
+    if (confirmInput.type === "password") {
+      confirmInput.type = "text";
+      togglePwConfirm.textContent = "Hide";
+    } else {
+      confirmInput.type = "password";
+      togglePwConfirm.textContent = "Show";
+    }
   });
 </script>
 </body>
