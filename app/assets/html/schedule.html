@@ -292,6 +292,9 @@
                 <button id="scanBtn" style="width:auto;">📷 Scan barcode</button>
                 <button id="addVitaminBtn" class="primary" style="width:auto;">Add vitamin</button>
             </div>
+            <div style="margin-top:10px; font-size:12px; line-height:1.4; color:#C04030;">
+                ⚠️ Overuse of vitamins may cause harm. Always follow the recommended dosage on the product label or consult a healthcare professional.
+            </div>
         </div>
 
         <div id="vitaminList"></div>
@@ -560,7 +563,7 @@
                         vitaminType: v.vitaminType.trim(),
                         numberOfPills: Number.isFinite(pills) && pills >= 1 ? Math.floor(pills) : 1,
                         schedule: uiSchedule,
-                        ui: { collapsed: false }
+                        ui: { collapsed: true }
                     };
                 })
         };
@@ -631,7 +634,7 @@
         root.innerHTML = "";
 
         state.vitamins.forEach((v, idx)=>{
-            v.ui = v.ui || { collapsed:false };
+            v.ui = v.ui || { collapsed:true };
             const collapsed = !!v.ui.collapsed;
             const card = document.createElement("div");
             card.className = "card";
@@ -776,7 +779,7 @@
                 e.stopPropagation();
                 const idx = Number(e.target.dataset.idx);
                 applyPreset(idx, e.target.getAttribute("data-preset"));
-                setCollapsed(idx, false);
+                setCollapsed(idx, true);
                 // Daily opens modal — don't re-render yet, modal confirm will
                 if (e.target.getAttribute("data-preset") !== "daily") { render(); setStatusFromValidation(); }
             });
@@ -840,7 +843,7 @@
             vitaminType: name,
             numberOfPills: Number.isFinite(n) && n >= 1 ? Math.floor(n) : 1,
             schedule: {},
-            ui: { collapsed: false }
+            ui: { collapsed: true }
         });
         nameInp.value = "";
         pillsInp.value = "1";
@@ -969,7 +972,7 @@
                         vitaminType: result.name,
                         numberOfPills: numberOfPills,
                         schedule: schedule,
-                        ui: { collapsed: false }
+                        ui: { collapsed: true }
                     });
 
                     document.getElementById("newVitaminName").value = "";
