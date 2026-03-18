@@ -123,8 +123,10 @@ export default function HomeScreen() {
     const webViewRef = useRef<any>(null);
     const authTokenRef = useRef<string>("");
     const apiBaseRef = useRef<string>("");
-    const usernameRef = useRef<string>(""); // ✅ FIXED LOCATION
+    const usernameRef = useRef<string>("");
     const scannedRef = useRef(false);
+
+    const lastScheduleRef = useRef<any>(null);
 
     const sources = {
         login: require("../../assets/html/login.html"),
@@ -233,13 +235,30 @@ export default function HomeScreen() {
                         if (parsed.type === "authSuccess") {
                             authTokenRef.current = parsed.token;
                             apiBaseRef.current = parsed.apiBase;
-                            usernameRef.current = parsed.username; // ✅ now works
+                            usernameRef.current = parsed.username;
                             setPage("home");
                             return;
                         }
 
+                        if (parsed.type === "pauseToggled") {
+                            if (parsed.paused) {
+                                await Notifications.cancelAllScheduledNotificationsAsync();
+                            } else {
+                                if (lastScheduleRef.current) {
+                                    await scheduleAllNotifications(
+                                        lastScheduleRef.current,
+                                        authTokenRef.current,
+                                        apiBaseRef.current
+                                    );
+                                }
+                            }
+                            return;
+                        }
+
                         if (parsed.type === "scheduleUpdated") {
-                            scheduleAllNotifications(
+                            lastScheduleRef.current = parsed.schedule;
+
+                            await scheduleAllNotifications(
                                 parsed.schedule,
                                 parsed.authToken,
                                 parsed.apiBase

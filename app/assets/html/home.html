@@ -439,6 +439,13 @@
             svg.setAttribute("stroke", "#C04030");
             svg.innerHTML = '<rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/>';
         }
+
+        if (window.ReactNativeWebView) {
+            window.ReactNativeWebView.postMessage(JSON.stringify({
+                type: "pauseToggled",
+                paused: paused
+            }));
+        }
     }
 
     document.getElementById("pauseToggle").addEventListener("click", async function() {
@@ -458,6 +465,13 @@
                         showResumeWarning(advances, dispenses);
                     } else {
                         setPauseUI(false);
+
+                        if (window.ReactNativeWebView) {
+                            window.ReactNativeWebView.postMessage(JSON.stringify({
+                                type: "pauseToggled",
+                                paused: false
+                            }));
+                        }
                     }
                 }
             } catch (e) {}
@@ -468,7 +482,16 @@
                     method: "POST",
                     headers: { "Authorization": "Bearer " + authToken }
                 });
-                if (res.ok) setPauseUI(true);
+                if (res.ok) {
+                    setPauseUI(true);
+
+                    if (window.ReactNativeWebView) {
+                        window.ReactNativeWebView.postMessage(JSON.stringify({
+                            type: "pauseToggled",
+                            paused: true
+                        }));
+                    }
+                }
             } catch (e) {}
         }
     });
@@ -492,6 +515,13 @@
     document.getElementById("resumeWarningOk").addEventListener("click", function() {
         document.getElementById("resumeWarningModal").classList.remove("open");
         setPauseUI(false);
+
+        if (window.ReactNativeWebView) {
+            window.ReactNativeWebView.postMessage(JSON.stringify({
+                type: "pauseToggled",
+                paused: false
+            }));
+        }
     });
 
     fetchPauseState();
