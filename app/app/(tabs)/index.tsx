@@ -123,7 +123,10 @@ export default function HomeScreen() {
     const webViewRef = useRef<any>(null);
     const authTokenRef = useRef<string>("");
     const apiBaseRef = useRef<string>("");
+    const usernameRef = useRef<string>("");
     const scannedRef = useRef(false);
+
+    const lastScheduleRef = useRef<any>(null);
 
     const sources = {
         login: require("../../assets/html/login.html"),
@@ -185,6 +188,7 @@ export default function HomeScreen() {
             );
             const json = await res.json();
             const result = res.ok ? json : null;
+
             webViewRef.current?.injectJavaScript(
                 `window.onBarcodeResult(${JSON.stringify(result)}); true;`
             );
@@ -200,22 +204,61 @@ export default function HomeScreen() {
             <StatusBar
                 barStyle="light-content"
                 backgroundColor="transparent"
-                translucent={true}
+                translucent
             />
+
             <WebView
                 ref={webViewRef}
                 originWhitelist={["*"]}
                 source={sources[page]}
                 style={{ flex: 1 }}
                 injectedJavaScript={injectedJS}
+
+                onLoad={() => {
+                    if (authTokenRef.current && usernameRef.current) {
+                        webViewRef.current?.injectJavaScript(`
+                            sessionStorage.setItem("authToken", ${JSON.stringify(authTokenRef.current)});
+                            sessionStorage.setItem("authUser", ${JSON.stringify(usernameRef.current)});
+                            sessionStorage.setItem("apiBase", ${JSON.stringify(apiBaseRef.current)});
+                            if (typeof fetchPauseState === "function") fetchPauseState();
+                            true;
+                        `);
+                    }
+                }}
+
                 onMessage={async (event) => {
                     const msg = event.nativeEvent.data;
 
                     try {
                         const parsed = JSON.parse(msg);
 
+                        if (parsed.type === "authSuccess") {
+                            authTokenRef.current = parsed.token;
+                            apiBaseRef.current = parsed.apiBase;
+                            usernameRef.current = parsed.username;
+                            setPage("home");
+                            return;
+                        }
+
+                        if (parsed.type === "pauseToggled") {
+                            if (parsed.paused) {
+                                await Notifications.cancelAllScheduledNotificationsAsync();
+                            } else {
+                                if (lastScheduleRef.current) {
+                                    await scheduleAllNotifications(
+                                        lastScheduleRef.current,
+                                        authTokenRef.current,
+                                        apiBaseRef.current
+                                    );
+                                }
+                            }
+                            return;
+                        }
+
                         if (parsed.type === "scheduleUpdated") {
-                            scheduleAllNotifications(
+                            lastScheduleRef.current = parsed.schedule;
+
+                            await scheduleAllNotifications(
                                 parsed.schedule,
                                 parsed.authToken,
                                 parsed.apiBase
@@ -227,9 +270,11 @@ export default function HomeScreen() {
                             authTokenRef.current = parsed.authToken;
                             apiBaseRef.current = parsed.apiBase;
                             scannedRef.current = false;
+
                             if (!permission?.granted) {
                                 await requestPermission();
                             }
+
                             setShowCamera(true);
                             return;
                         }

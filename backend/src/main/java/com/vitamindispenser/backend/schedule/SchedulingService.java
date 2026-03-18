@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -31,6 +32,11 @@ public class SchedulingService {
         this.userRepository = userRepository;
     }
 
+    /**
+     * saves the user's new schedule, overwriting the old one with all changes
+     * @param request the user's submitted schedule information
+     * @param user the User entity whose entry is being updated
+     */
     @Transactional
     public void saveSchedule(ScheduleRequest request, User user) {
 
@@ -67,9 +73,16 @@ public class SchedulingService {
 
         scheduleEntryRepository.saveAll(entries);
 
-        assignSlots(entries, user);
+        if (!entries.isEmpty()) {
+            assignSlots(entries, user);
+        }
     }
 
+    /**
+     * fetches the specified user's currently stored schedule
+     * @param user the User entity whose schedule is to be accessed
+     * @return the user's stored schedule
+     */
     public ScheduleRequest retrieveSchedule(User user) {
 
         List<ScheduleEntry> entries = scheduleEntryRepository.findByUser(user);
@@ -109,6 +122,11 @@ public class SchedulingService {
         return request;
     }
 
+    /**
+     * creates a slot entry for all 14 vitamin slots on the dispenser, and
+     * marks slot 15 as reserved (must be kept empty)
+     * @param user the User's whose dispenser slots are being initialised
+     */
     private void initialiseSlots(User user) {
 
         List<Slot> slots = new ArrayList<>();
@@ -126,6 +144,11 @@ public class SchedulingService {
         slotRepository.saveAll(slots);
     }
 
+    /**
+     * assigns vitamins to physical slots in the dispenser by grouping them by day and time
+     * @param entries the list of all the user's supplements and their timings
+     * @param user the user whose dispenser slots are being assigned
+     */
     private void assignSlots(List<ScheduleEntry> entries, User user) {
 
         List<Slot> slots = slotRepository.findByUserOrderBySlotNumber(user)
@@ -140,7 +163,7 @@ public class SchedulingService {
                 .toList();
 
         if (uniqueTimes.isEmpty()) {
-            throw new IllegalArgumentException("NO_SCHEDULE");
+            return;
         }
 
         int offset = user.getFillCycleOffset() % uniqueTimes.size();
@@ -205,6 +228,11 @@ public class SchedulingService {
         slotRepository.saveAll(slots);
     }
 
+    /**
+     * fetches what vitamins should be in each physical dispenser slot
+     * @param user the user whose information is to be updated
+     * @return a map of which vitamins are in each dispenser slot
+     */
     public Map<String, Object> getSlots(User user) {
 
         List<Slot> slots = slotRepository.findByUserOrderBySlotNumber(user);
@@ -245,6 +273,12 @@ public class SchedulingService {
         return Map.of("slots", slotList);
     }
 
+    /**
+     * calculates when the user should next refill the dispenser based on their schedule
+     * and last refill date
+     * @param user the user whose info is being updated
+     * @return a map of any current warnings and the user's refill information
+     */
     public Map<String, Object> getRefillInfo(User user) {
 
         List<ScheduleEntry> entries = scheduleEntryRepository.findByUser(user);
@@ -288,6 +322,12 @@ public class SchedulingService {
         return result;
     }
 
+    /**
+     * resets last fill date to now, calls the assign slots function to represent
+     * what pills are now physically in which slots of the dispenser
+     * @param user the user who has filled their dispenser
+     * @return the new refill information
+     */
     public Map<String, Object> confirmFill(User user) {
 
         List<ScheduleEntry> entries = scheduleEntryRepository.findByUser(user);
@@ -313,5 +353,90 @@ public class SchedulingService {
         assignSlots(entries, user);
 
         return getRefillInfo(user);
+    }
+
+    /**
+     * calculates how many scheduled dispenses the user has missed while they have paused dispensing
+     * @param user the user who paused their schedule
+     * @param pausedAt the timestamp of when the user changed their schedule
+     * @return how many scheduled dispenses were missed
+     */
+    public List<String> calculateMissedSlotQueue(User user, LocalDateTime pausedAt) {
+        if (pausedAt == null) return List.of();
+
+        LocalDateTime now = LocalDateTime.now();
+        List<ScheduleEntry> entries = scheduleEntryRepository.findByUser(user);
+
+        List<String> missed = new ArrayList<>();
+
+        entries.stream()
+                .map(e -> e.getDay() + "|" + e.getTime())
+                .distinct()
+                .forEach(dayTime -> {
+                    String[] parts = dayTime.split("\\|");
+                    String day = parts[0];
+                    LocalTime time = LocalTime.parse(parts[1]);
+                    DayOfWeek targetDay = DayOfWeek.valueOf(day.toUpperCase());
+
+                    LocalDateTime cursor = pausedAt.toLocalDate().atTime(time);
+                    while (cursor.getDayOfWeek() != targetDay) {
+                        cursor = cursor.plusDays(1);
+                    }
+                    if (cursor.isBefore(pausedAt)) {
+                        cursor = cursor.plusWeeks(1);
+                    }
+
+                    while (cursor.isBefore(now)) {
+                        boolean olderThan8Hours = cursor.isBefore(now.minusHours(8));
+                        LocalDateTime nextSlot = findNextSlotAfter(cursor, entries);
+                        boolean nextSlotHasPassed = nextSlot != null && nextSlot.isBefore(now);
+
+                        if (olderThan8Hours || nextSlotHasPassed) {
+                            missed.add(dayTime + "|ADVANCE");
+                        } else {
+                            // within 8 hours, next slot hasn't passed — dispense immediately on resume
+                            missed.add(dayTime + "|DISPENSE");
+                        }
+
+                        cursor = cursor.plusWeeks(1);
+                    }
+                });
+
+        Map<String, Integer> dayOrder = Map.of(
+                "monday", 0, "tuesday", 1, "wednesday", 2, "thursday", 3,
+                "friday", 4, "saturday", 5, "sunday", 6
+        );
+
+        missed.sort((a, b) -> {
+            String[] partsA = a.split("\\|");
+            String[] partsB = b.split("\\|");
+            int dayCompare = Integer.compare(
+                    dayOrder.getOrDefault(partsA[0], 0),
+                    dayOrder.getOrDefault(partsB[0], 0)
+            );
+            if (dayCompare != 0) return dayCompare;
+            return LocalTime.parse(partsA[1]).compareTo(LocalTime.parse(partsB[1]));
+        });
+
+        return missed;
+    }
+
+    private LocalDateTime findNextSlotAfter(LocalDateTime after, List<ScheduleEntry> entries) {
+        return entries.stream()
+                .map(e -> e.getDay() + "|" + e.getTime())
+                .distinct()
+                .map(dayTime -> {
+                    String[] parts = dayTime.split("\\|");
+                    LocalTime time = LocalTime.parse(parts[1]);
+                    DayOfWeek targetDay = DayOfWeek.valueOf(parts[0].toUpperCase());
+
+                    LocalDateTime cursor = after.plusMinutes(1).toLocalDate().atTime(time);
+                    while (cursor.getDayOfWeek() != targetDay) cursor = cursor.plusDays(1);
+                    if (!cursor.isAfter(after)) cursor = cursor.plusWeeks(1);
+                    return cursor;
+                })
+                .filter(dt -> dt.isAfter(after))
+                .min(Comparator.naturalOrder())
+                .orElse(null);
     }
 }

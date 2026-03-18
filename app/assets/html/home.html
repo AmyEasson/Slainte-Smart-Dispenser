@@ -89,6 +89,73 @@
             from { opacity: 0; transform: translateY(14px); }
             to { opacity: 1; transform: translateY(0); }
         }
+
+        .pause-card {
+            background: var(--warm-white);
+            border: 1px solid rgba(30,77,43,0.08);
+            border-radius: 22px;
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+            animation: fade-up 0.5s ease-out 0.55s both;
+            margin-top: 14px;
+        }
+
+        .pause-icon {
+            width: 56px; height: 56px; border-radius: 16px;
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+            background: linear-gradient(145deg, #FDE8E8, #FACACA);
+            transition: background 0.3s ease;
+        }
+        .pause-icon.active {
+            background: linear-gradient(145deg, #D8F3DC, #B7E4C7);
+        }
+
+        .pause-body { flex: 1; min-width: 0; }
+        .pause-title { font-family: 'Fraunces', serif; font-weight: 700; font-size: 17px; margin-bottom: 3px; }
+        .pause-desc { font-size: 13px; color: var(--text-muted); line-height: 1.4; }
+
+        .pause-toggle {
+            flex-shrink: 0;
+            width: 50px; height: 28px;
+            border-radius: 999px;
+            background: #D0D0D0;
+            border: none;
+            cursor: pointer;
+            position: relative;
+            transition: background 0.3s ease;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .pause-toggle.active { background: var(--forest-green); }
+        .pause-toggle::after {
+            content: '';
+            position: absolute;
+            top: 3px; left: 3px;
+            width: 22px; height: 22px;
+            border-radius: 50%;
+            background: white;
+            transition: transform 0.3s ease;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+        .pause-toggle.active::after { transform: translateX(22px); }
+
+        .modal-overlay {
+            display: none; position: fixed; inset: 0;
+            background: rgba(11,26,15,0.4); z-index: 100;
+            align-items: center; justify-content: center;
+        }
+        .modal-overlay.open { display: flex; animation: fade-in 0.2s ease-out; }
+        .modal {
+            background: var(--cream); border-radius: 24px; padding: 22px;
+            width: min(340px, 90vw); box-shadow: 0 12px 40px rgba(11,26,15,0.25);
+            border: 1px solid rgba(30,77,43,0.08);
+        }
+        .modal h2 { font-size: 18px; margin: 0 0 6px; font-weight: 900; font-family: 'Fraunces', serif; }
+        .modal p { font-size: 13px; color: var(--text-muted); margin: 0 0 14px; }
+        .modal-btns { display: flex; gap: 10px; }
+        .modal-btns button { flex: 1; padding: 12px; font-size: 15px; }
     </style>
 </head>
 <body>
@@ -269,11 +336,35 @@
         </a>
     </div>
 
+    <div class="pause-card" id="pauseCard">
+        <div class="card-icon pause-icon" id="pauseIcon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#C04030" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" id="pauseSvg">
+                <rect x="6" y="4" width="4" height="16" rx="1"/>
+                <rect x="14" y="4" width="4" height="16" rx="1"/>
+            </svg>
+        </div>
+        <div class="pause-body">
+            <div class="pause-title" id="pauseTitle">Dispensing active</div>
+            <div class="pause-desc" id="pauseDesc">Tap to pause while you're away.</div>
+        </div>
+        <button class="pause-toggle" id="pauseToggle"></button>
+    </div>
+
     <div class="signout-row">
         <button class="signout-btn" id="logoutBtn">Sign out</button>
     </div>
 
 
+</div>
+
+<div class="modal-overlay" id="resumeWarningModal">
+    <div class="modal">
+        <h2>⚠️ Catching up</h2>
+        <p id="resumeWarningMsg"></p>
+        <div class="modal-btns">
+            <button id="resumeWarningOk" class="primary">OK, got it</button>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -302,6 +393,139 @@
             window.ReactNativeWebView.postMessage("login");
         }
     });
+
+    var API_BASE = window.location.hostname === "localhost"
+        ? "http://localhost:8080"
+        : "http://" + window.location.hostname + ":8080";
+
+    var isPaused = false;
+
+    async function fetchPauseState() {
+        console.log("fetchPauseState called, authToken:", authToken);
+        try {
+            var res = await fetch(API_BASE + "/api/mobile/pause-status", {
+                headers: { "Authorization": "Bearer " + authToken }
+            });
+            if (res.ok) {
+                var data = await res.json();
+                setPauseUI(data.paused);
+            }
+        } catch (e) {
+            console.log("fetchPauseState error:", e);
+        }
+    }
+
+    function setPauseUI(paused) {
+        isPaused = paused;
+        var toggle = document.getElementById("pauseToggle");
+        var icon = document.getElementById("pauseIcon");
+        var title = document.getElementById("pauseTitle");
+        var desc = document.getElementById("pauseDesc");
+        var svg = document.getElementById("pauseSvg");
+
+        if (paused) {
+            toggle.classList.add("active");
+            icon.classList.add("active");
+            title.textContent = "Dispensing paused";
+            desc.textContent = "Tap to resume when you're back.";
+            svg.setAttribute("stroke", "#2D6A4F");
+            // Change to play icon
+            svg.innerHTML = '<circle cx="12" cy="12" r="9"/><polygon points="10,8 18,12 10,16" fill="#2D6A4F" stroke="none"/>';
+        } else {
+            toggle.classList.remove("active");
+            icon.classList.remove("active");
+            title.textContent = "Dispensing active";
+            desc.textContent = "Tap to pause while you're away.";
+            svg.setAttribute("stroke", "#C04030");
+            svg.innerHTML = '<rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/>';
+        }
+
+        if (window.ReactNativeWebView) {
+            window.ReactNativeWebView.postMessage(JSON.stringify({
+                type: "pauseToggled",
+                paused: paused
+            }));
+        }
+    }
+
+    document.getElementById("pauseToggle").addEventListener("click", async function() {
+        if (isPaused) {
+            // resuming — check if advances needed first
+            try {
+                var res = await fetch(API_BASE + "/api/mobile/resume", {
+                    method: "POST",
+                    headers: { "Authorization": "Bearer " + authToken }
+                });
+                if (res.ok) {
+                    var data = await res.json();
+                    var advances = data.slotsToAdvance || 0;
+                    var dispenses = data.immediateDispenses || 0;
+
+                    if (advances > 0 || dispenses > 0) {
+                        showResumeWarning(advances, dispenses);
+                    } else {
+                        setPauseUI(false);
+
+                        if (window.ReactNativeWebView) {
+                            window.ReactNativeWebView.postMessage(JSON.stringify({
+                                type: "pauseToggled",
+                                paused: false
+                            }));
+                        }
+                    }
+                }
+            } catch (e) {}
+        } else {
+            // pausing
+            try {
+                var res = await fetch(API_BASE + "/api/mobile/pause", {
+                    method: "POST",
+                    headers: { "Authorization": "Bearer " + authToken }
+                });
+                if (res.ok) {
+                    setPauseUI(true);
+
+                    if (window.ReactNativeWebView) {
+                        window.ReactNativeWebView.postMessage(JSON.stringify({
+                            type: "pauseToggled",
+                            paused: true
+                        }));
+                    }
+                }
+            } catch (e) {}
+        }
+    });
+
+    function showResumeWarning(advances, dispenses) {
+        var modal = document.getElementById("resumeWarningModal");
+        var msg = document.getElementById("resumeWarningMsg");
+
+        var text = "";
+        if (advances > 0) {
+            text += `Your dispenser needs to skip ${advances} missed slot${advances > 1 ? "s" : ""}. `;
+            text += `Pills from these slots will fall into the tray — please discard them before taking your next dose. `;
+        }
+        if (dispenses > 0) {
+            text += `Your most recent dose will be dispensed immediately.`;
+        }
+        msg.textContent = text;
+        modal.classList.add("open");
+    }
+
+    document.getElementById("resumeWarningOk").addEventListener("click", function() {
+        document.getElementById("resumeWarningModal").classList.remove("open");
+        setPauseUI(false);
+
+        if (window.ReactNativeWebView) {
+            window.ReactNativeWebView.postMessage(JSON.stringify({
+                type: "pauseToggled",
+                paused: false
+            }));
+        }
+    });
+
+    fetchPauseState();
 </script>
+
 </body>
 </html>

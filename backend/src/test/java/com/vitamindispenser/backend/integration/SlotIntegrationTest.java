@@ -112,19 +112,20 @@ class SlotIntegrationTest {
         """;
 
     private static final String SCHEDULE_3_TIMES = """
+    {
+      "vitamins":[
         {
-          "vitamins":[
-            {
-              "vitaminType":"Vitamin A",
-              "numberOfPills":1,
-              "schedule":[
-                {"day":"monday","times":["09:00","18:00"]},
-                {"day":"wednesday","times":["09:00"]}
-              ]
-            }
+          "vitaminType":"Vitamin A",
+          "numberOfPills":1,
+          "schedule":[
+            {"day":"monday","times":["09:00"]},
+            {"day":"wednesday","times":["13:00"]},
+            {"day":"friday","times":["18:00"]}
           ]
         }
-        """;
+      ]
+    }
+    """;
 
     private static final String SCHEDULE_14_TIMES = """
         {
