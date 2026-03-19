@@ -8,6 +8,7 @@ import com.vitamindispenser.backend.schedule.ScheduleEntryRepository;
 import lombok.NonNull;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -49,6 +50,7 @@ public class LoggingService {
         if (entry == null) return null;
         Log log = new Log();
         log.setVitaminType(entry.getVitaminType());
+        log.setDate(LocalDate.now());
         log.setDay(entry.getDay());
         log.setTime(entry.getTime());
         log.setNumberOfPills(entry.getNumberOfPills());
@@ -63,6 +65,7 @@ public class LoggingService {
             log.setIntakeId(e.getId());
             log.setVitaminType(e.getVitaminType());
             log.setNumberOfPills(e.getNumberOfPills());
+            log.setDate(LocalDate.now());
             log.setDay(e.getDay());
             log.setTime(e.getTime());
             log.setTaken(e.getTaken());

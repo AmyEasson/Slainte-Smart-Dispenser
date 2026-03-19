@@ -4,6 +4,8 @@ package com.vitamindispenser.backend.logging.dto;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDate;
+
 /**
  * Response body for intake log history sent to mobile app
  */
@@ -12,6 +14,7 @@ import lombok.Setter;
 public class Log {
 
     private String vitaminType;
+    private LocalDate date;
     private String day;
     private String time;
     private Integer numberOfPills;

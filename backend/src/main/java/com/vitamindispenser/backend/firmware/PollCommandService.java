@@ -99,6 +99,8 @@ public class PollCommandService {
                             return new PollCommandResult("DISPENSE", ids, slotNumber);
                         } else {
                             loggingService.handleStatus(ids, false, user);
+                            System.out.println("MISSED SLOT DETECTED: " + day + " " + time);
+                            System.out.println("IDS: " + ids);
                         }
                     }
 

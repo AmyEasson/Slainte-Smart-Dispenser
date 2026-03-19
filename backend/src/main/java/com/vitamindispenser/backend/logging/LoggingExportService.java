@@ -54,6 +54,7 @@ public class LoggingExportService {
         return repo.findByUser(user).stream()
                 .map(r -> new IntakeForRawDashboard(
                         r.getVitaminType(),
+                        r.getDate().toString(),
                         r.getDay(),
                         r.getTime(),
                         r.getNumberOfPills(),

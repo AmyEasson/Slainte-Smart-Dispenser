@@ -46,12 +46,57 @@
         .toolbar button{ padding: 8px 14px; font-size: 13px; border-radius: 999px; background: linear-gradient(135deg, #1E4D2B, #2D6A4F); color: #FEFCF8; border-color: transparent; box-shadow: 0 2px 8px rgba(30,77,43,0.25); font-weight: 600; }
         .toolbar button:active{ transform: scale(0.95); }
 
-        table{ width:100%; border-collapse: collapse; }
+        table{
+            width:100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
 
-        thead th{ text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); font-weight: 700; border-bottom: 1px solid var(--border); padding: 10px 12px; cursor: pointer; user-select: none; white-space: nowrap; font-family: 'DM Sans', sans-serif; transition: color 0.2s ease; }
+        thead th{
+            text-align: left;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            color: var(--muted);
+            font-weight: 700;
+            border-bottom: 1px solid var(--border);
+            padding: 8px 6px;
+            cursor: pointer;
+            user-select: none;
+            white-space: nowrap;
+            font-family: 'DM Sans', sans-serif;
+            transition: color 0.2s ease;
+        }
         thead th:hover{ color: var(--text); }
 
-        tbody td{ border-bottom: 1px solid rgba(30,77,43,0.06); padding: 12px; font-size: 14px; vertical-align: middle; }
+        tbody td{
+            border-bottom: 1px solid rgba(30,77,43,0.06);
+            padding: 8px 6px;
+            font-size: 13px;
+            vertical-align: middle;
+        }
+
+        td, th {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        thead th:first-child {
+            padding-left: 12px;
+        }
+        tbody td:first-child {
+            padding-left: 12px;
+        }
+        thead th:last-child {
+            padding-left: 12px;
+        }
+
+        th:nth-child(2), td:nth-child(2) { width: 80px; } /* Date */
+        th:nth-child(3), td:nth-child(3) { width: 55px; } /* Day */
+        th:nth-child(4), td:nth-child(4) { width: 65px; } /* Time */
+        th:nth-child(5), td:nth-child(5) { width: 50px; } /* Pills */
+
         tbody tr:last-child td{ border-bottom: none; }
         tbody tr:hover{ background: #EDE8DD; }
         tbody tr{ animation: fade-in 0.3s ease-out both; }
@@ -67,6 +112,13 @@
 
         #count{ font-size: 13px; color: var(--muted); margin-top: 10px; padding: 0 4px; font-style: italic; animation: fade-up 0.4s ease-out 0.4s both; }
         #loadStatus{ margin-top: 10px; animation: fade-in 0.3s ease-out both; }
+
+        @media (max-width: 480px) {
+            th:nth-child(3),
+            td:nth-child(3) {
+                display: none;
+            }
+        }
 
         @keyframes fade-up { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
@@ -100,14 +152,15 @@
 
     <div id="loadStatus" class="muted" style="margin-top:10px;"></div>
 
-    <div class="card" style="padding:0; overflow:hidden;">
+    <div class="card" style="padding:0; overflow-x:auto;">
         <table>
             <thead>
             <tr>
                 <th data-sort="vitaminType">Vitamin</th>
+                <th data-sort="date">Date</th>
                 <th data-sort="day">Day</th>
                 <th data-sort="time">Time</th>
-                <th data-sort="numberOfPills" class="right">Pills</th>
+                <th data-sort="numberOfPills">Pills</th>
                 <th data-sort="status">Status</th>
             </tr>
             </thead>
@@ -176,6 +229,24 @@
             .replaceAll("'", "&#039;");
     }
 
+    function formatDate(dateStr) {
+        if (!dateStr) return "";
+
+        const d = new Date(dateStr);
+        if (isNaN(d)) return dateStr;
+
+        return d.toLocaleDateString("en-GB", {
+            day: "2-digit",
+            month: "2-digit",
+            year: "2-digit"
+        });
+    }
+
+    function shortDay(day) {
+        if (!day) return "";
+        return day.slice(0, 3);
+    }
+
     function render() {
         const filter = document.getElementById("filter").value;
         const q = document.getElementById("search").value.trim().toLowerCase();
@@ -207,9 +278,10 @@
                 const tr = document.createElement("tr");
                 tr.innerHTML = `
                     <td>${escapeHtml(r.vitaminType)}</td>
-                    <td>${escapeHtml(r.day)}</td>
+                    <td>${formatDate(r.date)}</td>
+                    <td>${escapeHtml(shortDay(r.day))}</td>
                     <td class="mono">${escapeHtml(r.time)}</td>
-                    <td class="right">${escapeHtml(r.numberOfPills)}</td>
+                    <td>${escapeHtml(r.numberOfPills)}</td>
                     <td><span class="pill ${r.status}">${r.status}</span></td>
                 `;
                 tbody.appendChild(tr);
