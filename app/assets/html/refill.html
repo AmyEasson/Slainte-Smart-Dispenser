@@ -264,7 +264,7 @@
             card.innerHTML = `
         <div class="slot-header">
           <div class="slot-number">Slot ${escapeHtml(slot.slotNumber)}</div>
-          <div class="slot-tag">${slot.reserved ? "Reserved" : "Active"}</div>
+          ${slot.reserved ? `<div class="slot-tag">Reserved</div>` : ``}
         </div>
         ${bodyHtml}
       `;
