@@ -362,6 +362,7 @@
     });
 
     let state = { vitamins: [] };
+    let pendingPresetType = "daily";
     let pendingFocus = null;
     let pendingDailyIdx = null; // vitamin index waiting for daily modal
 
@@ -437,10 +438,21 @@
 
     // ── Daily modal ───────────────────────────────────────────────
 
-    function openDailyModal(vIdx) {
+    function openDailyModal(vIdx, presetType = "daily") {
         pendingDailyIdx = vIdx;
+        pendingPresetType = presetType;
         document.getElementById("dailyTimeInput").value = "09:00";
-        document.getElementById("dailyModal").classList.add("open");
+
+        const modal = document.getElementById("dailyModal");
+        modal.querySelector("h2").textContent =
+            presetType === "weekdays" ? "Set weekday time" : "Set daily time";
+
+        modal.querySelector("p").textContent =
+            presetType === "weekdays"
+                ? "Choose a time to use for Monday–Friday."
+                : "Choose a time to use for all 7 days.";
+
+        modal.classList.add("open");
     }
 
     document.getElementById("dailyCancel").addEventListener("click", () => {
@@ -450,15 +462,30 @@
 
     document.getElementById("dailyConfirm").addEventListener("click", () => {
         const time = document.getElementById("dailyTimeInput").value;
+
         if (!time || pendingDailyIdx === null) {
             document.getElementById("dailyModal").classList.remove("open");
             return;
         }
+
         const v = state.vitamins[pendingDailyIdx];
         v.schedule = {};
-        DAYS.forEach(d => v.schedule[d] = [time]);
+
+        if (pendingPresetType === "daily") {
+            // All 7 days
+            DAYS.forEach(d => v.schedule[d] = [time]);
+        } else if (pendingPresetType === "weekdays") {
+            // Mon–Fri only
+            ["MONDAY","TUESDAY","WEDNESDAY","THURSDAY","FRIDAY"]
+                .forEach(d => v.schedule[d] = [time]);
+        }
+
+        // collapse after applying preset
+        setCollapsed(pendingDailyIdx, true);
+
         document.getElementById("dailyModal").classList.remove("open");
         pendingDailyIdx = null;
+
         render();
         setStatusFromValidation();
     });
@@ -777,11 +804,20 @@
         root.querySelectorAll("button[data-kind='preset']").forEach(btn=>{
             btn.addEventListener("click",(e)=>{
                 e.stopPropagation();
+
                 const idx = Number(e.target.dataset.idx);
-                applyPreset(idx, e.target.getAttribute("data-preset"));
+                const preset = e.target.getAttribute("data-preset");
+
+                if (preset === "daily" || preset === "weekdays") {
+                    openDailyModal(idx, preset);
+                    return;
+                }
+
+                applyPreset(idx, preset);
                 setCollapsed(idx, true);
-                // Daily opens modal — don't re-render yet, modal confirm will
-                if (e.target.getAttribute("data-preset") !== "daily") { render(); setStatusFromValidation(); }
+
+                render();
+                setStatusFromValidation();
             });
         });
         root.querySelectorAll("button[data-kind='day']").forEach(btn=>{
@@ -843,7 +879,7 @@
             vitaminType: name,
             numberOfPills: Number.isFinite(n) && n >= 1 ? Math.floor(n) : 1,
             schedule: {},
-            ui: { collapsed: true }
+            ui: { collapsed: false }
         });
         nameInp.value = "";
         pillsInp.value = "1";
