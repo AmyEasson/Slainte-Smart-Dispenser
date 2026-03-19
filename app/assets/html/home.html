@@ -64,6 +64,8 @@
         }
         .nav-card:nth-child(1) { animation-delay: 0.3s; }
         .nav-card:nth-child(2) { animation-delay: 0.45s; }
+        .nav-card:nth-child(3) { animation-delay: 0.6s; }
+        .nav-card:nth-child(4) { animation-delay: 0.75s; }
         .nav-card:active { transform: scale(0.97); box-shadow: 0 1px 4px rgba(0,0,0,0.05); }
 
         .card-icon { width: 56px; height: 56px; border-radius: 16px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
@@ -99,7 +101,9 @@
             align-items: center;
             gap: 16px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.03);
-            animation: fade-up 0.5s ease-out 0.55s both;
+            opacity: 0;
+            transform: translateY(14px);
+            animation: fade-up 0.75s ease-out 0.75s forwards;
             margin-top: 14px;
         }
 
