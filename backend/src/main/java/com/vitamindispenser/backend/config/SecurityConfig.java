@@ -20,6 +20,10 @@ import org.springframework.web.cors.CorsConfigurationSource;
 
 import java.util.List;
 
+/**
+ * Security configuration that disables/enables authentication for certain endpoints
+ */
+
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
