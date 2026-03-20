@@ -6,6 +6,7 @@ import com.vitamindispenser.backend.schedule.ScheduleEntry;
 import com.vitamindispenser.backend.user.User;
 import com.vitamindispenser.backend.schedule.ScheduleEntryRepository;
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -13,6 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
+@Slf4j
 public class LoggingService {
 
     private final ScheduleEntryRepository scheduleEntryRepository;
@@ -28,14 +30,13 @@ public class LoggingService {
     This method needs to fetch the information related the pills that have been dispensed.
     That information comes from the scheduling database; hence why the scheduleRepository is used.
      */
-    public void handleStatus(@NonNull List<Integer> intakeIds, @NonNull Boolean taken, User user) {
-        if (intakeIds.isEmpty()) {
-            throw new IllegalArgumentException("intakeIds must not be empty");
+    public void handleStatus(List<Integer> intakeIds, @NonNull Boolean taken, User user) {
+        if (intakeIds == null || intakeIds.isEmpty()) {
+            log.warn("Status report received with no intakeIds, skipping");
+            return;
         }
+
         List<ScheduleEntry> entries = scheduleEntryRepository.findByIdIn(intakeIds);
-        if (entries.isEmpty()) {
-            throw new ScheduleNotFoundException("No schedule events found for ids: " + intakeIds);
-        }
 
         List<Log> logs = new ArrayList<>();
         for (ScheduleEntry e : entries) {
