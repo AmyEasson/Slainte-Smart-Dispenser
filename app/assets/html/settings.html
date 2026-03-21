@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Sláinte — Settings</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,700;0,9..144,900;1,9..144,400&family=DM+Sans:wght@400;500;600;700&display=swap');
+
+        :root {
+            --forest-mid: #1E4D2B;
+            --forest-green: #2D6A4F;
+            --forest-pale: #52B788;
+            --cream: #F5F0E8;
+            --cream-dark: #E8DFD0;
+            --warm-white: #FEFCF8;
+            --text-primary: #1A2E1A;
+            --text-muted: #4A6B4A;
+            --text-light: #7A9B7A;
+            --danger: #C04030;
+            --danger-light: #FDECEA;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { height: 100%; overflow: hidden; position: fixed; width: 100%; }
+        body { font-family: 'DM Sans', system-ui, sans-serif; background: var(--cream); color: var(--text-primary); height: 100vh; height: 100dvh; display: flex; flex-direction: column; }
+
+        .forest-header { position: relative; width: 100%; flex: 0 0 140px; overflow: hidden; z-index: 10; }
+        .forest-header svg { width: 100%; height: 100%; display: block; }
+        .header-curve { position: absolute; bottom: -1px; left: 0; right: 0; height: 30px; z-index: 3; }
+
+        .back-btn {
+            position: absolute; top: 44px; left: 16px; z-index: 20;
+            background: rgba(255,255,255,0.15); border: none;
+            border-radius: 50%; width: 36px; height: 36px;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; -webkit-tap-highlight-color: transparent;
+            backdrop-filter: blur(4px);
+        }
+        .back-btn:active { background: rgba(255,255,255,0.25); }
+
+        .content { padding: 8px 20px 32px; position: relative; z-index: 5; margin-top: 0; flex: 1; display: flex; flex-direction: column; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+
+        .page-title { font-family: 'Fraunces', serif; font-weight: 900; font-size: 26px; color: var(--text-primary); margin-top: 14px; margin-bottom: 4px; animation: fade-up 0.5s ease-out 0.1s both; }
+        .page-sub { font-size: 14px; color: var(--text-muted); margin-bottom: 24px; line-height: 1.5; animation: fade-up 0.5s ease-out 0.2s both; }
+
+        .section-label {
+            font-size: 11px; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 1.2px; color: var(--text-light);
+            margin-bottom: 8px; margin-top: 20px;
+            animation: fade-up 0.5s ease-out both;
+        }
+        .section-label:first-of-type { margin-top: 0; }
+
+        .settings-card {
+            background: var(--warm-white);
+            border: 1px solid rgba(30,77,43,0.08);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+            animation: fade-up 0.5s ease-out both;
+        }
+
+        .settings-row {
+            display: flex; align-items: center; gap: 14px;
+            padding: 16px 18px;
+            cursor: pointer; -webkit-tap-highlight-color: transparent;
+            transition: background 0.15s ease;
+            border-bottom: 1px solid rgba(30,77,43,0.06);
+        }
+        .settings-row:last-child { border-bottom: none; }
+        .settings-row:active { background: var(--cream); }
+
+        .row-icon {
+            width: 40px; height: 40px; border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+        .row-icon.green { background: linear-gradient(145deg, #D8F3DC, #B7E4C7); }
+        .row-icon.amber { background: linear-gradient(145deg, #FEF3C7, #FDE68A); }
+        .row-icon.red { background: linear-gradient(145deg, #FEE2E2, #FECACA); }
+        .row-icon.slate { background: linear-gradient(145deg, #E8DFD0, #D4C5A9); }
+
+        .row-body { flex: 1; min-width: 0; }
+        .row-title { font-size: 15px; font-weight: 600; margin-bottom: 2px; }
+        .row-desc { font-size: 12px; color: var(--text-muted); line-height: 1.4; }
+
+        .row-arrow { flex-shrink: 0; }
+        .row-arrow svg { width: 16px; height: 16px; }
+
+        .settings-row.danger .row-title { color: var(--danger); }
+        .settings-row.danger:active { background: var(--danger-light); }
+
+        .signout-card {
+            background: var(--warm-white);
+            border: 1px solid rgba(30,77,43,0.08);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+            animation: fade-up 0.5s ease-out 0.65s both;
+        }
+
+        .version-text {
+            text-align: center; font-size: 12px; color: var(--text-light);
+            margin-top: auto; padding-top: 24px;
+            font-family: 'Fraunces', serif; font-style: italic;
+            animation: fade-up 0.5s ease-out 0.7s both;
+        }
+
+        .modal-overlay {
+            display: none; position: fixed; inset: 0;
+            background: rgba(11,26,15,0.4); z-index: 100;
+            align-items: center; justify-content: center;
+        }
+        .modal-overlay.open { display: flex; animation: fade-in 0.2s ease-out; }
+        .modal {
+            background: var(--cream); border-radius: 24px; padding: 24px;
+            width: min(340px, 90vw); box-shadow: 0 12px 40px rgba(11,26,15,0.25);
+            border: 1px solid rgba(30,77,43,0.08);
+        }
+        .modal h2 { font-family: 'Fraunces', serif; font-weight: 900; font-size: 20px; margin-bottom: 8px; }
+        .modal p { font-size: 14px; color: var(--text-muted); margin-bottom: 16px; line-height: 1.5; }
+
+        .modal-input {
+            width: 100%; padding: 12px 14px;
+            border: 1.5px solid rgba(30,77,43,0.15);
+            border-radius: 12px; font-size: 15px;
+            font-family: 'DM Sans', sans-serif;
+            background: var(--warm-white); color: var(--text-primary);
+            outline: none; margin-bottom: 10px;
+            transition: border-color 0.2s;
+        }
+        .modal-input:focus { border-color: var(--forest-green); }
+        .modal-input:last-of-type { margin-bottom: 0; }
+
+        .modal-msg {
+            font-size: 13px; color: var(--danger);
+            margin: 10px 0 4px; display: none; line-height: 1.4;
+        }
+
+        .modal-btns { display: flex; gap: 10px; margin-top: 16px; }
+        .modal-btns button {
+            flex: 1; padding: 13px; border: none; border-radius: 14px;
+            font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 600;
+            cursor: pointer; -webkit-tap-highlight-color: transparent;
+        }
+        .btn-cancel { background: var(--cream-dark); color: var(--text-muted); }
+        .btn-cancel:active { background: #D4C5A9; }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-danger:active { background: #A03020; }
+        .btn-primary { background: var(--forest-green); color: white; }
+        .btn-primary:active { background: #1b4332; }
+
+        @keyframes fade-up {
+            from { opacity: 0; transform: translateY(14px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fade-in {
+            from { opacity: 0; } to { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="forest-header">
+    <svg viewBox="0 0 393 140" preserveAspectRatio="xMidYMax slice" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+            <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#0F3D22"/>
+                <stop offset="50%" stop-color="#1A5C35"/>
+                <stop offset="100%" stop-color="#2D6A4F"/>
+            </linearGradient>
+        </defs>
+        <rect width="393" height="140" fill="url(#sky)"/>
+        <g opacity="0.4">
+            <circle cx="40" cy="18" r="0.9" fill="#D8F3DC"/>
+            <circle cx="180" cy="12" r="0.8" fill="#D8F3DC"/>
+            <circle cx="330" cy="15" r="0.7" fill="#D8F3DC"/>
+            <circle cx="260" cy="25" r="0.5" fill="#B7E4C7"/>
+        </g>
+        <g opacity="0.4">
+            <polygon points="20,140 35,60 50,140" fill="#0D2818"/>
+            <polygon points="100,135 118,50 136,135" fill="#102415"/>
+            <polygon points="200,135 218,45 236,135" fill="#0D2818"/>
+            <polygon points="300,135 318,55 336,135" fill="#102415"/>
+            <polygon points="360,140 375,58 393,140" fill="#0D2818"/>
+        </g>
+        <g>
+            <polygon points="10,140 38,85 66,140" fill="#1E4D2B"/>
+            <polygon points="18,125 38,97 58,125" fill="#256B3B"/>
+            <polygon points="150,140 178,80 206,140" fill="#1E4D2B"/>
+            <polygon points="158,123 178,93 198,123" fill="#256B3B"/>
+            <polygon points="290,140 318,83 346,140" fill="#1E4D2B"/>
+            <polygon points="298,123 318,97 338,123" fill="#256B3B"/>
+        </g>
+    </svg>
+
+    <button class="back-btn" onclick="goBack()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M15 18l-6-6 6-6"/>
+        </svg>
+    </button>
+
+    <div class="header-curve">
+        <svg viewBox="0 0 393 30" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M0 30 Q100 0 196.5 0 Q293 0 393 30 L393 30 L0 30Z" fill="#F5F0E8"/>
+        </svg>
+    </div>
+</div>
+
+<div class="content">
+    <div class="page-title">Settings</div>
+    <div class="page-sub">Manage your device and account.</div>
+
+    <div class="section-label" style="animation-delay: 0.25s;">Device</div>
+    <div class="settings-card" style="animation-delay: 0.3s;">
+        <div class="settings-row" onclick="goToSetup()">
+            <div class="row-icon green">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2D6A4F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M5 12.55a11 11 0 0 1 14.08 0"/>
+                    <path d="M1.42 9a16 16 0 0 1 21.16 0"/>
+                    <path d="M8.53 16.11a6 6 0 0 1 6.95 0"/>
+                    <circle cx="12" cy="20" r="1" fill="#2D6A4F"/>
+                </svg>
+            </div>
+            <div class="row-body">
+                <div class="row-title">Device Setup</div>
+                <div class="row-desc">Reconfigure Wi-Fi or claim a new dispenser.</div>
+            </div>
+            <div class="row-arrow">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#B7D7B0" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 18l6-6-6-6"/>
+                </svg>
+            </div>
+        </div>
+    </div>
+
+    <div class="section-label" style="animation-delay: 0.4s;">Account</div>
+    <div class="settings-card" style="animation-delay: 0.45s;">
+        <div class="settings-row" onclick="openChangePassword()">
+            <div class="row-icon amber">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#92400E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                </svg>
+            </div>
+            <div class="row-body">
+                <div class="row-title">Change Password</div>
+                <div class="row-desc">Update your account password.</div>
+            </div>
+            <div class="row-arrow">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#B7D7B0" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 18l6-6-6-6"/>
+                </svg>
+            </div>
+        </div>
+
+        <div class="settings-row danger" onclick="openDeleteAccount()">
+            <div class="row-icon red">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#C04030" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="3 6 5 6 21 6"/>
+                    <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                    <path d="M10 11v6"/>
+                    <path d="M14 11v6"/>
+                    <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                </svg>
+            </div>
+            <div class="row-body">
+                <div class="row-title">Delete Account</div>
+                <div class="row-desc">Permanently remove your account and data.</div>
+            </div>
+            <div class="row-arrow">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#FECACA" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 18l6-6-6-6"/>
+                </svg>
+            </div>
+        </div>
+    </div>
+
+    <div class="section-label" style="animation-delay: 0.55s;">Session</div>
+    <div class="signout-card">
+        <div class="settings-row danger" onclick="signOut()">
+            <div class="row-icon slate">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#5C3D2E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                    <polyline points="16 17 21 12 16 7"/>
+                    <line x1="21" y1="12" x2="9" y2="12"/>
+                </svg>
+            </div>
+            <div class="row-body">
+                <div class="row-title">Sign Out</div>
+                <div class="row-desc">Sign out of your Sláinte account.</div>
+            </div>
+            <div class="row-arrow">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#FECACA" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 18l6-6-6-6"/>
+                </svg>
+            </div>
+        </div>
+    </div>
+
+    <div class="version-text">Sláinte v1.0</div>
+</div>
+
+<!-- ── Change password modal ── -->
+<div class="modal-overlay" id="changePasswordModal">
+    <div class="modal">
+        <h2>Change Password</h2>
+        <p>Enter your current password and choose a new one.</p>
+        <input class="modal-input" type="password" id="oldPassword" placeholder="Current password" />
+        <input class="modal-input" type="password" id="newPassword" placeholder="New password" />
+        <input class="modal-input" type="password" id="confirmNewPassword" placeholder="Confirm new password" />
+        <div class="modal-msg" id="changePasswordMsg"></div>
+        <div class="modal-btns">
+            <button class="btn-cancel" onclick="closeChangePassword()">Cancel</button>
+            <button class="btn-primary" onclick="submitChangePassword()">Update</button>
+        </div>
+    </div>
+</div>
+
+<!-- ── Delete account modal ── -->
+<div class="modal-overlay" id="deleteModal">
+    <div class="modal">
+        <h2>Delete account?</h2>
+        <p>This will permanently remove your account, schedule, and all intake history. This cannot be undone.</p>
+        <div class="modal-msg" id="deleteMsg"></div>
+        <div class="modal-btns">
+            <button class="btn-cancel" onclick="closeDeleteAccount()">Cancel</button>
+            <button class="btn-danger" onclick="submitDeleteAccount()">Delete</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    function getAuth() {
+        return {
+            apiBase: sessionStorage.getItem("apiBase") || "",
+            authToken: sessionStorage.getItem("authToken") || ""
+        };
+    }
+
+    function goBack() {
+        if (window.ReactNativeWebView) {
+            window.ReactNativeWebView.postMessage("home");
+        }
+    }
+
+    function goToSetup() {
+        if (window.ReactNativeWebView) {
+            window.ReactNativeWebView.postMessage("setup");
+        }
+    }
+
+    // ── Change password ──
+    function openChangePassword() {
+        document.getElementById("oldPassword").value = "";
+        document.getElementById("newPassword").value = "";
+        document.getElementById("confirmNewPassword").value = "";
+        var msg = document.getElementById("changePasswordMsg");
+        msg.style.display = "none";
+        msg.textContent = "";
+        document.getElementById("changePasswordModal").classList.add("open");
+    }
+
+    function closeChangePassword() {
+        document.getElementById("changePasswordModal").classList.remove("open");
+    }
+
+    async function submitChangePassword() {
+        var oldPassword = document.getElementById("oldPassword").value;
+        var newPassword = document.getElementById("newPassword").value;
+        var confirmNew = document.getElementById("confirmNewPassword").value;
+        var msg = document.getElementById("changePasswordMsg");
+
+        msg.style.display = "none";
+
+        if (!oldPassword || !newPassword || !confirmNew) {
+            msg.textContent = "Please fill in all fields.";
+            msg.style.display = "block";
+            return;
+        }
+        if (newPassword !== confirmNew) {
+            msg.textContent = "New passwords do not match.";
+            msg.style.display = "block";
+            return;
+        }
+
+        try {
+            var { apiBase, authToken } = getAuth();
+            var res = await fetch(apiBase + "/api/mobile/change-password", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer " + authToken
+                },
+                body: JSON.stringify({ oldPassword: oldPassword, newPassword: newPassword })
+            });
+            if (res.ok) {
+                var msg = document.getElementById("changePasswordMsg");
+                msg.style.color = "var(--forest-green)";
+                msg.style.display = "block";
+                msg.textContent = "Password updated successfully.";
+                setTimeout(function() {
+                    closeChangePassword();
+                    msg.style.color = "var(--danger)";
+                }, 1500);
+            } else {
+                msg.textContent = text || "Failed to update password.";
+                msg.style.display = "block";
+            }
+        } catch (e) {
+            msg.textContent = "Network error. Please try again.";
+            msg.style.display = "block";
+        }
+    }
+
+    // ── Delete account ──
+    function openDeleteAccount() {
+        var msg = document.getElementById("deleteMsg");
+        msg.style.display = "none";
+        msg.textContent = "";
+        document.getElementById("deleteModal").classList.add("open");
+    }
+
+    function closeDeleteAccount() {
+        document.getElementById("deleteModal").classList.remove("open");
+    }
+
+    async function submitDeleteAccount() {
+        var msg = document.getElementById("deleteMsg");
+        msg.style.display = "none";
+
+        try {
+            var { apiBase, authToken } = getAuth();
+            var res = await fetch(apiBase + "/api/mobile/account", {
+                method: "DELETE",
+                headers: { "Authorization": "Bearer " + authToken }
+            });
+            if (res.ok) {
+                closeDeleteAccount();
+                signOut();
+            } else {
+                var text = await res.text();
+                msg.textContent = text || "Failed to delete account.";
+                msg.style.display = "block";
+            }
+        } catch (e) {
+            msg.textContent = "Network error. Please try again.";
+            msg.style.display = "block";
+        }
+    }
+
+    // ── Sign out ──
+    function signOut() {
+        sessionStorage.removeItem("authToken");
+        sessionStorage.removeItem("authUser");
+        sessionStorage.removeItem("apiBase");
+        if (window.ReactNativeWebView) {
+            window.ReactNativeWebView.postMessage("login");
+        }
+    }
+</script>
+
+</body>
+</html>

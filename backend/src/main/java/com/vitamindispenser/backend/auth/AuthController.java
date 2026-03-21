@@ -1,6 +1,8 @@
 package com.vitamindispenser.backend.auth;
 
 import com.vitamindispenser.backend.auth.dto.AuthRequest;
+import com.vitamindispenser.backend.logging.DispenseEventLogRepository;
+import com.vitamindispenser.backend.schedule.ScheduleEntryRepository;
 import com.vitamindispenser.backend.user.User;
 import com.vitamindispenser.backend.device.DeviceRepository;
 import com.vitamindispenser.backend.user.UserRepository;
@@ -8,11 +10,9 @@ import com.vitamindispenser.backend.security.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.Map;
 import java.util.Optional;
 
@@ -22,7 +22,6 @@ public class AuthController {
 
     @Autowired private UserRepository userRepository;
     @Autowired private PasswordEncoder passwordEncoder;
-    @Autowired private DeviceRepository deviceRepository;
     @Autowired private JwtUtil jwtUtil;
 
     @PostMapping("/register")
@@ -34,12 +33,6 @@ public class AuthController {
         user.setUsername(request.getUsername());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         userRepository.save(user);
-
-        // Auto-claim DISPENSER_001
-        deviceRepository.findByDeviceId("DISPENSER_001").ifPresent(device -> {
-            device.setOwner(user);
-            deviceRepository.save(device);
-        });
 
         return ResponseEntity.ok("User registered successfully");
     }

@@ -661,7 +661,14 @@
       sessionStorage.setItem("authUser", username);
 
       if (window.ReactNativeWebView) {
-        window.ReactNativeWebView.postMessage("home");
+        window.ReactNativeWebView.postMessage(JSON.stringify({
+          type: "authSuccess",
+          token: data.token,
+          apiBase: API_BASE,
+          username: username
+        }));
+      } else {
+        window.location.href = "home.html";
       }
 
     } catch (e) {

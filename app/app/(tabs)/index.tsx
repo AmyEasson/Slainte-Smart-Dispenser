@@ -113,7 +113,7 @@ async function scheduleAllNotifications(payload: any, authToken: string, apiBase
     }
 }
 
-type Page = "login" | "home" | "intake" | "schedule" | "refill";
+type Page = "login" | "home" | "intake" | "schedule" | "refill" | "setup" | "settings";
 
 export default function HomeScreen() {
     const [page, setPage] = useState<Page>("login");
@@ -134,6 +134,8 @@ export default function HomeScreen() {
         intake: require("../../assets/html/intake.html"),
         schedule: require("../../assets/html/schedule.html"),
         refill: require("../../assets/html/refill.html"),
+        setup: require("../../assets/html/setup.html"),
+        settings: require("../../assets/html/settings.html"),
     };
 
     const injectedJS = `
@@ -170,6 +172,18 @@ export default function HomeScreen() {
             if (href.endsWith('refill.html')) {
                 e.preventDefault();
                 window.ReactNativeWebView.postMessage('refill');
+                return;
+            }
+            
+            if (href.endsWith('setup.html')) {
+                e.preventDefault();
+                window.ReactNativeWebView.postMessage('setup');
+                return;
+            }
+            
+            if (href.endsWith('settings.html')) {
+                e.preventDefault();
+                window.ReactNativeWebView.postMessage('settings');
                 return;
             }
         }, true);
@@ -236,7 +250,21 @@ export default function HomeScreen() {
                             authTokenRef.current = parsed.token;
                             apiBaseRef.current = parsed.apiBase;
                             usernameRef.current = parsed.username;
-                            setPage("home");
+
+                            // Check if user already has a device claimed
+                            try {
+                                const res = await fetch(`${parsed.apiBase}/api/mobile/has-device`, {
+                                    headers: { Authorization: `Bearer ${parsed.token}` }
+                                });
+                                if (res.ok) {
+                                    const data = await res.json();
+                                    setPage(data.hasDevice ? "home" : "setup");
+                                } else {
+                                    setPage("setup"); // fail safe — show setup if check fails
+                                }
+                            } catch (e) {
+                                setPage("setup"); // fail safe — show setup if network error
+                            }
                             return;
                         }
 
@@ -281,11 +309,13 @@ export default function HomeScreen() {
 
                     } catch (_) {}
 
-                    if (msg === "login") setPage("login");
                     if (msg === "home") setPage("home");
+                    if (msg === "login") setPage("login");
                     if (msg === "intake") setPage("intake");
                     if (msg === "schedule") setPage("schedule");
                     if (msg === "refill") setPage("refill");
+                    if (msg === "setup") setPage("setup");
+                    if (msg === "settings") setPage("settings");
                 }}
             />
 
