@@ -70,14 +70,18 @@ public class MobileAppController {
      * @return success or failure message only
      */
     @PostMapping("/claim-device")
-    public ResponseEntity<String> claimDevice(@RequestBody Map<String, String> body, Principal principal){
+    public ResponseEntity<String> claimDevice(@RequestBody Map<String, String> body, Principal principal) {
         String deviceId = body.get("deviceId");
         User user = userRepository.findByUsername(principal.getName())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         Device device = deviceRepository.findByDeviceId(deviceId)
-                .orElse(new Device());
-        device.setDeviceId(deviceId);
+                .orElseThrow(() -> new RuntimeException("Device not found"));
+
+        if (device.getOwner() != null && !device.getOwner().getId().equals(user.getId())) {
+            return ResponseEntity.status(409).body("Device is already claimed by another user");
+        }
+
         device.setOwner(user);
         deviceRepository.save(device);
 
