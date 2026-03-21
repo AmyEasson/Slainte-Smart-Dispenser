@@ -49,6 +49,11 @@ class ScheduleIntegrationTest {
         deviceRepository.deleteAll();
         userRepository.deleteAll();
 
+        // Create the device so it can be claimed
+        com.vitamindispenser.backend.device.Device device = new com.vitamindispenser.backend.device.Device();
+        device.setDeviceId("DISPENSER_001");
+        deviceRepository.save(device);
+
         // Register and login to get a token
         mockMvc.perform(post("/api/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
