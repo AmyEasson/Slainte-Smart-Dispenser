@@ -113,7 +113,7 @@ async function scheduleAllNotifications(payload: any, authToken: string, apiBase
     }
 }
 
-type Page = "login" | "home" | "intake" | "schedule" | "refill" | "setup";
+type Page = "login" | "home" | "intake" | "schedule" | "refill" | "setup" | "settings";
 
 export default function HomeScreen() {
     const [page, setPage] = useState<Page>("login");
@@ -135,6 +135,7 @@ export default function HomeScreen() {
         schedule: require("../../assets/html/schedule.html"),
         refill: require("../../assets/html/refill.html"),
         setup: require("../../assets/html/setup.html"),
+        settings: require("../../assets/html/settings.html"),
     };
 
     const injectedJS = `
@@ -177,6 +178,12 @@ export default function HomeScreen() {
             if (href.endsWith('setup.html')) {
                 e.preventDefault();
                 window.ReactNativeWebView.postMessage('setup');
+                return;
+            }
+            
+            if (href.endsWith('settings.html')) {
+                e.preventDefault();
+                window.ReactNativeWebView.postMessage('settings');
                 return;
             }
         }, true);
@@ -308,6 +315,7 @@ export default function HomeScreen() {
                     if (msg === "schedule") setPage("schedule");
                     if (msg === "refill") setPage("refill");
                     if (msg === "setup") setPage("setup");
+                    if (msg === "settings") setPage("settings");
                 }}
             />
 
