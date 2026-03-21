@@ -81,6 +81,14 @@ public class MobileAppController {
         return ResponseEntity.ok("Successfully claimed device");
     }
 
+    @GetMapping("/has-device")
+    public ResponseEntity<?> hasDevice(Principal principal) {
+        User user = userRepository.findByUsername(principal.getName())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        boolean hasDevice = deviceRepository.findByOwner(user).isPresent();
+        return ResponseEntity.ok(Map.of("hasDevice", hasDevice));
+    }
+
     // Mobile app sends schedule with multiple vitamins
     @PostMapping("/schedule")
     public ResponseEntity<String> createSchedule(@RequestBody ScheduleRequest request, Principal principal) {

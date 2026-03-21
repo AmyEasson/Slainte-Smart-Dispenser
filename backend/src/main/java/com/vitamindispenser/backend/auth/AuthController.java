@@ -35,12 +35,6 @@ public class AuthController {
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         userRepository.save(user);
 
-        // Auto-claim DISPENSER_001
-        deviceRepository.findByDeviceId("DISPENSER_001").ifPresent(device -> {
-            device.setOwner(user);
-            deviceRepository.save(device);
-        });
-
         return ResponseEntity.ok("User registered successfully");
     }
 
