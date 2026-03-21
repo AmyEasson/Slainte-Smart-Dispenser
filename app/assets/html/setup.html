@@ -18,59 +18,62 @@
             --text-muted: #4A6B4A;
             --text-light: #7A9B7A;
             --danger: #C04030;
-            --success: #2D6A4F;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html, body { height: 100%; overflow: hidden; position: fixed; width: 100%; }
         body { font-family: 'DM Sans', system-ui, sans-serif; background: var(--cream); color: var(--text-primary); height: 100vh; height: 100dvh; display: flex; flex-direction: column; }
 
-        /* ── Forest Header (same as home) ── */
-        .forest-header { position: relative; width: 100%; flex: 0 0 160px; overflow: hidden; z-index: 10; }
+        .forest-header { position: relative; width: 100%; flex: 0 0 140px; overflow: hidden; z-index: 10; }
         .forest-header svg { width: 100%; height: 100%; display: block; }
         .header-curve { position: absolute; bottom: -1px; left: 0; right: 0; height: 30px; z-index: 3; }
 
-        /* ── Scrollable content ── */
-        .content { padding: 8px 20px 32px; position: relative; z-index: 5; margin-top: 0; flex: 1; display: flex; flex-direction: column; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+        .content { padding: 8px 20px 32px; position: relative; z-index: 5; flex: 1; display: flex; flex-direction: column; overflow-y: auto; -webkit-overflow-scrolling: touch; }
 
-        .page-title { font-family: 'Fraunces', serif; font-weight: 900; font-size: 26px; color: var(--text-primary); margin-top: 14px; margin-bottom: 4px; animation: fade-up 0.5s ease-out 0.1s both; }
-        .page-sub { font-size: 14px; color: var(--text-muted); margin-bottom: 24px; line-height: 1.5; animation: fade-up 0.5s ease-out 0.2s both; }
+        .progress-row {
+            display: flex; align-items: center; gap: 0;
+            margin: 18px 0 24px; animation: fade-up 0.4s ease-out 0.1s both;
+        }
+        .progress-step { display: flex; flex-direction: column; align-items: center; flex: 1; }
+        .step-circle {
+            width: 28px; height: 28px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 12px; font-weight: 700;
+            background: var(--cream-dark); color: var(--text-light);
+            transition: all 0.3s ease;
+        }
+        .step-circle.active { background: var(--forest-green); color: white; }
+        .step-circle.done { background: var(--forest-pale); color: white; }
+        .step-label {
+            font-size: 10px; color: var(--text-light); margin-top: 4px;
+            font-weight: 600; text-align: center; line-height: 1.3;
+            transition: color 0.3s ease;
+        }
+        .step-label.active { color: var(--forest-green); }
+        .progress-line {
+            flex: 1; height: 2px; background: var(--cream-dark);
+            margin-bottom: 18px; transition: background 0.3s ease;
+        }
+        .progress-line.done { background: var(--forest-pale); }
 
-        /* ── Step cards ── */
+        .step-panel { display: none; flex-direction: column; flex: 1; animation: fade-up 0.4s ease-out both; }
+        .step-panel.active { display: flex; }
+
         .step-card {
             background: var(--warm-white);
             border: 1px solid rgba(30,77,43,0.08);
-            border-radius: 20px;
-            padding: 20px;
+            border-radius: 20px; padding: 20px;
             margin-bottom: 16px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.03);
-            animation: fade-up 0.5s ease-out both;
-        }
-        .step-card { animation-delay: 0.4s; }
-
-        .step-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
-        .step-num {
-            width: 32px; height: 32px; border-radius: 50%;
-            background: linear-gradient(145deg, #D8F3DC, #B7E4C7);
-            display: flex; align-items: center; justify-content: center;
-            font-family: 'Fraunces', serif; font-weight: 900; font-size: 15px;
-            color: var(--forest-green); flex-shrink: 0;
-        }
-        .step-num.done { background: var(--forest-green); color: white; }
-        .step-title { font-family: 'Fraunces', serif; font-weight: 700; font-size: 16px; }
-
-        .step-body { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
-
-        .highlight-box {
-            background: var(--cream); border-radius: 12px;
-            padding: 10px 14px; margin: 10px 0;
-            font-size: 14px; font-weight: 600; color: var(--forest-green);
-            display: flex; align-items: center; gap: 8px;
         }
 
-        /* ── Form ── */
+        .step-heading { font-family: 'Fraunces', serif; font-weight: 900; font-size: 22px; margin-bottom: 6px; }
+        .step-sub { font-size: 14px; color: var(--text-muted); line-height: 1.5; margin-bottom: 20px; }
+
         .form-group { margin-bottom: 14px; }
         label { display: block; font-weight: 600; font-size: 13px; color: var(--text-muted); margin-bottom: 6px; }
+        .field-hint { font-size: 12px; color: var(--text-light); margin-top: 5px; }
+
         input {
             width: 100%; padding: 12px 14px;
             border: 1.5px solid rgba(30,77,43,0.15);
@@ -87,8 +90,7 @@
             border: none; border-radius: 14px;
             font-family: 'DM Sans', sans-serif; font-size: 16px; font-weight: 600;
             cursor: pointer; margin-top: 8px;
-            transition: all 0.2s ease;
-            -webkit-tap-highlight-color: transparent;
+            transition: all 0.2s ease; -webkit-tap-highlight-color: transparent;
         }
         .btn-primary:active { background: #1b4332; transform: scale(0.98); }
         .btn-primary:disabled { background: #A0BFA0; cursor: not-allowed; transform: none; }
@@ -101,9 +103,7 @@
             cursor: pointer; margin-top: 6px;
             -webkit-tap-highlight-color: transparent;
         }
-        .btn-secondary:active { color: var(--danger); }
 
-        /* ── Status states ── */
         .status-msg {
             display: none; padding: 12px 14px; border-radius: 12px;
             font-size: 13px; font-weight: 500; margin-top: 10px; line-height: 1.5;
@@ -112,12 +112,45 @@
         .status-msg.success { display: block; background: #D8F3DC; color: var(--forest-green); }
         .status-msg.loading { display: block; background: var(--cream); color: var(--text-muted); }
 
-        /* ── Success screen ── */
-        #successScreen { display: none; flex-direction: column; align-items: center; justify-content: center; flex: 1; text-align: center; padding: 32px 20px; animation: fade-up 0.5s ease-out; }
-        #successScreen.visible { display: flex; }
-        .success-icon { width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(145deg, #D8F3DC, #B7E4C7); display: flex; align-items: center; justify-content: center; margin-bottom: 20px; }
+        .instruction-box {
+            background: var(--cream); border-radius: 14px;
+            padding: 16px; margin: 16px 0;
+            border: 1.5px solid rgba(30,77,43,0.12);
+        }
+        .instruction-step {
+            display: flex; align-items: flex-start; gap: 12px;
+            margin-bottom: 12px;
+        }
+        .instruction-step:last-child { margin-bottom: 0; }
+        .instruction-num {
+            width: 22px; height: 22px; border-radius: 50%;
+            background: var(--forest-green); color: white;
+            font-size: 11px; font-weight: 700;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0; margin-top: 1px;
+        }
+        .instruction-text { font-size: 14px; color: var(--text-muted); line-height: 1.5; }
+        .instruction-text strong { color: var(--forest-green); }
+
+        .success-screen {
+            display: none; flex-direction: column;
+            align-items: center; justify-content: center;
+            flex: 1; text-align: center; padding: 32px 20px;
+        }
+        .success-screen.visible { display: flex; animation: fade-up 0.5s ease-out; }
+        .success-icon {
+            width: 80px; height: 80px; border-radius: 50%;
+            background: linear-gradient(145deg, #D8F3DC, #B7E4C7);
+            display: flex; align-items: center; justify-content: center;
+            margin-bottom: 20px;
+        }
         .success-title { font-family: 'Fraunces', serif; font-weight: 900; font-size: 26px; margin-bottom: 8px; }
-        .success-sub { font-size: 14px; color: var(--text-muted); line-height: 1.5; margin-bottom: 32px; }
+        .success-sub { font-size: 14px; color: var(--text-muted); line-height: 1.6; margin-bottom: 12px; }
+        .success-note {
+            font-size: 13px; color: var(--text-light); line-height: 1.5;
+            background: var(--cream-dark); border-radius: 12px;
+            padding: 12px 16px; margin-bottom: 32px; text-align: left;
+        }
 
         @keyframes fade-up {
             from { opacity: 0; transform: translateY(14px); }
@@ -127,9 +160,8 @@
 </head>
 <body>
 
-<!-- ── Forest Header ── -->
 <div class="forest-header">
-    <svg viewBox="0 0 393 160" preserveAspectRatio="xMidYMax slice" xmlns="http://www.w3.org/2000/svg">
+    <svg viewBox="0 0 393 140" preserveAspectRatio="xMidYMax slice" xmlns="http://www.w3.org/2000/svg">
         <defs>
             <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stop-color="#0F3D22"/>
@@ -137,7 +169,7 @@
                 <stop offset="100%" stop-color="#2D6A4F"/>
             </linearGradient>
         </defs>
-        <rect width="393" height="160" fill="url(#sky)"/>
+        <rect width="393" height="140" fill="url(#sky)"/>
         <g opacity="0.4">
             <circle cx="40" cy="18" r="0.9" fill="#D8F3DC"/>
             <circle cx="180" cy="12" r="0.8" fill="#D8F3DC"/>
@@ -145,19 +177,19 @@
             <circle cx="260" cy="25" r="0.5" fill="#B7E4C7"/>
         </g>
         <g opacity="0.4">
-            <polygon points="20,160 35,75 50,160" fill="#0D2818"/>
-            <polygon points="100,155 118,65 136,155" fill="#102415"/>
-            <polygon points="200,155 218,60 236,155" fill="#0D2818"/>
-            <polygon points="300,155 318,68 336,155" fill="#102415"/>
-            <polygon points="360,160 375,72 393,160" fill="#0D2818"/>
+            <polygon points="20,140 35,60 50,140" fill="#0D2818"/>
+            <polygon points="100,135 118,50 136,135" fill="#102415"/>
+            <polygon points="200,135 218,45 236,135" fill="#0D2818"/>
+            <polygon points="300,135 318,55 336,135" fill="#102415"/>
+            <polygon points="360,140 375,58 393,140" fill="#0D2818"/>
         </g>
         <g>
-            <polygon points="10,160 38,100 66,160" fill="#1E4D2B"/>
-            <polygon points="18,145 38,112 58,145" fill="#256B3B"/>
-            <polygon points="150,160 178,95 206,160" fill="#1E4D2B"/>
-            <polygon points="158,143 178,108 198,143" fill="#256B3B"/>
-            <polygon points="290,160 318,98 346,160" fill="#1E4D2B"/>
-            <polygon points="298,143 318,112 338,143" fill="#256B3B"/>
+            <polygon points="10,140 38,85 66,140" fill="#1E4D2B"/>
+            <polygon points="18,125 38,97 58,125" fill="#256B3B"/>
+            <polygon points="150,140 178,80 206,140" fill="#1E4D2B"/>
+            <polygon points="158,123 178,93 198,123" fill="#256B3B"/>
+            <polygon points="290,140 318,83 346,140" fill="#1E4D2B"/>
+            <polygon points="298,123 318,97 338,123" fill="#256B3B"/>
         </g>
     </svg>
     <div class="header-curve">
@@ -167,120 +199,206 @@
     </div>
 </div>
 
-<!-- ── Main content ── -->
 <div class="content" id="mainContent">
-    <div class="page-title">Device Setup</div>
-    <div class="page-sub">Connect your Sláinte dispenser to your home Wi-Fi.</div>
 
-    <!-- Step 1: Connect to Slainte_Setup -->
-    <div class="step-card" style="animation-delay: 0.3s;">
-        <div class="step-header">
-            <div class="step-num" id="step1num">1</div>
-            <div class="step-title">Connect to your dispenser</div>
+    <div class="progress-row" id="progressRow">
+        <div class="progress-step">
+            <div class="step-circle active" id="circle1">1</div>
+            <div class="step-label active" id="label1">Claim</div>
         </div>
-        <div class="step-body">
-            On your phone, go to <strong>Settings → Wi-Fi</strong> and connect to:
-            <div class="highlight-box">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M5 12.55a11 11 0 0 1 14.08 0"/>
-                    <path d="M1.42 9a16 16 0 0 1 21.16 0"/>
-                    <path d="M8.53 16.11a6 6 0 0 1 6.95 0"/>
-                    <circle cx="12" cy="20" r="1" fill="currentColor"/>
-                </svg>
-                Slainte_Setup
-            </div>
-            Then come back to this screen and continue below.
+        <div class="progress-line" id="line1"></div>
+        <div class="progress-step">
+            <div class="step-circle" id="circle2">2</div>
+            <div class="step-label" id="label2">Connect</div>
+        </div>
+        <div class="progress-line" id="line2"></div>
+        <div class="progress-step">
+            <div class="step-circle" id="circle3">3</div>
+            <div class="step-label" id="label3">Wi-Fi</div>
         </div>
     </div>
 
-    <!-- Step 2: Enter WiFi credentials -->
-    <div class="step-card" style="animation-delay: 0.45s;">
-        <div class="step-header">
-            <div class="step-num" id="step2num">2</div>
-            <div class="step-title">Enter your dispenser details</div>
-        </div>
-        <div class="step-body">
-            <p style="margin-bottom: 14px;">Enter the ID printed on the bottom of your dispenser, and the Wi-Fi network you want it to connect to.</p>
+    <!-- Step 1: Claim device -->
+    <div class="step-panel active" id="step1">
+        <div class="step-heading">Claim your dispenser</div>
+        <div class="step-sub">Enter the ID printed on the label on the bottom of your device. Make sure you're on your normal Wi-Fi for this step.</div>
 
+        <div class="step-card">
             <div class="form-group">
                 <label>Dispenser ID</label>
-                <input type="text" id="deviceIdInput" placeholder="e.g. DISPENSER_001" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false" />
-                <div style="font-size: 12px; color: var(--text-light); margin-top: 5px;">Found on the label on the bottom of your device.</div>
+                <input type="text" id="deviceIdInput" placeholder="e.g. DISPENSER_001"
+                       autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false" />
+                <div class="field-hint">Found on the label on the bottom of your device.</div>
             </div>
+            <div class="status-msg" id="step1Status"></div>
+            <button class="btn-primary" id="claimBtn" onclick="claimDevice()">Claim Device</button>
+        </div>
+
+        <button class="btn-secondary" onclick="skipSetup()">Skip for now</button>
+    </div>
+
+    <!-- Step 2: Switch to Slainte_Setup -->
+    <div class="step-panel" id="step2">
+        <div class="step-heading">Connect to your dispenser</div>
+        <div class="step-sub">Your device has been claimed. Now connect your phone to the dispenser's setup network.</div>
+
+        <div class="step-card">
+            <div class="instruction-box">
+                <div class="instruction-step">
+                    <div class="instruction-num">1</div>
+                    <div class="instruction-text">Open your phone's <strong>Settings → Wi-Fi</strong></div>
+                </div>
+                <div class="instruction-step">
+                    <div class="instruction-num">2</div>
+                    <div class="instruction-text">Connect to <strong>Slainte_Setup</strong></div>
+                </div>
+                <div class="instruction-step">
+                    <div class="instruction-num">3</div>
+                    <div class="instruction-text">Come back to this screen and tap the button below</div>
+                </div>
+            </div>
+            <button class="btn-primary" onclick="goToStep3()">I'm connected to Slainte_Setup</button>
+        </div>
+    </div>
+
+    <!-- Step 3: Enter home WiFi credentials -->
+    <div class="step-panel" id="step3">
+        <div class="step-heading">Enter your home Wi-Fi</div>
+        <div class="step-sub">Enter the Wi-Fi network you want your dispenser to connect to.</div>
+
+        <div class="step-card">
             <div class="form-group">
                 <label>Network name (SSID)</label>
-                <input type="text" id="ssidInput" placeholder="e.g. HomeNetwork" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" />
+                <input type="text" id="ssidInput" placeholder="e.g. HomeNetwork"
+                       autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" />
             </div>
             <div class="form-group">
                 <label>Password</label>
                 <input type="password" id="passInput" placeholder="Wi-Fi password" autocomplete="off" />
             </div>
-
-            <div class="status-msg" id="statusMsg"></div>
-
-            <button class="btn-primary" id="connectBtn" onclick="submitSetup()">Connect Dispenser</button>
+            <div class="status-msg" id="step3Status"></div>
+            <button class="btn-primary" id="connectBtn" onclick="submitWifi()">Connect Dispenser</button>
         </div>
     </div>
 
-    <button class="btn-secondary" id="skipBtn" onclick="skipSetup()">Skip for now</button>
 </div>
 
-<!-- ── Success screen ── -->
-<div id="successScreen">
+<!-- Success screen -->
+<div class="success-screen" id="successScreen">
     <div class="success-icon">
         <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#2D6A4F" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <path d="M20 6L9 17l-5-5"/>
         </svg>
     </div>
     <div class="success-title">All set!</div>
-    <div class="success-sub">Your dispenser is connecting to your network.<br/>This may take a few seconds.</div>
+    <div class="success-sub">Your dispenser is connecting to your network. This may take a few seconds.</div>
+    <div class="success-note">
+        📶 You can switch your phone back to your home Wi-Fi network now.
+    </div>
     <button class="btn-primary" style="max-width: 280px;" onclick="goHome()">Go to Home</button>
 </div>
 
 <script>
-    var apiBase = sessionStorage.getItem("apiBase") || "";
-    var authToken = sessionStorage.getItem("authToken") || "";
-    var enteredDeviceId = "";
+    // Captured at claim time, before any network switch
+    var serverAddr = "";
+    var serverPort = "8080";
 
-    function setStatus(msg, type) {
-        var el = document.getElementById("statusMsg");
+    function getAuth() {
+        return {
+            apiBase: sessionStorage.getItem("apiBase") || "",
+            authToken: sessionStorage.getItem("authToken") || ""
+        };
+    }
+
+    function setStatus(id, msg, type) {
+        var el = document.getElementById(id);
         el.textContent = msg;
         el.className = "status-msg " + type;
     }
 
-    function clearStatus() {
-        var el = document.getElementById("statusMsg");
-        el.className = "status-msg";
+    function goToStep(step) {
+        document.getElementById("step1").classList.remove("active");
+        document.getElementById("step2").classList.remove("active");
+        document.getElementById("step3").classList.remove("active");
+        document.getElementById("step" + step).classList.add("active");
+
+        for (var i = 1; i <= 3; i++) {
+            var circle = document.getElementById("circle" + i);
+            var label = document.getElementById("label" + i);
+            circle.className = "step-circle";
+            label.className = "step-label";
+            if (i < step) {
+                circle.classList.add("done");
+                circle.innerHTML = "✓";
+            } else if (i === step) {
+                circle.classList.add("active");
+                label.classList.add("active");
+            }
+        }
+
+        document.getElementById("line1").className = "progress-line" + (step > 1 ? " done" : "");
+        document.getElementById("line2").className = "progress-line" + (step > 2 ? " done" : "");
+        document.getElementById("mainContent").scrollTop = 0;
     }
 
-    async function submitSetup() {
+    async function claimDevice() {
         var deviceId = document.getElementById("deviceIdInput").value.trim().toUpperCase();
+        var { apiBase, authToken } = getAuth();
+
+        if (!deviceId) {
+            setStatus("step1Status", "Please enter your dispenser ID.", "error");
+            return;
+        }
+
+        // Capture server address now while still on home WiFi
+        serverAddr = apiBase.replace(/^https?:\/\//, "").split(":")[0];
+        serverPort = apiBase.includes(":") ? apiBase.split(":").pop() : "8080";
+
+        var btn = document.getElementById("claimBtn");
+        btn.disabled = true;
+        setStatus("step1Status", "Claiming device…", "loading");
+
+        try {
+            var res = await fetch(apiBase + "/api/mobile/claim-device", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer " + authToken
+                },
+                body: JSON.stringify({ deviceId: deviceId })
+            });
+
+            if (res.ok) {
+                goToStep(2);
+            } else {
+                var text = await res.text();
+                btn.disabled = false;
+                setStatus("step1Status", text || "Failed to claim device. Please try again.", "error");
+            }
+        } catch (e) {
+            btn.disabled = false;
+            setStatus("step1Status", "Network error. Make sure you're connected to your home Wi-Fi.", "error");
+        }
+    }
+
+    function goToStep3() {
+        goToStep(3);
+    }
+
+    async function submitWifi() {
         var ssid = document.getElementById("ssidInput").value.trim();
         var pass = document.getElementById("passInput").value;
 
-        if (!deviceId) {
-            setStatus("Please enter your dispenser ID.", "error");
-            return;
-        }
         if (!ssid) {
-            setStatus("Please enter your Wi-Fi network name.", "error");
+            setStatus("step3Status", "Please enter your Wi-Fi network name.", "error");
             return;
         }
-
-        enteredDeviceId = deviceId;
-
-        // Extract just the host from apiBase (strip http:// and port)
-        // e.g. "http://172.20.10.4:8080" → "172.20.10.4"
-        var serverAddr = apiBase.replace(/^https?:\/\//, "").split(":")[0];
-        var serverPort = apiBase.includes(":") ? apiBase.split(":").pop() : "8080";
 
         var btn = document.getElementById("connectBtn");
         btn.disabled = true;
-        setStatus("Sending credentials to dispenser…", "loading");
+        setStatus("step3Status", "Sending credentials to dispenser…", "loading");
 
         try {
-            // POST to the captive portal on the ESP32
-            // Phone must be connected to Slainte_Setup for this to work
             var formData = new URLSearchParams();
             formData.append("ssid", ssid);
             formData.append("password", pass);
@@ -293,46 +411,22 @@
                 body: formData.toString()
             });
 
-            // ESP32 returns 200 with a confirmation page on success
             if (res.ok) {
-                await claimDevice();
+                showSuccess();
             } else {
                 throw new Error("ESP32 returned " + res.status);
             }
         } catch (e) {
             btn.disabled = false;
-            setStatus(
-                "Couldn't reach the dispenser. Make sure your phone is connected to Slainte_Setup Wi-Fi and try again.",
-                "error"
-            );
+            setStatus("step3Status",
+                "Couldn't reach the dispenser. Make sure your phone is connected to Slainte_Setup and try again.",
+                "error");
         }
-    }
-
-    async function claimDevice() {
-        // Claim DISPENSER_001 on the backend so this user's schedule is linked to it
-        try {
-            if (apiBase && authToken) {
-                await fetch(apiBase + "/api/mobile/claim-device", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Authorization": "Bearer " + authToken
-                    },
-                    body: JSON.stringify({ deviceId: enteredDeviceId })
-                });
-            }
-        } catch (e) {
-            // Non-fatal — device claim can be retried, WiFi setup already done
-            console.log("claim-device failed:", e);
-        }
-
-        showSuccess();
     }
 
     function showSuccess() {
         document.getElementById("mainContent").style.display = "none";
         var s = document.getElementById("successScreen");
-        s.style.display = "flex";
         s.classList.add("visible");
     }
 

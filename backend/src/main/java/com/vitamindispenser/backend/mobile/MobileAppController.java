@@ -1,5 +1,6 @@
 package com.vitamindispenser.backend.mobile;
 
+import com.vitamindispenser.backend.auth.AccountService;
 import com.vitamindispenser.backend.logging.LoggingExportService;
 import com.vitamindispenser.backend.schedule.SchedulingService;
 import com.vitamindispenser.backend.logging.dto.IntakeForRawDashboard;
@@ -51,13 +52,15 @@ public class MobileAppController {
     private final BarcodeService barcodeService;
     private final UserRepository userRepository;
     private final DeviceRepository deviceRepository;
+    private final AccountService accountService;
 
-    public MobileAppController(SchedulingService schedulingService, LoggingExportService exportService, UserRepository userRepository, DeviceRepository deviceRepository, BarcodeService barcodeService) {
+    public MobileAppController(SchedulingService schedulingService, LoggingExportService exportService, UserRepository userRepository, DeviceRepository deviceRepository, BarcodeService barcodeService, AccountService accountService) {
         this.schedulingService = schedulingService;
         this.exportService = exportService;
         this.userRepository = userRepository;
-        this.deviceRepository = deviceRepository;
         this.barcodeService = barcodeService;
+        this.deviceRepository = deviceRepository;
+        this.accountService = accountService;
     }
 
     /**
@@ -237,5 +240,33 @@ public class MobileAppController {
     public ResponseEntity<?> pauseStatus(Principal principal) {
         User user = userRepository.findByUsername(principal.getName()).orElseThrow();
         return ResponseEntity.ok(Map.of("paused", user.isPaused()));
+    }
+
+    @PostMapping("/change-password")
+    public ResponseEntity<String> changePassword(@RequestBody Map<String, String> body, Principal principal) {
+        String oldPassword = body.get("oldPassword");
+        String newPassword = body.get("newPassword");
+
+        if (oldPassword == null || newPassword == null || newPassword.isBlank()) {
+            return ResponseEntity.badRequest().body("Missing required fields");
+        }
+
+        User user = userRepository.findByUsername(principal.getName())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        try {
+            accountService.changePassword(user, oldPassword, newPassword);
+            return ResponseEntity.ok("Password updated successfully");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(401).body(e.getMessage());
+        }
+    }
+
+    @DeleteMapping("/account")
+    public ResponseEntity<String> deleteAccount(Principal principal) {
+        User user = userRepository.findByUsername(principal.getName())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        accountService.deleteAccount(user);
+        return ResponseEntity.ok("Account deleted successfully");
     }
 }
