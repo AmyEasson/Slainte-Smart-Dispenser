@@ -1,11 +1,14 @@
 package com.vitamindispenser.backend.firmware;
 
+import com.vitamindispenser.backend.exceptions.DeviceNotFoundException;
 import com.vitamindispenser.backend.logging.LoggingService;
 import com.vitamindispenser.backend.firmware.dto.IntakeReport;
 import com.vitamindispenser.backend.device.Device;
 import com.vitamindispenser.backend.schedule.ScheduleEntryRepository;
 import com.vitamindispenser.backend.user.User;
 import com.vitamindispenser.backend.device.DeviceRepository;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,6 +19,7 @@ import java.util.Map;
 
 @Slf4j
 @RestController
+@Tag(name = "Firmware", description = "Endpoints for the ESP32 dispenser device")
 @RequestMapping("/api/firmware")
 public class FirmwareController {
     /*
@@ -38,10 +42,11 @@ public class FirmwareController {
      * Poll endpoint: returns command and, for DISPENSE, the intake/slot ids to report back in POST /status.
      * Response JSON: { "command": "IDLE" | "DISPENSE" | "SNOOZE", "intakeIds": [1, 2] }
      */
+    @Operation(summary = "Poll for command", description = "Called by firmware every 2 seconds to check for DISPENSE, SNOOZE or ADVANCE command")
     @GetMapping("/poll")
     public ResponseEntity<Map<String, Object>> poll(@RequestParam String deviceId) {
         Device device = deviceRepository.findByDeviceId(deviceId)
-                .orElseThrow(() -> new RuntimeException("Unknown device"));
+                .orElseThrow(() -> new DeviceNotFoundException(deviceId));
 
         User owner = device.getOwner();
         var result = pollCommandService.getPollingResults(owner);
@@ -57,20 +62,12 @@ public class FirmwareController {
      * Lets the mobile app set a one-shot SNOOZE for the next poll. DISPENSE cannot be set by the app; it is only triggered by the schedule.
      * Body: { "command": "SNOOZE" }
      */
+    @Operation(summary = "Set command", description = "Lets the mobile app set a one-shot SNOOZE command for the next firmware poll. DISPENSE is schedule-driven only and cannot be set here")
     @PostMapping("/command")
     public ResponseEntity<String> setCommand(@RequestBody Map<String, String> body) {
         String command = body != null ? body.get("command") : null;
         pollCommandService.setPendingCommand(command);
         return ResponseEntity.ok("Command set");
-    }
-
-    // Firmware gets the current schedule to dispense (alternative to poll; not used by current firmware)
-    @GetMapping("/schedule")
-    public ResponseEntity<Object> getSchedule() {
-        // TODO: Fetch schedule
-        // TODO: Return schedule in format firmware can understand
-
-        return ResponseEntity.ok("TODO: return schedule for firmware");
     }
 
     // Firmware sends vitamin intake status (boolean yes/no)
@@ -83,10 +80,11 @@ public class FirmwareController {
 
      Notes: the controller only calls the domain service (and not the repos directly)
      */
+    @Operation(summary = "Report dispense status", description = "Called by firmware after a dispense cycle to report whether the pill was taken. intakeIds must match those received in the DISPENSE poll response")
     @PostMapping("/status")
     public ResponseEntity<String> reportStatus(@RequestBody IntakeReport request, @RequestParam(defaultValue = "DISPENSER_001") String deviceId) {
         Device device = deviceRepository.findByDeviceId(deviceId)
-                .orElseThrow(() -> new RuntimeException("Unknown device"));
+                .orElseThrow(() -> new DeviceNotFoundException(deviceId));
         log.info("Intake IDs: {}", request.getIntakeIds());
         log.info("Dispense status: {}", request.getDispenseEventStatus());
         loggingService.handleStatus(request.getIntakeIds(),

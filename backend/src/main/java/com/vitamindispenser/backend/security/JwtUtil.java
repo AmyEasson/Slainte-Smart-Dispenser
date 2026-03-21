@@ -20,7 +20,7 @@ public class JwtUtil {
 
     public String generateToken(String username){
         //24 hours
-        long EXPIRY = 100 * 60 * 60 * 24;
+        long EXPIRY = 1000L * 60 * 60 * 24;
         return Jwts.builder()
                 .setSubject(username)
                 .setIssuedAt(new Date())
@@ -42,8 +42,10 @@ public class JwtUtil {
         try {
             extractUsername(token);
             return true;
-        } catch (Exception e) {
-            return false;
+        } catch (io.jsonwebtoken.ExpiredJwtException e) {
+            return false; // token expired
+        } catch (io.jsonwebtoken.JwtException e) {
+            return false; // token invalid/malformed
         }
     }
 

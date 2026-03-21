@@ -1,6 +1,9 @@
 package com.vitamindispenser.backend.mobile;
 
 import com.vitamindispenser.backend.auth.AccountService;
+import com.vitamindispenser.backend.exceptions.DeviceAlreadyClaimedException;
+import com.vitamindispenser.backend.exceptions.DeviceNotFoundException;
+import com.vitamindispenser.backend.exceptions.UserNotFoundException;
 import com.vitamindispenser.backend.logging.LoggingExportService;
 import com.vitamindispenser.backend.schedule.SchedulingService;
 import com.vitamindispenser.backend.logging.dto.IntakeForRawDashboard;
@@ -10,6 +13,8 @@ import com.vitamindispenser.backend.device.Device;
 import com.vitamindispenser.backend.user.User;
 import com.vitamindispenser.backend.device.DeviceRepository;
 import com.vitamindispenser.backend.user.UserRepository;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -22,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
+@Tag(name = "Mobile App", description = "Endpoints for the mobile application")
 @RequestMapping("/api/mobile")
 public class MobileAppController {
     /*
@@ -69,17 +75,18 @@ public class MobileAppController {
      * @param principal the JWT token of the authenticated user
      * @return success or failure message only
      */
+    @Operation(summary = "Claim device", description = "Links a physical dispenser to the authenticated user's account by device ID")
     @PostMapping("/claim-device")
     public ResponseEntity<String> claimDevice(@RequestBody Map<String, String> body, Principal principal) {
         String deviceId = body.get("deviceId");
         User user = userRepository.findByUsername(principal.getName())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException(principal.getName()));
 
         Device device = deviceRepository.findByDeviceId(deviceId)
-                .orElseThrow(() -> new RuntimeException("Device not found"));
+                .orElseThrow(() -> new DeviceNotFoundException(deviceId));
 
         if (device.getOwner() != null && !device.getOwner().getId().equals(user.getId())) {
-            return ResponseEntity.status(409).body("Device is already claimed by another user");
+            throw new DeviceAlreadyClaimedException(deviceId);
         }
 
         device.setOwner(user);
@@ -88,19 +95,20 @@ public class MobileAppController {
         return ResponseEntity.ok("Successfully claimed device");
     }
 
+    @Operation(summary = "Check device claimed", description = "Returns whether the authenticated user has a device claimed — used post-login to decide whether to show the setup flow")
     @GetMapping("/has-device")
     public ResponseEntity<?> hasDevice(Principal principal) {
         User user = userRepository.findByUsername(principal.getName())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException(principal.getName()));
         boolean hasDevice = deviceRepository.findByOwner(user).isPresent();
         return ResponseEntity.ok(Map.of("hasDevice", hasDevice));
     }
 
-    // Mobile app sends schedule with multiple vitamins
+    @Operation(summary = "Save schedule", description = "Creates or overwrites the user's vitamin dispensing schedule")
     @PostMapping("/schedule")
     public ResponseEntity<String> createSchedule(@RequestBody ScheduleRequest request, Principal principal) {
         User user = userRepository.findByUsername(principal.getName())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException(principal.getName()));
         try {
             schedulingService.saveSchedule(request, user);
             return ResponseEntity.ok("Schedule has been sent");
@@ -114,10 +122,11 @@ public class MobileAppController {
      * @param principal the JWT token of the authenticated user
      * @return the user's currently active schedule
      */
+    @Operation(summary = "Get schedule", description = "Returns the user's currently active dispensing schedule")
     @GetMapping("/getSchedule")
     public ResponseEntity<ScheduleRequest> getSchedule(Principal principal) {
         User user = userRepository.findByUsername(principal.getName())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException(principal.getName()));
         return ResponseEntity.ok(schedulingService.retrieveSchedule(user));
     }
 
@@ -127,10 +136,11 @@ public class MobileAppController {
      * @param principal the JWT token of the authenticated user
      * @return the list of slots and what vitamins should be in each
      */
+    @Operation(summary = "Get slots", description = "Returns which vitamins should be loaded into each dispenser slot")
     @GetMapping("/slots")
     public ResponseEntity<?> getSlots(Principal principal) {
         User user = userRepository.findByUsername(principal.getName())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException(principal.getName()));
         return ResponseEntity.ok(schedulingService.getSlots(user));
     }
 
@@ -139,25 +149,27 @@ public class MobileAppController {
      * @param principal the JWT-token of the authenticated user
      * @return the user's refill information
      */
+    @Operation(summary = "Get refill info", description = "Returns the date the dispenser needs refilling based on the current schedule")
     @GetMapping("/slots/refill-info")
     public ResponseEntity<?> getRefillIndoors(Principal principal) {
         User user = userRepository.findByUsername(principal.getName())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException(principal.getName()));
         return ResponseEntity.ok(schedulingService.getRefillInfo(user));
     }
 
+    @Operation(summary = "Confirm refill", description = "Marks the dispenser as refilled and resets the refill countdown")
     @PostMapping("/slots/confirm-fill")
     public ResponseEntity<?> confirmFill(Principal principal) {
         User user = userRepository.findByUsername(principal.getName())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException(principal.getName()));
         return ResponseEntity.ok(schedulingService.confirmFill(user));
     }
 
-    // Mobile app gets vitamin intake data
+    @Operation(summary = "Export intake logs as CSV", description = "Downloads all vitamin intake history for the authenticated user as a CSV file")
     @GetMapping("/logs/export.csv")
     public ResponseEntity<String> exportCsv(Principal principal) {
         User user = userRepository.findByUsername(principal.getName())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException(principal.getName()));
         String csv = exportService.exportAllLogsAsCsv(user);
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"logs.csv\"")
@@ -165,13 +177,11 @@ public class MobileAppController {
                 .body(csv);
     }
 
-    /*
-    This endpoint shall be called by the UI to just enumerate raw data there
-     */
+    @Operation(summary = "Get intake logs", description = "Returns raw intake log data for the dashboard")
     @GetMapping("/intake")
     public ResponseEntity<?> getIntake(Principal principal) {
         User user = userRepository.findByUsername(principal.getName())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException(principal.getName()));
         List<IntakeForRawDashboard> data = exportService.exportDashboardJson(user);
 
         if (data.isEmpty()) {
@@ -185,11 +195,7 @@ public class MobileAppController {
         );
     }
 
-    /**
-     * endpoint to receive barcode to lookup vitamin information,
-     * for automatic data entry and schedule suggestions
-     */
-
+    @Operation(summary = "Lookup barcode", description = "Looks up vitamin product information by barcode for automatic schedule entry")
     @GetMapping("/barcode/{barcode}")
     public ResponseEntity<?> lookupBarcode(@PathVariable String barcode) {
         Map<String, Object> result = barcodeService.lookupBarcode(barcode);
@@ -199,6 +205,7 @@ public class MobileAppController {
         return ResponseEntity.ok(result);
     }
 
+    @Operation(summary = "Pause dispensing", description = "Pauses the dispensing schedule — no vitamins will be dispensed until resumed")
     @PostMapping("/pause")
     public ResponseEntity<?> pause(Principal principal) {
         User user = userRepository.findByUsername(principal.getName()).orElseThrow();
@@ -208,6 +215,7 @@ public class MobileAppController {
         return ResponseEntity.ok("Dispensing paused");
     }
 
+    @Operation(summary = "Resume dispensing", description = "Resumes the dispensing schedule and calculates any missed slots that need to be advanced")
     @PostMapping("/resume")
     public ResponseEntity<?> resume(Principal principal) {
         User user = userRepository.findByUsername(principal.getName()).orElseThrow();
@@ -240,12 +248,14 @@ public class MobileAppController {
         ));
     }
 
+    @Operation(summary = "Get pause status", description = "Returns whether dispensing is currently paused")
     @GetMapping("/pause-status")
     public ResponseEntity<?> pauseStatus(Principal principal) {
         User user = userRepository.findByUsername(principal.getName()).orElseThrow();
         return ResponseEntity.ok(Map.of("paused", user.isPaused()));
     }
 
+    @Operation(summary = "Change password", description = "Updates the authenticated user's password after verifying their current password")
     @PostMapping("/change-password")
     public ResponseEntity<String> changePassword(@RequestBody Map<String, String> body, Principal principal) {
         String oldPassword = body.get("oldPassword");
@@ -256,7 +266,7 @@ public class MobileAppController {
         }
 
         User user = userRepository.findByUsername(principal.getName())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException(principal.getName()));
 
         try {
             accountService.changePassword(user, oldPassword, newPassword);
@@ -266,10 +276,11 @@ public class MobileAppController {
         }
     }
 
+    @Operation(summary = "Delete account", description = "Permanently deletes the authenticated user's account including all schedule entries, intake logs and device claim")
     @DeleteMapping("/account")
     public ResponseEntity<String> deleteAccount(Principal principal) {
         User user = userRepository.findByUsername(principal.getName())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException(principal.getName()));
         accountService.deleteAccount(user);
         return ResponseEntity.ok("Account deleted successfully");
     }

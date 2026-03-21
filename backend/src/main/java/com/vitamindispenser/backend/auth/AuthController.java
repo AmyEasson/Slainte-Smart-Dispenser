@@ -7,6 +7,8 @@ import com.vitamindispenser.backend.user.User;
 import com.vitamindispenser.backend.device.DeviceRepository;
 import com.vitamindispenser.backend.user.UserRepository;
 import com.vitamindispenser.backend.security.JwtUtil;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -17,6 +19,7 @@ import java.util.Map;
 import java.util.Optional;
 
 @RestController
+@Tag(name = "Authentication", description = "User registration and login")
 @RequestMapping("/api/auth")
 public class AuthController {
 
@@ -24,6 +27,7 @@ public class AuthController {
     @Autowired private PasswordEncoder passwordEncoder;
     @Autowired private JwtUtil jwtUtil;
 
+    @Operation(summary = "Register", description = "Create a new user account")
     @PostMapping("/register")
     public ResponseEntity<String> registerUser(@RequestBody AuthRequest request) {
         if (userRepository.findByUsername(request.getUsername()).isPresent()){
@@ -37,6 +41,7 @@ public class AuthController {
         return ResponseEntity.ok("User registered successfully");
     }
 
+    @Operation(summary = "Login", description = "Authenticate with username and password, returns a JWT token valid for 24 hours")
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody AuthRequest request){
         Optional<User> userOpt = userRepository.findByUsername(request.getUsername());
