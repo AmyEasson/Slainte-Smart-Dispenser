@@ -34,10 +34,10 @@
         }
 
         .topbar{
+            position: relative;
             display:flex;
             align-items:center;
-            justify-content:space-between;
-            gap:12px;
+            justify-content:center;  /* center the title */
             margin-bottom: 12px;
             animation: fade-up 0.5s ease-out 0.1s both;
         }
@@ -57,6 +57,8 @@
             font-size: 14px;
             font-family: 'DM Sans', sans-serif;
             box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+            position: absolute;
+            left: 0;
         }
 
         .card{
@@ -233,8 +235,6 @@
         .modal-btns{ display:flex; gap:10px; }
         .modal-btns button{ flex:1; padding: 12px; font-size: 15px; }
 
-        .signout{ width:auto; padding: 10px 12px; font-size: 13px; border-radius: 999px; color: var(--muted); background: none; border: none; box-shadow: none; }
-
 
         @keyframes fade-up {
             from { opacity: 0; transform: translateY(14px); }
@@ -258,7 +258,6 @@
     <div class="topbar">
         <a class="back" href="home.html">Back</a>
         <h1>Scheduling</h1>
-        <button class="signout toggleBtn" id="logoutBtn">Sign out</button>
     </div>
 
     <div id="loadStatus" class="muted" style="margin-top:10px;"></div>
@@ -354,12 +353,6 @@
         window.ReactNativeWebView && window.ReactNativeWebView.postMessage("login");
         throw new Error("Not authenticated");
     }
-
-    document.getElementById("logoutBtn").addEventListener("click", () => {
-        sessionStorage.removeItem("authToken");
-        sessionStorage.removeItem("authUser");
-        window.ReactNativeWebView && window.ReactNativeWebView.postMessage("login");
-    });
 
     let state = { vitamins: [] };
     let pendingPresetType = "daily";
