@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Sláinte — Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,700;0,9..144,900;1,9..144,400&family=DM+Sans:wght@400;500;600;700&display=swap');
+:root{--bg:#F5F0E8;--panel:#FEFCF8;--text:#1A2E1A;--muted:#4A6B4A;--border:#D4C5A9;--primary:#1E4D2B;--primary-light:#2D6A4F;--forest-pale:#52B788;--danger:#C04030;--danger-bg:#FEF2F2;--ok:#2D6A4F;--ok-bg:#D8F3DC;--warm-white:#FEFCF8;--cream-dark:#E8DFD0;--gold:#D4A03C;}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;}
+body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:40px;}
+.wrap{ max-width: 720px; margin: 0 auto; padding: calc(env(safe-area-inset-top, 20px) + 69px) 16px 16px; }
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px;animation:fade-up .5s ease-out .1s both;}
+.topbar h1{font-size:20px;margin:0;font-weight:900;font-family:'Fraunces',serif;}
+.back {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--cream-dark);
+    border: none;
+    text-decoration: none;
+    transition: all 0.25s ease;
+}
+
+.back:active { transform: scale(0.9); background: var(--border); }
+.page-greeting{font-size:14px;color:var(--muted);margin-bottom:20px;animation:fade-up .5s ease-out .15s both;}
+.cards{display:flex;flex-direction:column;gap:14px;}
+.summary-card{background:var(--panel);border:1px solid rgba(30,77,43,.08);border-radius:22px;padding:18px;box-shadow:0 2px 8px rgba(0,0,0,.03);cursor:pointer;-webkit-tap-highlight-color:transparent;transition:all .2s ease;animation:fade-up .5s ease-out both;position:relative;overflow:hidden;}
+.summary-card:active{transform:scale(.98);box-shadow:0 1px 4px rgba(0,0,0,.05);}
+.card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+.card-category{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;display:flex;align-items:center;gap:6px;}
+.card-category .dot{width:8px;height:8px;border-radius:50%;display:inline-block;}
+.card-date{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:4px;}
+.card-date svg{width:14px;height:14px;}
+.card-big-number{font-family:'Fraunces',serif;font-weight:900;font-size:38px;line-height:1;margin-bottom:2px;}
+.card-big-unit{font-family:'Fraunces',serif;font-weight:400;font-size:18px;color:var(--muted);}
+.card-subtitle{font-size:13px;color:var(--muted);margin-top:2px;}
+.card-mini-chart{position:absolute;right:18px;bottom:18px;width:120px;height:50px;opacity:.7;}
+.card-mini-chart canvas{width:100%!important;height:100%!important;}
+.card-adherence .card-category{color:var(--ok);}.card-adherence .card-big-number{color:var(--ok);}
+.card-taken .card-category{color:var(--ok);}.card-taken .card-big-number{color:var(--ok);}
+.card-missed .card-category{color:var(--danger);}.card-missed .card-big-number{color:var(--danger);}
+.card-vitamins .card-category{color:var(--primary);}
+.card-weekly .card-category{color:var(--forest-pale);}
+.card-recent .card-category{color:var(--gold);}
+.card-dosage .card-category{color:var(--primary-light);}
+.vitamin-dots{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;}
+.vitamin-dot{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--muted);font-weight:600;}
+.vitamin-dot span{width:10px;height:10px;border-radius:50%;display:inline-block;}
+.recent-mini{margin-top:8px;}
+.recent-mini-item{display:flex;align-items:center;gap:8px;padding:6px 0;font-size:13px;}
+.recent-mini-bar{width:3px;height:24px;border-radius:3px;}
+.recent-mini-bar.taken{background:var(--ok);}.recent-mini-bar.missed{background:var(--danger);}
+.recent-mini-name{font-weight:600;flex:1;}
+.recent-mini-status{font-size:11px;font-weight:700;padding:3px 8px;border-radius:999px;}
+.recent-mini-status.taken{color:var(--ok);background:var(--ok-bg);}
+.recent-mini-status.missed{color:var(--danger);background:var(--danger-bg);}
+@keyframes fade-up{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="topbar"><a class="back" href="home.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1A2E1A" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></a><h1>Dashboard</h1><div style="min-width:36px;"></div></div>
+<div class="cards" id="cards"></div>
+</div>
+<script>
+var authToken=sessionStorage.getItem("authToken");
+if(!authToken&&window.ReactNativeWebView)window.ReactNativeWebView.postMessage("login");
+Chart.defaults.font.family="'DM Sans',system-ui,sans-serif";Chart.defaults.font.size=11;Chart.defaults.color="#4A6B4A";Chart.defaults.plugins.legend.display=false;
+var FOREST=["#1E4D2B","#2D6A4F","#40916C","#52B788","#74C69D","#95D5B2","#B7E4C7","#D8F3DC"];
+
+function nav(page){if(window.ReactNativeWebView)window.ReactNativeWebView.postMessage(page);}
+function esc(s){return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+function chevron(){return'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>';}
+
+
+
+// ── RAW INTAKE RECORDS (matches IntakeForRawDashboard DTO) ──
+var RAW_INTAKE = [
+    // December 2025
+    {vitaminType:"Iron",date:"2025-12-01",day:"monday",time:"08:00",numberOfPills:3,taken:true},
+    {vitaminType:"Magnesium",date:"2025-12-01",day:"monday",time:"08:00",numberOfPills:1,taken:true},
+    {vitaminType:"Vitamin D",date:"2025-12-01",day:"monday",time:"19:00",numberOfPills:1,taken:true},
+    {vitaminType:"Iron",date:"2025-12-02",day:"tuesday",time:"08:00",numberOfPills:3,taken:true},
+    {vitaminType:"Magnesium",date:"2025-12-02",day:"tuesday",time:"08:00",numberOfPills:1,taken:true},
+    {vitaminType:"Vitamin D",date:"2025-12-02",day:"tuesday",time:"19:00",numberOfPills:1,taken:true},
+    {vitaminType:"Iron",date:"2025-12-03",day:"wednesday",time:"08:00",numberOfPills:3,taken:true},
+    {vitaminType:"Magnesium",date:"2025-12-03",day:"wednesday",time:"08:00",numberOfPills:1,taken:false},
+    {vitaminType:"Vitamin D",date:"2025-12-03",day:"wednesday",time:"19:00",numberOfPills:1,taken:true},
+    {vitaminType:"Omega-3",date:"2025-12-03",day:"wednesday",time:"19:00",numberOfPills:2,taken:true},
+    {vitaminType:"Iron",date:"2025-12-04",day:"thursday",time:"08:00",numberOfPills:3,taken:true},
+    {vitaminType:"Vitamin C",date:"2025-12-04",day:"thursday",time:"08:00",numberOfPills:1,taken:true},
+    {vitaminType:"Multivitamin",date:"2025-12-04",day:"thursday",time:"19:00",numberOfPills:1,taken:true},
+    {vitaminType:"Iron",date:"2025-12-05",day:"friday",time:"08:00",numberOfPills:3,taken:true},
+    {vitaminType:"Magnesium",date:"2025-12-05",day:"friday",time:"08:00",numberOfPills:1,taken:true},
+    {vitaminType:"Vitamin D",date:"2025-12-05",day:"friday",time:"19:00",numberOfPills:1,taken:true},
+    {vitaminType:"Iron",date:"2025-12-06",day:"saturday",time:"08:00",numberOfPills:3,taken:false},
+    {vitaminType:"Magnesium",date:"2025-12-06",day:"saturday",time:"08:00",numberOfPills:1,taken:true},
+    {vitaminType:"Vitamin C",date:"2025-12-06",day:"saturday",time:"18:00",numberOfPills:1,taken:true},
+    {vitaminType:"Omega-3",date:"2025-12-06",day:"saturday",time:"18:00",numberOfPills:2,taken:false},
+    {vitaminType:"Iron",date:"2025-12-07",day:"sunday",time:"08:00",numberOfPills:3,taken:true},
+    {vitaminType:"Multivitamin",date:"2025-12-07",day:"sunday",time:"08:00",numberOfPills:1,taken:true},
+    {vitaminType:"Vitamin D",date:"2025-12-07",day:"sunday",time:"19:00",numberOfPills:1,taken:true},
+
+    // More December
+    {vitaminType:"Iron",date:"2025-12-08",day:"monday",time:"08:00",numberOfPills:3,taken:true},
+    {vitaminType:"Magnesium",date:"2025-12-08",day:"monday",time:"08:00",numberOfPills:1,taken:true},
+    {vitaminType:"Vitamin D",date:"2025-12-08",day:"monday",time:"19:00",numberOfPills:1,taken:true},
+    {vitaminType:"Iron",date:"2025-12-09",day:"tuesday",time:"08:00",numberOfPills:3,taken:true},
+    {vitaminType:"Vitamin C",date:"2025-12-09",day:"tuesday",time:"08:00",numberOfPills:1,taken:true},
+    {vitaminType:"Omega-3",date:"2025-12-09",day:"tuesday",time:"19:00",numberOfPills:2,taken:true},
+    {vitaminType:"Iron",date:"2025-12-10",day:"wednesday",time:"08:00",numberOfPills:3,taken:true},
+    {vitaminType:"Magnesium",date:"2025-12-10",day:"wednesday",time:"08:00",numberOfPills:1,taken:false},
+    {vitaminType:"Multivitamin",date:"2025-12-10",day:"wednesday",time:"19:00",numberOfPills:1,taken:true},
+    {vitaminType:"Vitamin D",date:"2025-12-10",day:"wednesday",time:"19:00",numberOfPills:1,taken:false},
+
+    // January 2026
+    {vitaminType:"Iron",date:"2026-01-05",day:"monday",time:"08:00",numberOfPills:3,taken:true},
+    {vitaminType:"Magnesium",date:"2026-01-05",day:"monday",time:"08:00",numberOfPills:1,taken:true},
+    {vitaminType:"Vitamin D",date:"2026-01-05",day:"monday",time:"19:00",numberOfPills:1,taken:true},
+    {vitaminType:"Vitamin C",date:"2026-01-05",day:"monday",time:"19:00",numberOfPills:1,taken:true},
+    {vitaminType:"Iron",date:"2026-01-06",day:"tuesday",time:"08:00",numberOfPills:3,taken:true},
+    {vitaminType:"Magnesium",date:"2026-01-06",day:"tuesday",time:"08:00",numberOfPills:1,taken:false},
+    {vitaminType:"Omega-3",date:"2026-01-06",day:"tuesday",time:"19:00",numberOfPills:2,taken:true},
+    {vitaminType:"Multivitamin",date:"2026-01-06",day:"tuesday",time:"19:00",numberOfPills:1,taken:true},
+    {vitaminType:"Iron",date:"2026-01-07",day:"wednesday",time:"08:00",numberOfPills:3,taken:true},
+    {vitaminType:"Vitamin D",date:"2026-01-07",day:"wednesday",time:"08:00",numberOfPills:1,taken:true},
+    {vitaminType:"Magnesium",date:"2026-01-07",day:"wednesday",time:"19:00",numberOfPills:1,taken:true},
+    {vitaminType:"Iron",date:"2026-01-08",day:"thursday",time:"08:00",numberOfPills:3,taken:true},
+    {vitaminType:"Vitamin C",date:"2026-01-08",day:"thursday",time:"08:00",numberOfPills:1,taken:true},
+    {vitaminType:"Vitamin D",date:"2026-01-08",day:"thursday",time:"19:00",numberOfPills:1,taken:true},
+    {vitaminType:"Iron",date:"2026-01-09",day:"friday",time:"08:00",numberOfPills:3,taken:false},
+    {vitaminType:"Magnesium",date:"2026-01-09",day:"friday",time:"08:00",numberOfPills:1,taken:true},
+    {vitaminType:"Omega-3",date:"2026-01-09",day:"friday",time:"19:00",numberOfPills:2,taken:true},
+    {vitaminType:"Iron",date:"2026-01-10",day:"saturday",time:"08:00",numberOfPills:3,taken:true},
+    {vitaminType:"Multivitamin",date:"2026-01-10",day:"saturday",time:"08:00",numberOfPills:1,taken:true},
+    {vitaminType:"Vitamin D",date:"2026-01-10",day:"saturday",time:"19:00",numberOfPills:1,taken:false},
+    {vitaminType:"Iron",date:"2026-01-11",day:"sunday",time:"08:00",numberOfPills:3,taken:true},
+    {vitaminType:"Magnesium",date:"2026-01-11",day:"sunday",time:"08:00",numberOfPills:1,taken:true},
+    {vitaminType:"Vitamin C",date:"2026-01-11",day:"sunday",time:"19:00",numberOfPills:1,taken:true},
+
+    // February 2026
+    {vitaminType:"Iron",date:"2026-02-02",day:"monday",time:"08:00",numberOfPills:3,taken:true},
+    {vitaminType:"Magnesium",date:"2026-02-02",day:"monday",time:"08:00",numberOfPills:1,taken:true},
+    {vitaminType:"Vitamin D",date:"2026-02-02",day:"monday",time:"19:00",numberOfPills:1,taken:true},
+    {vitaminType:"Iron",date:"2026-02-03",day:"tuesday",time:"08:00",numberOfPills:3,taken:true},
+    {vitaminType:"Vitamin C",date:"2026-02-03",day:"tuesday",time:"08:00",numberOfPills:1,taken:true},
+    {vitaminType:"Omega-3",date:"2026-02-03",day:"tuesday",time:"19:00",numberOfPills:2,taken:true},
+    {vitaminType:"Multivitamin",date:"2026-02-03",day:"tuesday",time:"19:00",numberOfPills:1,taken:true},
+    {vitaminType:"Iron",date:"2026-02-04",day:"wednesday",time:"08:00",numberOfPills:3,taken:false},
+    {vitaminType:"Magnesium",date:"2026-02-04",day:"wednesday",time:"08:00",numberOfPills:1,taken:true},
+    {vitaminType:"Vitamin D",date:"2026-02-04",day:"wednesday",time:"19:00",numberOfPills:1,taken:true},
+    {vitaminType:"Iron",date:"2026-02-05",day:"thursday",time:"08:00",numberOfPills:3,taken:true},
+    {vitaminType:"Vitamin C",date:"2026-02-05",day:"thursday",time:"08:00",numberOfPills:1,taken:true},
+    {vitaminType:"Vitamin D",date:"2026-02-05",day:"thursday",time:"19:00",numberOfPills:1,taken:true},
+    {vitaminType:"Iron",date:"2026-02-06",day:"friday",time:"08:00",numberOfPills:3,taken:true},
+    {vitaminType:"Magnesium",date:"2026-02-06",day:"friday",time:"08:00",numberOfPills:1,taken:true},
+    {vitaminType:"Omega-3",date:"2026-02-06",day:"friday",time:"19:00",numberOfPills:2,taken:false},
+    {vitaminType:"Iron",date:"2026-02-07",day:"saturday",time:"08:00",numberOfPills:3,taken:true},
+    {vitaminType:"Multivitamin",date:"2026-02-07",day:"saturday",time:"08:00",numberOfPills:1,taken:false},
+    {vitaminType:"Vitamin D",date:"2026-02-07",day:"saturday",time:"19:00",numberOfPills:1,taken:true},
+    {vitaminType:"Iron",date:"2026-02-08",day:"sunday",time:"08:00",numberOfPills:3,taken:true},
+    {vitaminType:"Magnesium",date:"2026-02-08",day:"sunday",time:"08:00",numberOfPills:1,taken:true},
+    {vitaminType:"Vitamin C",date:"2026-02-08",day:"sunday",time:"19:00",numberOfPills:1,taken:true},
+
+    // March 2026 (recent)
+    {vitaminType:"Iron",date:"2026-03-16",day:"monday",time:"08:00",numberOfPills:3,taken:true},
+    {vitaminType:"Magnesium",date:"2026-03-16",day:"monday",time:"08:00",numberOfPills:1,taken:true},
+    {vitaminType:"Vitamin D",date:"2026-03-16",day:"monday",time:"19:00",numberOfPills:1,taken:true},
+    {vitaminType:"Vitamin C",date:"2026-03-16",day:"monday",time:"19:00",numberOfPills:1,taken:true},
+    {vitaminType:"Iron",date:"2026-03-17",day:"tuesday",time:"08:00",numberOfPills:3,taken:true},
+    {vitaminType:"Magnesium",date:"2026-03-17",day:"tuesday",time:"08:00",numberOfPills:1,taken:false},
+    {vitaminType:"Omega-3",date:"2026-03-17",day:"tuesday",time:"19:00",numberOfPills:2,taken:true},
+    {vitaminType:"Multivitamin",date:"2026-03-17",day:"tuesday",time:"19:00",numberOfPills:1,taken:true},
+    {vitaminType:"Iron",date:"2026-03-18",day:"wednesday",time:"08:00",numberOfPills:3,taken:true},
+    {vitaminType:"Vitamin D",date:"2026-03-18",day:"wednesday",time:"08:00",numberOfPills:1,taken:true},
+    {vitaminType:"Magnesium",date:"2026-03-18",day:"wednesday",time:"19:00",numberOfPills:1,taken:true},
+    {vitaminType:"Vitamin C",date:"2026-03-18",day:"wednesday",time:"19:00",numberOfPills:1,taken:true},
+    {vitaminType:"Iron",date:"2026-03-19",day:"thursday",time:"08:00",numberOfPills:3,taken:true},
+    {vitaminType:"Vitamin C",date:"2026-03-19",day:"thursday",time:"08:00",numberOfPills:1,taken:true},
+    {vitaminType:"Vitamin D",date:"2026-03-19",day:"thursday",time:"19:00",numberOfPills:1,taken:true},
+    {vitaminType:"Omega-3",date:"2026-03-19",day:"thursday",time:"19:00",numberOfPills:2,taken:true},
+    {vitaminType:"Iron",date:"2026-03-20",day:"friday",time:"08:00",numberOfPills:3,taken:true},
+    {vitaminType:"Magnesium",date:"2026-03-20",day:"friday",time:"08:00",numberOfPills:1,taken:true},
+    {vitaminType:"Vitamin D",date:"2026-03-20",day:"friday",time:"19:00",numberOfPills:1,taken:true},
+    {vitaminType:"Iron",date:"2026-03-21",day:"saturday",time:"08:00",numberOfPills:3,taken:true},
+    {vitaminType:"Multivitamin",date:"2026-03-21",day:"saturday",time:"08:00",numberOfPills:1,taken:false},
+    {vitaminType:"Vitamin C",date:"2026-03-21",day:"saturday",time:"18:00",numberOfPills:1,taken:true},
+    {vitaminType:"Omega-3",date:"2026-03-21",day:"saturday",time:"18:00",numberOfPills:2,taken:true},
+    {vitaminType:"Iron",date:"2026-03-22",day:"sunday",time:"08:00",numberOfPills:3,taken:true},
+    {vitaminType:"Magnesium",date:"2026-03-22",day:"sunday",time:"08:00",numberOfPills:1,taken:true},
+    {vitaminType:"Vitamin D",date:"2026-03-22",day:"sunday",time:"19:00",numberOfPills:1,taken:true}
+];
+
+// ── PROCESS RAW DATA INTO DASHBOARD FORMAT ──
+
+function processRawIntake(raw) {
+    var taken = 0, missed = 0;
+    raw.forEach(function(r) {
+        if (r.taken) taken++; else missed++;
+    });
+    var total = taken + missed;
+    var adherencePct = total > 0 ? Math.round(taken * 100 / total) : 0;
+
+    // Daily adherence — fill every day from first to last record
+    var dailyMap = {};
+    raw.forEach(function(r) {
+        if (!dailyMap[r.date]) dailyMap[r.date] = { taken: 0, total: 0 };
+        dailyMap[r.date].total++;
+        if (r.taken) dailyMap[r.date].taken++;
+    });
+
+    var dates = Object.keys(dailyMap).sort();
+    var dailyAdherence = [];
+
+    if (dates.length > 0) {
+        var current = new Date(dates[0]);
+        var end = new Date(dates[dates.length - 1]);
+
+        while (current <= end) {
+            var key = current.toISOString().substring(0, 10);
+            if (dailyMap[key]) {
+                var d = dailyMap[key];
+                dailyAdherence.push({ date: key, adherencePct: Math.round(d.taken * 100 / d.total) });
+            } else {
+                dailyAdherence.push({ date: key, adherencePct: null });
+            }
+            current.setDate(current.getDate() + 1);
+        }
+    }
+
+    // By vitamin type
+    var vitMap = {};
+    raw.forEach(function(r) {
+        if (!vitMap[r.vitaminType]) vitMap[r.vitaminType] = 0;
+        vitMap[r.vitaminType]++;
+    });
+    var byVitaminType = Object.keys(vitMap).map(function(vt) {
+        return { vitaminType: vt, count: vitMap[vt], pct: Math.round(vitMap[vt] * 1000 / total) / 10 };
+    }).sort(function(a, b) { return b.count - a.count; });
+
+    // By day of week
+    var dayMap = {};
+    raw.forEach(function(r) {
+        var day = r.day.charAt(0).toUpperCase() + r.day.slice(1);
+        if (!dayMap[day]) dayMap[day] = { taken: 0, total: 0 };
+        dayMap[day].total++;
+        if (r.taken) dayMap[day].taken++;
+    });
+    var dayOrder = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+    var byDayOfWeek = dayOrder.map(function(day) {
+        var d = dayMap[day];
+        return { day: day, adherencePct: d ? Math.round(d.taken * 1000 / d.total) / 10 : 0 };
+    });
+
+    // Timeline — group by day + time
+    var tlMap = {};
+    raw.forEach(function(r) {
+        var key = r.day + "|" + r.time;
+        if (!tlMap[key]) tlMap[key] = { day: r.day, time: r.time, taken: 0, missed: 0 };
+        if (r.taken) tlMap[key].taken++; else tlMap[key].missed++;
+    });
+    var timeline = Object.keys(tlMap).sort().map(function(k) { return tlMap[k]; });
+
+    // Recent intake — sorted by date desc, then time desc
+    var recentIntake = raw.slice().sort(function(a, b) {
+        if (a.date !== b.date) return b.date.localeCompare(a.date);
+        return b.time.localeCompare(a.time);
+    }).slice(0, 10);
+
+    return {
+        summary: { taken: taken, missed: missed, total: total, adherencePct: adherencePct },
+        dailyAdherence: dailyAdherence,
+        byVitaminType: byVitaminType,
+        byDayOfWeek: byDayOfWeek,
+        timeline: timeline,
+        recentIntake: recentIntake
+    };
+}
+
+var DATA = processRawIntake(RAW_INTAKE);
+
+// Store for detail pages
+sessionStorage.setItem("dashboardData", JSON.stringify(DATA));
+sessionStorage.setItem("rawIntake", JSON.stringify(RAW_INTAKE))
+
+function renderCards(){
+var s=DATA.summary,vits=DATA.byVitaminType,recent=DATA.recentIntake.slice(0,3),weekly=DATA.byDayOfWeek;
+var now=new Date();var weekAgo=new Date();weekAgo.setDate(now.getDate()-7);
+var weekFiltered=DATA.dailyAdherence.filter(function(d){return new Date(d.date)>=weekAgo;});
+var weekSum=weekFiltered.reduce(function(a,d){return a+d.adherencePct;},0);
+var avg=weekFiltered.length>0?Math.round(weekSum/weekFiltered.length):0;
+var statusText=s.adherencePct>=80?"On Track":s.adherencePct>=50?"Needs Work":"Off Track";
+var h='';
+var weekTaken=0,weekMissed=0;weekFiltered.forEach(function(d){var dayRaw=RAW_INTAKE.filter(function(r){return r.date===d.date;});dayRaw.forEach(function(r){if(r.taken)weekTaken++;else weekMissed++;});});var weekTotal=weekTaken+weekMissed;var weekPct=weekTotal>0?Math.round(weekTaken*100/weekTotal):0;var weekStatus=weekPct>=80?"On Track":weekPct>=50?"Needs Work":"Off Track";
+h+='<div class="summary-card card-adherence" onclick="nav(\'adherence-detail\')" style="animation-delay:.2s"><div class="card-header"><div class="card-category"><span class="dot" style="background:var(--ok)"></span> Adherence</div><div class="card-date">'+chevron()+'</div></div><div><span class="card-big-number">'+weekPct+'</span><span class="card-big-unit">%</span></div><div class="card-subtitle">'+weekStatus+' · '+weekTaken+' taken, '+weekMissed+' missed</div><div class="card-mini-chart"><canvas id="miniAdherence"></canvas></div></div>';
+h+='<div class="summary-card" onclick="nav(\'taken-missed-detail\')" style="animation-delay:.3s"><div class="card-header"><div class="card-category"><span class="dot" style="background:var(--danger)"></span> Doses</div><div class="card-date">'+chevron()+'</div></div><div style="display:flex;gap:24px;align-items:baseline;"><div><span class="card-big-number" style="color:var(--danger);">'+s.missed+'</span><span class="card-big-unit" style="color:var(--danger);"> missed</span></div><div><span class="card-big-number" style="color:var(--ok);">'+s.taken+'</span><span class="card-big-unit" style="color:var(--ok);"> taken</span></div></div><div class="card-subtitle">'+s.total+' total logged</div></div>';
+h+='<div class="summary-card card-vitamins" onclick="nav(\'vitamins-detail\')" style="animation-delay:.4s"><div class="card-header"><div class="card-category"><span class="dot" style="background:var(--primary)"></span> Vitamins</div><div class="card-date">'+chevron()+'</div></div><div><span class="card-big-number">'+vits.length+'</span><span class="card-big-unit"> types</span></div><div class="vitamin-dots">';
+vits.forEach(function(v,i){h+='<div class="vitamin-dot"><span style="background:'+FOREST[i%FOREST.length]+'"></span>'+esc(v.vitaminType)+'</div>';});
+h+='</div></div>';
+var now=new Date();var weekAgo=new Date();weekAgo.setDate(now.getDate()-7);
+var weekFiltered=DATA.dailyAdherence.filter(function(d){return new Date(d.date)>=weekAgo;});
+var dayNames=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+var dayOrd=["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
+var buckets={};dayOrd.forEach(function(d){buckets[d]={sum:0,count:0};});
+weekFiltered.forEach(function(d){var name=dayNames[new Date(d.date).getDay()];buckets[name].sum+=d.adherencePct;buckets[name].count++;});
+var weakest={day:"—",pct:100};dayOrd.forEach(function(d){var b=buckets[d];if(b.count>0){var p=Math.round(b.sum/b.count*10)/10;if(p<weakest.pct)weakest={day:d,pct:p};}});
+h+='<div class="summary-card card-weekly" onclick="nav(\'weekly-detail\')" style="animation-delay:.4s"><div class="card-header"><div class="card-category"><span class="dot" style="background:var(--forest-pale)"></span> Weekly</div><div class="card-date">'+chevron()+'</div></div><div><span class="card-big-number">'+avg+'</span><span class="card-big-unit">% avg</span></div><div class="card-subtitle" style="color:#D4A03C;font-weight:600;">Weakest: '+weakest.day.substring(0,3)+' · '+weakest.pct.toFixed(1)+'%</div><div class="card-mini-chart"><canvas id="miniWeekly"></canvas></div></div>';
+h+='<div class="summary-card card-recent" onclick="nav(\'recent-detail\')" style="animation-delay:.45s"><div class="card-header"><div class="card-category"><span class="dot" style="background:var(--gold)"></span> Recent Intake</div><div class="card-date">'+chevron()+'</div></div><div class="recent-mini">';
+recent.forEach(function(r){var c=r.taken?"taken":"missed";h+='<div class="recent-mini-item"><div class="recent-mini-bar '+c+'"></div><div class="recent-mini-name">'+esc(r.vitaminType)+' · '+r.numberOfPills+'</div><div class="recent-mini-status '+c+'">'+(r.taken?'TAKEN':'MISSED')+'</div></div>';});
+h+='</div></div>';
+
+h+='<div class="summary-card card-dosage" onclick="nav(\'dosage-detail\')" style="animation-delay:.5s"><div class="card-header"><div class="card-category"><span class="dot" style="background:var(--primary-light)"></span> Dosage Rec.</div><div class="card-date">'+chevron()+'</div></div><div class="card-subtitle" style="font-size:14px;color:var(--text);margin-top:4px;">Get a suggested dose for any supplement based on guidelines.</div><div class="card-subtitle" style="margin-top:6px;font-style:italic;">Tap to open →</div></div>';
+
+document.getElementById("cards").innerHTML=h;
+
+var d=DATA.dailyAdherence.slice(-14);
+new Chart(document.getElementById("miniAdherence"),{type:"line",data:{labels:d.map(function(){return"";}),datasets:[{data:d.map(function(x){return x.adherencePct;}),borderColor:"#2D6A4F",backgroundColor:"rgba(45,106,79,0.1)",fill:true,tension:.4,pointRadius:0,borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,scales:{x:{display:false},y:{display:false,min:0,max:100}},plugins:{tooltip:{enabled:false}},animation:false}});
+
+new Chart(document.getElementById("miniWeekly"),{type:"bar",data:{labels:weekly.map(function(x){return x.day.substring(0,1);}),datasets:[{data:weekly.map(function(x){return x.adherencePct;}),backgroundColor:weekly.map(function(x){return x.adherencePct>=90?"#2D6A4F":"#52B788";}),borderRadius:4,barPercentage:.6}]},options:{responsive:true,maintainAspectRatio:false,scales:{x:{display:false},y:{display:false,min:0,max:100}},plugins:{tooltip:{enabled:false}},animation:false}});
+}
+renderCards();
+</script>
+</body>
+</html>

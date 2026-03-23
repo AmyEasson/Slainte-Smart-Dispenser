@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Sláinte — Weekly</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,700;0,9..144,900;1,9..144,400&family=DM+Sans:wght@400;500;600;700&display=swap');
+
+        :root {
+            --bg: #F5F0E8;
+            --panel: #FEFCF8;
+            --text: #1A2E1A;
+            --muted: #4A6B4A;
+            --border: #D4C5A9;
+            --primary: #1E4D2B;
+            --ok: #2D6A4F;
+            --ok-bg: #D8F3DC;
+            --danger: #C04030;
+            --danger-bg: #FEF2F2;
+            --cream-dark: #E8DFD0;
+            --warm-white: #FEFCF8;
+            --forest-pale: #52B788;
+            --gold: #D4A03C;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { height: 100%; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; }
+
+        body {
+            font-family: 'DM Sans', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            padding-bottom: 40px;
+        }
+
+        .wrap {
+            max-width: 720px;
+            margin: 0 auto;
+            padding: calc(env(safe-area-inset-top, 20px) + 69px) 16px 16px;
+        }
+
+        /* ── Top bar ── */
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 16px;
+            animation: fade-up 0.5s ease-out 0.1s both;
+        }
+
+        .topbar h1 {
+            font-size: 20px;
+            margin: 0;
+            font-weight: 900;
+            font-family: 'Fraunces', serif;
+        }
+
+        .back {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--cream-dark);
+            border: none;
+            text-decoration: none;
+            transition: all 0.25s ease;
+        }
+
+        .back:active { transform: scale(0.9); background: var(--border); }
+
+        /* ── Time tabs ── */
+        .time-tabs {
+            display: flex;
+            background: var(--cream-dark);
+            border-radius: 14px;
+            padding: 3px;
+            margin-bottom: 20px;
+            gap: 2px;
+            animation: fade-up 0.5s ease-out 0.15s both;
+        }
+
+        .time-tab {
+            flex: 1;
+            padding: 9px 4px;
+            border: none;
+            background: none;
+            border-radius: 11px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--muted);
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.25s ease;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .time-tab.active {
+            background: var(--primary);
+            color: var(--warm-white);
+            box-shadow: 0 2px 8px rgba(30, 77, 43, 0.3);
+        }
+
+        /* ── Hero section ── */
+        .hero {
+            animation: fade-up 0.5s ease-out 0.2s both;
+            margin-bottom: 4px;
+        }
+
+        .hero-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            margin-bottom: 4px;
+        }
+
+        .hero-number {
+            font-family: 'Fraunces', serif;
+            font-weight: 900;
+            font-size: 52px;
+            line-height: 1;
+            color: var(--ok);
+        }
+
+        .hero-unit {
+            font-family: 'Fraunces', serif;
+            font-weight: 400;
+            font-size: 22px;
+            color: var(--muted);
+        }
+
+        .hero-sub {
+            font-size: 13px;
+            color: var(--muted);
+            margin-top: 4px;
+        }
+
+        /* ── Chart card ── */
+        .chart-card {
+            background: var(--panel);
+            border: 1px solid rgba(30, 77, 43, 0.08);
+            border-radius: 22px;
+            padding: 16px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+            margin-top: 16px;
+            animation: fade-up 0.5s ease-out 0.3s both;
+        }
+
+        .chart-card canvas { width: 100% !important; }
+
+        .chart-note {
+            font-size: 12px;
+            color: var(--muted);
+            text-align: center;
+            margin-top: 8px;
+        }
+
+        /* ── Day bars ── */
+        .section-title {
+            font-family: 'Fraunces', serif;
+            font-weight: 700;
+            font-size: 18px;
+            color: var(--text);
+            margin: 24px 0 10px;
+            animation: fade-up 0.5s ease-out 0.35s both;
+        }
+
+        .day-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            animation: fade-up 0.5s ease-out 0.4s both;
+        }
+
+        .day-item {
+            background: var(--panel);
+            border: 1px solid rgba(30, 77, 43, 0.08);
+            border-radius: 18px;
+            padding: 14px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .day-name {
+            font-family: 'Fraunces', serif;
+            font-weight: 700;
+            font-size: 14px;
+            min-width: 36px;
+        }
+
+        .day-bar-wrap {
+            flex: 1;
+            height: 10px;
+            background: var(--cream-dark);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .day-bar {
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.6s ease;
+        }
+
+        .day-pct {
+            font-family: 'Fraunces', serif;
+            font-weight: 900;
+            font-size: 14px;
+            min-width: 55px;
+            text-align: right;
+        }
+
+        /* ── Statistics rows ── */
+        .stat-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            animation: fade-up 0.5s ease-out 0.5s both;
+        }
+
+        .stat-row-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 18px;
+            background: var(--panel);
+            border: 1px solid rgba(30, 77, 43, 0.08);
+            border-radius: 18px;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.02);
+        }
+
+        .stat-row-label {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .stat-row-value {
+            font-family: 'Fraunces', serif;
+            font-weight: 900;
+            font-size: 18px;
+            color: var(--ok);
+        }
+
+        /* ── Info section ── */
+        .info-card {
+            background: var(--panel);
+            border: 1px solid rgba(30, 77, 43, 0.08);
+            border-radius: 22px;
+            padding: 18px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+            animation: fade-up 0.5s ease-out 0.6s both;
+        }
+
+        .info-text {
+            font-size: 14px;
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        .info-source {
+            font-size: 12px;
+            color: var(--ok);
+            margin-top: 8px;
+            font-weight: 600;
+        }
+
+        @keyframes fade-up {
+            from { opacity: 0; transform: translateY(14px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="wrap">
+        <!-- Top bar -->
+        <div class="topbar">
+            <a class="back" href="dashboard.html">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1A2E1A" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+            </a>
+            <h1>Weekly Adherence</h1>
+            <div style="min-width: 36px;"></div>
+        </div>
+
+        <!-- Time range tabs -->
+        <div class="time-tabs">
+            <button class="time-tab active" onclick="switchTime(this)">W</button>
+            <button class="time-tab" onclick="switchTime(this)">M</button>
+            <button class="time-tab" onclick="switchTime(this)">3M</button>
+            <button class="time-tab" onclick="switchTime(this)">6M</button>
+            <button class="time-tab" onclick="switchTime(this)">Y</button>
+        </div>
+        <!-- Hero -->
+        <div class="hero">
+            <div class="hero-label">Average</div>
+            <div>
+                <span class="hero-number" id="hAvg">91</span>
+                <span class="hero-unit">%</span>
+            </div>
+            <div class="hero-sub" id="hSub">Across all days of the week</div>
+        </div>
+
+        <!-- Chart -->
+        <div class="chart-card">
+            <canvas id="weeklyChart" height="180"></canvas>
+            <div class="chart-note">Dashed line = period average</div>
+        </div>
+
+        <!-- Day bars -->
+        <div class="section-title">By day</div>
+        <div class="day-list" id="dayList"></div>
+
+        <!-- Statistics -->
+        <div class="section-title" style="animation-delay:.45s">Statistics</div>
+        <div class="stat-list" id="statList"></div>
+
+        <!-- About -->
+        <div class="section-title" style="animation-delay:.55s">About Weekly Patterns</div>
+        <div class="info-card">
+            <div class="info-text">
+                Identifying which days of the week have lower adherence can help you set targeted reminders.
+                Weekends often show lower compliance due to changes in routine.
+                Consistent daily habits tend to build over time.
+            </div>
+            <div class="info-source">Sláinte Health Insights</div>
+        </div>
+    </div>
+
+    <script>
+        // ── Chart.js defaults ──
+        Chart.defaults.font.family = "'DM Sans', system-ui, sans-serif";
+        Chart.defaults.font.size = 11;
+        Chart.defaults.color = "#4A6B4A";
+        Chart.defaults.plugins.legend.display = false;
+
+        // ── Data ──
+        var DATA = JSON.parse(sessionStorage.getItem("dashboardData") || "{}");
+        var allDaily = DATA.dailyAdherence || [];
+        var weeklyChart = null;
+
+        var monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        var dayNamesAll = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+        var dayOrder = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+
+        // ── Time range helpers ──
+
+        function getStartDate(range) {
+            var now = new Date();
+            if (range === "W") { now.setDate(now.getDate() - 7); return now; }
+            if (range === "M") { now.setMonth(now.getMonth() - 1); return now; }
+            if (range === "3M") { now.setMonth(now.getMonth() - 3); return now; }
+            if (range === "6M") { now.setMonth(now.getMonth() - 6); return now; }
+            return new Date("2000-01-01");
+        }
+
+        function filterByRange(range) {
+            var start = getStartDate(range);
+            return allDaily.filter(function(d) {
+                return new Date(d.date) >= start;
+            });
+        }
+
+        // ── Compute day-of-week averages ──
+
+        function computeWeeklyFromDaily(filtered) {
+            var buckets = {};
+            dayOrder.forEach(function(d) { buckets[d] = { sum: 0, count: 0 }; });
+
+            filtered.forEach(function(d) {
+                var dayIdx = new Date(d.date).getDay();
+                var name = dayNamesAll[dayIdx];
+                buckets[name].sum += d.adherencePct;
+                buckets[name].count++;
+            });
+
+            return dayOrder.map(function(day) {
+                var b = buckets[day];
+                return {
+                    day: day,
+                    adherencePct: b.count > 0 ? Math.round(b.sum / b.count * 10) / 10 : 0
+                };
+            });
+        }
+
+        // ── Render everything for selected range ──
+
+        function renderRange(range) {
+            var filtered = filterByRange(range);
+            var days = computeWeeklyFromDaily(filtered);
+            var vals = days.map(function(d) { return d.adherencePct; });
+            var nonZero = vals.filter(function(v) { return v > 0; });
+            var avg = nonZero.length > 0 ? nonZero.reduce(function(a, b) { return a + b; }, 0) / nonZero.length : 0;
+
+            // Find best and worst
+            var best = { day: "—", pct: 0 };
+            var worst = { day: "—", pct: 100 };
+            days.forEach(function(d) {
+                if (d.adherencePct > 0 && d.adherencePct > best.pct) { best = { day: d.day, pct: d.adherencePct }; }
+                if (d.adherencePct > 0 && d.adherencePct < worst.pct) { worst = { day: d.day, pct: d.adherencePct }; }
+            });
+
+            // Calculate taken/missed
+            var taken = 0, missed = 0;
+            filtered.forEach(function(d) {
+                var t = Math.round(d.adherencePct / 100 * 4);
+                taken += t;
+                missed += (4 - t);
+            });
+
+            var minPct = nonZero.length > 0 ? Math.round(Math.min.apply(null, nonZero)) : 0;
+            var maxPct = nonZero.length > 0 ? Math.round(Math.max.apply(null, nonZero)) : 0;
+
+            // Update hero
+            document.getElementById("hAvg").textContent = Math.round(avg);
+
+            var subtitle = "Across all days of the week";
+            if (range === "M") subtitle = "Last 30 days by day of week";
+            else if (range === "3M") subtitle = "Last 3 months by day of week";
+            else if (range === "6M") subtitle = "Last 6 months by day of week";
+            else if (range === "Y") subtitle = "All time by day of week";
+            document.getElementById("hSub").textContent = subtitle;
+
+            // ── Chart ──
+            var minVal = Math.min.apply(null, nonZero.length > 0 ? nonZero : [0]);
+            var yMin = Math.max(0, Math.floor((minVal - 10) / 10) * 10);
+
+            if (weeklyChart) { weeklyChart.destroy(); }
+
+            weeklyChart = new Chart(document.getElementById("weeklyChart"), {
+                type: "bar",
+                data: {
+                    labels: days.map(function(d) { return d.day.substring(0, 3); }),
+                    datasets: [
+                        {
+                            type: "line",
+                            data: new Array(days.length).fill(avg),
+                            borderColor: "#2D6A4F",
+                            borderDash: [6, 4],
+                            borderWidth: 2,
+                            pointRadius: 0,
+                            fill: false,
+                            order: 0
+                        },
+                        {
+                            data: vals,
+                            backgroundColor: vals.map(function(v) {
+                                return v >= 90 ? "#2D6A4F" : v >= 70 ? "#52B788" : "#D4A03C";
+                            }),
+                            borderRadius: 10,
+                            barPercentage: 0.55,
+                            order: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    layout: { padding: { top: 10 } },
+                    scales: {
+                        y: {
+                            min: yMin,
+                            max: 100,
+                            grid: { color: "rgba(30, 77, 43, 0.06)" },
+                            ticks: { callback: function(v) { return v + "%"; } }
+                        },
+                        x: { grid: { display: false } }
+                    },
+                    plugins: {
+                        tooltip: {
+                            backgroundColor: "#1A2E1A",
+                            cornerRadius: 12,
+                            padding: 10,
+                            callbacks: {
+                                label: function(c) {
+                                    if (c.datasetIndex === 0) return "Avg: " + avg.toFixed(1) + "%";
+                                    return c.parsed.y.toFixed(1) + "%";
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // ── Day bars ──
+            var dayHtml = "";
+            days.forEach(function(d) {
+                var color = d.adherencePct >= 90 ? "#2D6A4F" : d.adherencePct >= 70 ? "#52B788" : "#D4A03C";
+                var pctColor = d.adherencePct >= 90 ? "var(--ok)" : d.adherencePct >= 70 ? "#52B788" : "#D4A03C";
+                var display = d.adherencePct > 0 ? d.adherencePct.toFixed(1) + "%" : "—";
+
+                dayHtml += '<div class="day-item">';
+                dayHtml += '<div class="day-name">' + d.day.substring(0, 3) + '</div>';
+                dayHtml += '<div class="day-bar-wrap"><div class="day-bar" style="width:' + d.adherencePct + '%;background:' + color + ';"></div></div>';
+                dayHtml += '<div class="day-pct" style="color:' + pctColor + ';">' + display + '</div>';
+                dayHtml += '</div>';
+            });
+            document.getElementById("dayList").innerHTML = dayHtml;
+
+            // ── Statistics ──
+            var statHtml = '';
+            statHtml += '<div class="stat-row-item"><div class="stat-row-label">Average</div><div class="stat-row-value">' + Math.round(avg) + '%</div></div>';
+            statHtml += '<div class="stat-row-item"><div class="stat-row-label">Range</div><div class="stat-row-value">' + minPct + '–' + maxPct + '%</div></div>';
+            statHtml += '<div class="stat-row-item"><div class="stat-row-label">Best day</div><div class="stat-row-value">' + best.day.substring(0, 3) + ' · ' + best.pct.toFixed(1) + '%</div></div>';
+            statHtml += '<div class="stat-row-item"><div class="stat-row-label">Weakest day</div><div class="stat-row-value" style="color:' + (worst.pct < 80 ? 'var(--gold)' : 'var(--ok)') + ';">' + worst.day.substring(0, 3) + ' · ' + worst.pct.toFixed(1) + '%</div></div>';
+            statHtml += '<div class="stat-row-item"><div class="stat-row-label">Total taken</div><div class="stat-row-value">' + taken + '</div></div>';
+            statHtml += '<div class="stat-row-item"><div class="stat-row-label">Total missed</div><div class="stat-row-value" style="color: var(--danger);">' + missed + '</div></div>';
+            document.getElementById("statList").innerHTML = statHtml;
+        }
+
+        // ── Tab switching ──
+
+        function switchTime(btn) {
+            btn.parentElement.querySelectorAll(".time-tab").forEach(function(t) {
+                t.classList.remove("active");
+            });
+            btn.classList.add("active");
+            renderRange(btn.textContent.trim());
+        }
+
+        // ── Initial render ──
+        renderRange("W");
+    </script>
+</body>
+</html>

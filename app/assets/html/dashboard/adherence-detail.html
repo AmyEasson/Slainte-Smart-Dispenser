@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Sláinte — Adherence</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,700;0,9..144,900;1,9..144,400&family=DM+Sans:wght@400;500;600;700&display=swap');
+
+        :root {
+            --bg: #F5F0E8;
+            --panel: #FEFCF8;
+            --text: #1A2E1A;
+            --muted: #4A6B4A;
+            --border: #D4C5A9;
+            --primary: #1E4D2B;
+            --ok: #2D6A4F;
+            --ok-bg: #D8F3DC;
+            --danger: #C04030;
+            --danger-bg: #FEF2F2;
+            --cream-dark: #E8DFD0;
+            --warm-white: #FEFCF8;
+            --forest-pale: #52B788;
+            --gold: #D4A03C;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { height: 100%; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; }
+
+        body {
+            font-family: 'DM Sans', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            padding-bottom: 40px;
+        }
+
+        .wrap {
+            max-width: 720px;
+            margin: 0 auto;
+            padding: calc(env(safe-area-inset-top, 20px) + 69px) 16px 16px;
+        }
+
+        /* ── Top bar ── */
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 16px;
+            animation: fade-up 0.5s ease-out 0.1s both;
+        }
+
+        .topbar h1 {
+            font-size: 20px;
+            margin: 0;
+            font-weight: 900;
+            font-family: 'Fraunces', serif;
+        }
+
+        .back {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--cream-dark);
+            border: none;
+            text-decoration: none;
+            transition: all 0.25s ease;
+        }
+
+        .back:active { transform: scale(0.9); background: var(--border); }
+
+        /* ── Time tabs ── */
+        .time-tabs {
+            display: flex;
+            background: var(--cream-dark);
+            border-radius: 14px;
+            padding: 3px;
+            margin-bottom: 20px;
+            gap: 2px;
+            animation: fade-up 0.5s ease-out 0.15s both;
+        }
+
+        .time-tab {
+            flex: 1;
+            padding: 9px 4px;
+            border: none;
+            background: none;
+            border-radius: 11px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--muted);
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.25s ease;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .time-tab.active {
+            background: var(--primary);
+            color: var(--warm-white);
+            box-shadow: 0 2px 8px rgba(30, 77, 43, 0.3);
+        }
+
+        /* ── Hero section ── */
+        .hero {
+            animation: fade-up 0.5s ease-out 0.2s both;
+            margin-bottom: 4px;
+        }
+
+        .hero-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            margin-bottom: 4px;
+        }
+
+        .hero-number {
+            font-family: 'Fraunces', serif;
+            font-weight: 900;
+            font-size: 52px;
+            line-height: 1;
+            color: var(--ok);
+        }
+
+        .hero-unit {
+            font-family: 'Fraunces', serif;
+            font-weight: 400;
+            font-size: 22px;
+            color: var(--muted);
+        }
+
+        .hero-date {
+            font-size: 13px;
+            color: var(--ok);
+            margin-top: 4px;
+            font-weight: 600;
+        }
+
+        /* ── Chart card ── */
+        .chart-card {
+            background: var(--panel);
+            border: 1px solid rgba(30, 77, 43, 0.08);
+            border-radius: 22px;
+            padding: 16px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+            margin-top: 16px;
+            animation: fade-up 0.5s ease-out 0.3s both;
+        }
+
+        .chart-card canvas { width: 100% !important; }
+
+        /* ── Stat cards ── */
+        .stat-row {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 16px;
+            animation: fade-up 0.5s ease-out 0.35s both;
+        }
+
+        .stat-card {
+            background: var(--panel);
+            border: 1px solid rgba(30, 77, 43, 0.06);
+            border-radius: 18px;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: var(--muted);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+        }
+
+        .stat-value {
+            font-family: 'Fraunces', serif;
+            font-weight: 900;
+            font-size: 28px;
+            line-height: 1.1;
+        }
+
+        /* ── Show more button ── */
+        .show-more {
+            display: block;
+            margin-top: 20px;
+            padding: 8px 0;
+            background: none;
+            border: none;
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+            text-align: center;
+            animation: fade-up 0.5s ease-out 0.4s both;
+        }
+
+        .show-more-text {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--ok);
+        }
+
+        /* ── Info section ── */
+        .section-title {
+            font-family: 'Fraunces', serif;
+            font-weight: 700;
+            font-size: 18px;
+            color: var(--text);
+            margin: 28px 0 12px;
+            animation: fade-up 0.5s ease-out 0.45s both;
+        }
+
+        .info-card {
+            background: var(--panel);
+            border: 1px solid rgba(30, 77, 43, 0.08);
+            border-radius: 22px;
+            padding: 18px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+            animation: fade-up 0.5s ease-out 0.5s both;
+        }
+
+        .info-text {
+            font-size: 14px;
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        .info-source {
+            font-size: 12px;
+            color: var(--ok);
+            margin-top: 8px;
+            font-weight: 600;
+        }
+
+        /* ── Slide-up insights panel ── */
+
+
+        .insights-panel {
+            position: fixed;
+            inset: 0;
+            z-index: 101;
+            background: var(--bg);
+            display: flex;
+            flex-direction: column;
+            transform: translateY(100%);
+            transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+            will-change: transform;
+        }
+
+        .insights-panel.open { transform: translateY(0); }
+
+        .panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: calc(env(safe-area-inset-top, 20px) + 69px) 20px 12px;
+            background: var(--bg);
+            flex-shrink: 0;
+        }
+        .panel-scroll {
+            flex: 1;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            padding: 0 20px calc(env(safe-area-inset-bottom, 20px) + 16px);
+        }
+
+        .panel-title {
+            font-family: 'Fraunces', serif;
+            font-weight: 900;
+            font-size: 20px;
+            color: var(--text);
+        }
+
+        .panel-close {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--cream-dark);
+            border: none;
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+            transition: all 0.25s ease;
+        }
+
+        .panel-close:active { transform: scale(0.9); background: var(--border); }
+
+
+
+        /* ── Insight rows ── */
+        .insight-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 18px;
+            background: var(--panel);
+            border: 1px solid rgba(30, 77, 43, 0.08);
+            border-radius: 18px;
+            margin-bottom: 10px;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.02);
+        }
+
+        .insight-label {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .insight-value {
+            font-family: 'Fraunces', serif;
+            font-weight: 900;
+            font-size: 18px;
+            color: var(--ok);
+        }
+
+        /* ── Weekly chart inside panel ── */
+        .panel-section-title {
+            font-family: 'Fraunces', serif;
+            font-weight: 700;
+            font-size: 16px;
+            color: var(--text);
+            margin: 18px 0 10px;
+        }
+
+        .panel-chart-card {
+            background: var(--panel);
+            border: 1px solid rgba(30, 77, 43, 0.08);
+            border-radius: 18px;
+            padding: 14px;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.02);
+            margin-bottom: 10px;
+        }
+
+        .panel-chart-card canvas { width: 100% !important; }
+
+        /* ── Day of week bars inside panel ── */
+        .day-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            background: var(--panel);
+            border: 1px solid rgba(30, 77, 43, 0.08);
+            border-radius: 16px;
+            margin-bottom: 8px;
+        }
+
+        .day-name {
+            font-family: 'Fraunces', serif;
+            font-weight: 700;
+            font-size: 14px;
+            min-width: 36px;
+        }
+
+        .day-bar-wrap {
+            flex: 1;
+            height: 10px;
+            background: var(--cream-dark);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .day-bar {
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.6s ease;
+        }
+
+        .day-pct {
+            font-family: 'Fraunces', serif;
+            font-weight: 900;
+            font-size: 14px;
+            min-width: 50px;
+            text-align: right;
+        }
+
+        @keyframes fade-up {
+            from { opacity: 0; transform: translateY(14px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="wrap">
+        <!-- Top bar -->
+        <div class="topbar">
+            <a class="back" href="dashboard.html">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1A2E1A" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+            </a>
+            <h1>Adherence</h1>
+            <div style="min-width: 36px;"></div>
+        </div>
+
+        <!-- Time range tabs -->
+        <div class="time-tabs">
+            <button class="time-tab active" onclick="switchTime(this)">W</button>
+            <button class="time-tab" onclick="switchTime(this)">M</button>
+            <button class="time-tab" onclick="switchTime(this)">3M</button>
+            <button class="time-tab" onclick="switchTime(this)">6M</button>
+            <button class="time-tab" onclick="switchTime(this)">Y</button>
+        </div>
+
+        <!-- Hero number -->
+        <div class="hero">
+            <div class="hero-label">Rate</div>
+            <div>
+                <span class="hero-number" id="heroNum">91</span>
+                <span class="hero-unit">%</span>
+            </div>
+            <div class="hero-date" id="heroDate">9 Feb – 22 Feb 2026</div>
+        </div>
+
+        <!-- Adherence over time chart -->
+        <div class="chart-card">
+            <canvas id="mainChart" height="220"></canvas>
+        </div>
+
+        <!-- Stats grid -->
+        <div class="stat-row">
+            <div class="stat-card">
+                <div class="stat-label">Taken</div>
+                <div class="stat-value" style="color: var(--ok);" id="statTaken">117</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Missed</div>
+                <div class="stat-value" style="color: var(--danger);" id="statMissed">12</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Total Logged</div>
+                <div class="stat-value" id="statTotal">129</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Adherence</div>
+                <div class="stat-value" style="color: var(--ok);" id="statPct">91%</div>
+            </div>
+        </div>
+
+        <!-- Show more insights button -->
+        <div class="show-more" onclick="openInsights()">
+            <span class="show-more-text">Show More Weekly Adherence Insights</span>
+        </div>
+
+        <!-- About section -->
+        <div class="section-title">About Adherence</div>
+        <div class="info-card">
+            <div class="info-text">
+                Adherence measures the percentage of scheduled vitamin doses you've actually taken.
+                Consistent adherence above 80% is considered on track for most supplement regimens.
+                Tracking your adherence helps identify patterns and days where you might need reminders.
+            </div>
+            <div class="info-source">Sláinte Health Insights</div>
+        </div>
+    </div>
+
+    <!-- Overlay -->
+    <div class="overlay" id="overlay" onclick="closeInsights()"></div>
+
+    <!-- Insights slide-up panel -->
+    <div class="insights-panel" id="insightsPanel">
+        <div class="panel-header">
+            <div class="panel-title">Weekly Insights</div>
+            <button class="panel-close" onclick="closeInsights()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1A2E1A" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg>
+            </button>
+        </div>
+        <div class="panel-scroll">
+            <!-- Weekly chart -->
+            <div class="panel-section-title">By day of week</div>
+            <div class="panel-chart-card">
+                <canvas id="weeklyChart" height="160"></canvas>
+            </div>
+
+            <!-- Day breakdown bars -->
+            <div id="dayList"></div>
+
+            <!-- Summary insight rows -->
+            <div class="panel-section-title">Statistics</div>
+            <div id="insightRows"></div>
+        </div>
+    </div>
+
+    <script>
+        // ── Chart.js defaults ──
+        Chart.defaults.font.family = "'DM Sans', system-ui, sans-serif";
+        Chart.defaults.font.size = 11;
+        Chart.defaults.color = "#4A6B4A";
+        Chart.defaults.plugins.legend.display = false;
+
+        // ── Data ──
+        var DATA = JSON.parse(sessionStorage.getItem("dashboardData") || "{}");
+        var allDaily = DATA.dailyAdherence || [];
+        var RAW = JSON.parse(sessionStorage.getItem("rawIntake") || "[]");
+
+        function processForRange(range) {
+            var start = getStartDate(range);
+            var filtered = RAW.filter(function(r) { return new Date(r.date) >= start; });
+            var taken = 0, missed = 0;
+            filtered.forEach(function(r) { if (r.taken) taken++; else missed++; });
+            var total = taken + missed;
+            return {
+                taken: taken,
+                missed: missed,
+                total: total,
+                pct: total > 0 ? Math.round(taken * 100 / total) : 0
+            };
+        }
+        var mainChart = null;
+        var weeklyChart = null;
+
+        var monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        var dayNamesShort = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+        var dayNamesAll = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+        var dayOrder = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+
+        // ── Time range helpers ──
+
+        function getStartDate(range) {
+            var now = new Date();
+            now.setHours(0, 0, 0, 0);
+
+            if (range === "W") {
+                return new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7);
+            }
+            if (range === "M") {
+                var d = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
+                if (d.getMonth() === now.getMonth()) {
+                    d = new Date(now.getFullYear(), now.getMonth(), 0);
+                }
+                return d;
+            }
+            if (range === "3M") {
+                var d = new Date(now.getFullYear(), now.getMonth() - 3, now.getDate());
+                if (d.getDate() !== now.getDate()) {
+                    d = new Date(now.getFullYear(), now.getMonth() - 2, 0);
+                }
+                return d;
+            }
+            if (range === "6M") {
+                var d = new Date(now.getFullYear(), now.getMonth() - 6, now.getDate());
+                if (d.getDate() !== now.getDate()) {
+                    d = new Date(now.getFullYear(), now.getMonth() - 5, 0);
+                }
+                return d;
+            }
+            // Y — all time
+            return new Date("2000-01-01");
+        }
+
+        function filterByRange(range) {
+            var start = getStartDate(range);
+            return allDaily.filter(function(d) {
+                return new Date(d.date) >= start;
+            });
+        }
+
+        // ── Adherence chart binning ──
+
+        function binData(filtered, range) {
+            if (range === "D") {
+                return {
+                    labels: filtered.map(function(d) {
+                        var p = d.date.split("-");
+                        return p[1] + "/" + p[2];
+                    }),
+                    values: filtered.map(function(d) { return d.adherencePct; })
+                };
+            }
+
+            if (range === "W") {
+                return {
+                    labels: filtered.map(function(d) {
+                        var dt = new Date(d.date);
+                        return dayNamesShort[dt.getDay()];
+                    }),
+                    values: filtered.map(function(d) { return d.adherencePct; })
+                };
+            }
+
+            if (range === "M") {
+                return {
+                    labels: filtered.map(function(d) {
+                        var p = d.date.split("-");
+                        return parseInt(p[2]) + "";
+                    }),
+                    values: filtered.map(function(d) { return d.adherencePct; })
+                };
+            }
+
+            if (range === "6M" || range === "3M") {
+                var weeks = {};
+                var weekOrder = [];
+
+                filtered.forEach(function(d) {
+                    if (d.adherencePct === null) return;
+                    var dt = new Date(d.date);
+                    var startOfWeek = new Date(dt);
+                    startOfWeek.setDate(dt.getDate() - dt.getDay() + 1);
+                    var key = startOfWeek.toISOString().substring(0, 10);
+
+                    if (!weeks[key]) {
+                        weeks[key] = { sum: 0, count: 0 };
+                        weekOrder.push(key);
+                    }
+                    weeks[key].sum += d.adherencePct;
+                    weeks[key].count++;
+                });
+
+                return {
+                    labels: weekOrder.map(function(k) {
+                        var p = k.split("-");
+                        return parseInt(p[2]) + " " + monthNames[parseInt(p[1]) - 1];
+                    }),
+                    values: weekOrder.map(function(k) {
+                        return Math.round(weeks[k].sum / weeks[k].count);
+                    })
+                };
+            }
+
+            // Y — monthly bins (skip nulls)
+            var months = {};
+            var monthOrder = [];
+
+            filtered.forEach(function(d) {
+                if (d.adherencePct === null) return;
+                var key = d.date.substring(0, 7);
+                if (!months[key]) {
+                    months[key] = { sum: 0, count: 0 };
+                    monthOrder.push(key);
+                }
+                months[key].sum += d.adherencePct;
+                months[key].count++;
+            });
+
+            return {
+                labels: monthOrder.map(function(k) {
+                    var p = k.split("-");
+                    return monthNames[parseInt(p[1]) - 1] + " " + p[0].substring(2);
+                }),
+                values: monthOrder.map(function(k) {
+                    return Math.round(months[k].sum / months[k].count);
+                })
+            };
+        }
+
+        // ── Weekly day-of-week computation ──
+
+        function computeWeeklyFromDaily(filtered) {
+            var buckets = {};
+            dayOrder.forEach(function(d) { buckets[d] = { sum: 0, count: 0 }; });
+
+            filtered.forEach(function(d) {
+                var dayIdx = new Date(d.date).getDay();
+                var name = dayNamesAll[dayIdx];
+                buckets[name].sum += d.adherencePct;
+                buckets[name].count++;
+            });
+
+            return dayOrder.map(function(day) {
+                var b = buckets[day];
+                return {
+                    day: day,
+                    adherencePct: b.count > 0 ? Math.round(b.sum / b.count * 10) / 10 : 0
+                };
+            });
+        }
+
+        // ── Insights panel ──
+
+        var insightsOpen = false;
+        var insightsBuilt = false;
+
+        function openInsights() {
+            insightsOpen = true;
+            var panel = document.getElementById("insightsPanel");
+            document.body.style.overflow = "hidden";
+
+            // Build content before animating
+            if (!insightsBuilt) {
+                buildInsightsPanel();
+                insightsBuilt = true;
+            }
+
+            // Let the browser paint the content, then animate
+            requestAnimationFrame(function() {
+                requestAnimationFrame(function() {
+                    panel.scrollTop = 0;
+                    panel.classList.add("open");
+                });
+            });
+        }
+
+        function closeInsights() {
+            insightsOpen = false;
+            var panel = document.getElementById("insightsPanel");
+            panel.classList.remove("open");
+
+            // Re-enable scrolling after animation completes
+            setTimeout(function() {
+                document.body.style.overflow = "";
+            }, 450);
+        }
+
+        function buildInsightsPanel() {
+            var activeTab = document.querySelector(".time-tab.active");
+            var range = activeTab ? activeTab.textContent.trim() : "W";
+            var filtered = filterByRange(range);
+            var days = computeWeeklyFromDaily(filtered);
+            var vals = days.map(function(d) { return d.adherencePct; });
+            var nonZero = vals.filter(function(v) { return v > 0; });
+            var avg = nonZero.length > 0 ? nonZero.reduce(function(a, b) { return a + b; }, 0) / nonZero.length : 0;
+
+            // Find best and worst days
+            var best = { day: "—", pct: 0 };
+            var worst = { day: "—", pct: 100 };
+            days.forEach(function(d) {
+                if (d.adherencePct > 0 && d.adherencePct > best.pct) { best = { day: d.day, pct: d.adherencePct }; }
+                if (d.adherencePct > 0 && d.adherencePct < worst.pct) { worst = { day: d.day, pct: d.adherencePct }; }
+            });
+
+            // Calculate stats from raw intake
+            var activeRange = document.querySelector(".time-tab.active");
+            var currentRange = activeRange ? activeRange.textContent.trim() : "W";
+            var stats = processForRange(currentRange);
+            var taken = stats.taken, missed = stats.missed, total = stats.total;
+
+            // Range
+            var minPct = nonZero.length > 0 ? Math.round(Math.min.apply(null, nonZero)) : 0;
+            var maxPct = nonZero.length > 0 ? Math.round(Math.max.apply(null, nonZero)) : 0;
+
+            // Build insight rows
+            var rowsHtml = '';
+            rowsHtml += '<div class="insight-row"><div class="insight-label">Average</div><div class="insight-value">' + Math.round(avg) + '%</div></div>';
+            rowsHtml += '<div class="insight-row"><div class="insight-label">Range</div><div class="insight-value">' + minPct + '–' + maxPct + '%</div></div>';
+            rowsHtml += '<div class="insight-row"><div class="insight-label">Best day</div><div class="insight-value">' + best.day.substring(0, 3) + ' · ' + best.pct.toFixed(1) + '%</div></div>';
+            rowsHtml += '<div class="insight-row"><div class="insight-label">Weakest day</div><div class="insight-value" style="color:' + (worst.pct < 80 ? 'var(--gold)' : 'var(--ok)') + ';">' + worst.day.substring(0, 3) + ' · ' + worst.pct.toFixed(1) + '%</div></div>';
+            rowsHtml += '<div class="insight-row"><div class="insight-label">Total taken</div><div class="insight-value">' + taken + '</div></div>';
+            rowsHtml += '<div class="insight-row"><div class="insight-label">Total missed</div><div class="insight-value" style="color: var(--danger);">' + missed + '</div></div>';
+            document.getElementById("insightRows").innerHTML = rowsHtml;
+
+            // Build weekly chart
+            var minVal = Math.min.apply(null, nonZero.length > 0 ? nonZero : [0]);
+            var yMin = Math.max(0, Math.floor((minVal - 10) / 10) * 10);
+
+            if (weeklyChart) { weeklyChart.destroy(); }
+
+            weeklyChart = new Chart(document.getElementById("weeklyChart"), {
+                type: "bar",
+                data: {
+                    labels: days.map(function(d) { return d.day.substring(0, 3); }),
+                    datasets: [
+                        {
+                            type: "line",
+                            data: new Array(days.length).fill(avg),
+                            borderColor: "#2D6A4F",
+                            borderDash: [6, 4],
+                            borderWidth: 2,
+                            pointRadius: 0,
+                            fill: false,
+                            order: 0
+                        },
+                        {
+                            data: vals,
+                            backgroundColor: vals.map(function(v) {
+                                return v >= 90 ? "#2D6A4F" : v >= 70 ? "#52B788" : "#D4A03C";
+                            }),
+                            borderRadius: 10,
+                            barPercentage: 0.55,
+                            order: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    layout: { padding: { top: 10 } },
+                    scales: {
+                        y: {
+                            min: yMin,
+                            max: 100,
+                            grid: { color: "rgba(30, 77, 43, 0.06)" },
+                            ticks: { callback: function(v) { return v + "%"; } }
+                        },
+                        x: { grid: { display: false } }
+                    },
+                    plugins: {
+                        tooltip: {
+                            backgroundColor: "#1A2E1A",
+                            cornerRadius: 12,
+                            padding: 10,
+                            callbacks: {
+                                label: function(c) {
+                                    if (c.datasetIndex === 0) return "Avg: " + avg.toFixed(1) + "%";
+                                    return c.parsed.y.toFixed(1) + "%";
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Build day bars
+            var listHtml = "";
+            days.forEach(function(d) {
+                var color = d.adherencePct >= 90 ? "#2D6A4F" : d.adherencePct >= 70 ? "#52B788" : "#D4A03C";
+                var pctColor = d.adherencePct >= 90 ? "var(--ok)" : d.adherencePct >= 70 ? "#52B788" : "#D4A03C";
+                var display = d.adherencePct > 0 ? d.adherencePct.toFixed(1) + "%" : "—";
+
+                listHtml += '<div class="day-item">';
+                listHtml += '<div class="day-name">' + d.day.substring(0, 3) + '</div>';
+                listHtml += '<div class="day-bar-wrap"><div class="day-bar" style="width:' + d.adherencePct + '%;background:' + color + ';"></div></div>';
+                listHtml += '<div class="day-pct" style="color:' + pctColor + ';">' + display + '</div>';
+                listHtml += '</div>';
+            });
+            document.getElementById("dayList").innerHTML = listHtml;
+        }
+
+        // ── Render main page for selected range ──
+
+        function renderRange(range) {
+            var filtered = filterByRange(range);
+            var binned = binData(filtered, range);
+
+            // Calculate stats from raw intake
+            var stats = processForRange(range);
+
+            // Update hero and stats
+            document.getElementById("heroNum").textContent = stats.pct;
+            document.getElementById("statTaken").textContent = stats.taken;
+            document.getElementById("statMissed").textContent = stats.missed;
+            document.getElementById("statTotal").textContent = stats.total;
+            document.getElementById("statPct").textContent = stats.pct + "%";
+
+            // Update date range
+            if (filtered.length > 0) {
+                var first = filtered[0].date.split("-");
+                var last = filtered[filtered.length - 1].date.split("-");
+                document.getElementById("heroDate").textContent =
+                    parseInt(first[2]) + " " + monthNames[parseInt(first[1]) - 1] +
+                    " – " +
+                    parseInt(last[2]) + " " + monthNames[parseInt(last[1]) - 1] +
+                    " " + last[0];
+            } else {
+                document.getElementById("heroDate").textContent = "No data for this range";
+            }
+
+            // ── Main adherence chart ──
+            var chartType = (range === "Y" || range === "6M") ? "bar" : "line";
+            var pointRadius = binned.labels.length > 30 ? 0 : 3;
+
+            if (mainChart) { mainChart.destroy(); }
+
+            var dataset;
+            if (chartType === "bar") {
+                dataset = {
+                    data: binned.values,
+                    backgroundColor: "#2D6A4F",
+                    borderRadius: 8,
+                    barPercentage: range === "Y" ? 0.5 : 0.6
+                };
+            } else {
+                dataset = {
+                    data: binned.values,
+                    borderColor: "#2D6A4F",
+                    backgroundColor: "rgba(45, 106, 79, 0.08)",
+                    fill: true,
+                    spanGaps: false,
+                    tension: 0.3,
+                    pointRadius: pointRadius,
+                    pointBackgroundColor: "#2D6A4F",
+                    pointBorderColor: "#FEFCF8",
+                    pointBorderWidth: 2,
+                    borderWidth: 2.5,
+                    clip: false
+                };
+            }
+
+            mainChart = new Chart(document.getElementById("mainChart"), {
+                type: chartType,
+                data: { labels: binned.labels, datasets: [dataset] },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    layout: { padding: { top: 15 } },
+                    scales: {
+                        y: {
+                            min: 0,
+                            max: 100,
+                            grid: { color: "rgba(30, 77, 43, 0.06)" },
+                            ticks: { stepSize: 25 }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: {
+                                maxTicksLimit: binned.labels.length > 15 ? 8 : binned.labels.length
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            backgroundColor: "#1A2E1A",
+                            cornerRadius: 12,
+                            padding: 10,
+                            callbacks: {
+                                label: function(c) { return c.parsed.y + "%"; }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Rebuild insights panel if it was already opened
+            insightsBuilt = false;
+            if (insightsOpen) {
+                buildInsightsPanel();
+                insightsBuilt = true;
+            }
+        }
+
+        // ── Tab switching ──
+
+        function switchTime(btn) {
+            btn.parentElement.querySelectorAll(".time-tab").forEach(function(t) {
+                t.classList.remove("active");
+            });
+            btn.classList.add("active");
+            renderRange(btn.textContent.trim());
+        }
+
+        // ── Initial render ──
+        renderRange("W");
+
+    </script>
+</body>
+</html>

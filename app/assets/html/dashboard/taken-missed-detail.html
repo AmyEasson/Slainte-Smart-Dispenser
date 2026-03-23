@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Sláinte — Taken vs Missed</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,700;0,9..144,900;1,9..144,400&family=DM+Sans:wght@400;500;600;700&display=swap');
+:root{--bg:#F5F0E8;--panel:#FEFCF8;--text:#1A2E1A;--muted:#4A6B4A;--border:#D4C5A9;--primary:#1E4D2B;--ok:#2D6A4F;--ok-bg:#D8F3DC;--danger:#C04030;--cream-dark:#E8DFD0;--warm-white:#FEFCF8;}
+*{margin:0;padding:0;box-sizing:border-box;}html,body{height:100%;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;}body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:40px;}
+.wrap{ max-width: 720px; margin: 0 auto; padding: calc(env(safe-area-inset-top, 20px) + 69px) 16px 16px; }
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:20px;animation:fade-up .5s ease-out .1s both;}.topbar h1{font-size:20px;margin:0;font-weight:900;font-family:'Fraunces',serif;}
+.back {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--cream-dark);
+    border: none;
+    text-decoration: none;
+    transition: all 0.25s ease;
+}
+
+.back:active { transform: scale(0.9); background: var(--border); }
+
+.hero{animation:fade-up .5s ease-out .15s both;margin-bottom:4px;display:flex;gap:24px;align-items:baseline;}
+.hero-block{}.hero-label{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;}
+.hero-number{font-family:'Fraunces',serif;font-weight:900;font-size:52px;line-height:1;}
+.hero-number.taken{color:var(--ok);}.hero-number.missed{color:var(--danger);}
+
+.chart-card{background:var(--panel);border:1px solid rgba(30,77,43,.08);border-radius:22px;padding:16px;box-shadow:0 2px 8px rgba(0,0,0,.03);margin-top:20px;animation:fade-up .5s ease-out .25s both;}
+.chart-card canvas{width:100%!important;}
+
+.timeline-title{font-family:'Fraunces',serif;font-weight:700;font-size:18px;color:var(--text);margin:28px 0 12px;animation:fade-up .5s ease-out .35s both;}
+.timeline-card{background:var(--panel);border:1px solid rgba(30,77,43,.08);border-radius:22px;padding:16px;box-shadow:0 2px 8px rgba(0,0,0,.03);animation:fade-up .5s ease-out .4s both;}
+.timeline-card canvas{width:100%!important;}
+
+.section-title{font-family:'Fraunces',serif;font-weight:700;font-size:18px;color:var(--text);margin:28px 0 12px;animation:fade-up .5s ease-out .45s both;}
+.info-card{background:var(--panel);border:1px solid rgba(30,77,43,.08);border-radius:22px;padding:18px;box-shadow:0 2px 8px rgba(0,0,0,.03);animation:fade-up .5s ease-out .5s both;}
+.info-text{font-size:14px;color:var(--text);line-height:1.6;}
+
+@keyframes fade-up{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="topbar"><a class="back" href="dashboard.html">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1A2E1A" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+</a><h1>Taken vs Missed</h1><div style="min-width:36px;"></div></div>
+
+<div class="hero">
+<div class="hero-block"><div class="hero-label">Taken</div><div class="hero-number taken" id="hTaken">117</div></div>
+<div class="hero-block"><div class="hero-label">Missed</div><div class="hero-number missed" id="hMissed">12</div></div>
+</div>
+
+<div class="chart-card"><canvas id="barChart" height="240"></canvas></div>
+
+<div class="timeline-title">Intake Timeline</div>
+<div class="timeline-card"><canvas id="timelineChart" height="220"></canvas></div>
+
+<div class="section-title">About This Data</div>
+<div class="info-card"><div class="info-text">This shows the total number of vitamin doses you've taken versus those that were missed during the selected period. The timeline below breaks this down by day and time slot, so you can spot which times of day you're most likely to miss a dose.</div></div>
+</div>
+<script>
+Chart.defaults.font.family="'DM Sans',system-ui,sans-serif";Chart.defaults.font.size=11;Chart.defaults.color="#4A6B4A";Chart.defaults.plugins.legend.display=false;
+var DATA=JSON.parse(sessionStorage.getItem("dashboardData")||"{}");
+var s=DATA.summary||{taken:117,missed:12};
+document.getElementById("hTaken").textContent=s.taken;
+document.getElementById("hMissed").textContent=s.missed;
+
+new Chart(document.getElementById("barChart"),{type:"bar",data:{labels:["Taken","Missed"],datasets:[{data:[s.taken,s.missed],backgroundColor:["#2D6A4F","#C04030"],borderRadius:14,barPercentage:.4}]},options:{responsive:true,maintainAspectRatio:false,scales:{y:{beginAtZero:true,grid:{color:"rgba(30,77,43,0.06)"}},x:{grid:{display:false}}},plugins:{tooltip:{backgroundColor:"#1A2E1A",cornerRadius:12,padding:10}}}});
+
+var tl=DATA.timeline||[];
+new Chart(document.getElementById("timelineChart"),{type:"bar",data:{labels:tl.map(function(t){return t.day.substring(0,3)+" "+t.time;}),datasets:[{label:"Taken",data:tl.map(function(t){return t.taken;}),backgroundColor:"#2D6A4F",borderRadius:6},{label:"Missed",data:tl.map(function(t){return t.missed;}),backgroundColor:"#C04030",borderRadius:6}]},options:{responsive:true,maintainAspectRatio:false,scales:{x:{stacked:true,grid:{display:false},ticks:{maxRotation:90,font:{size:9}}},y:{stacked:true,beginAtZero:true,grid:{color:"rgba(30,77,43,0.06)"}}},plugins:{legend:{display:true,position:"bottom",labels:{padding:12,usePointStyle:true,pointStyle:"circle",font:{size:11}}},tooltip:{backgroundColor:"#1A2E1A",cornerRadius:12,padding:10}}}});
+</script>
+</body>
+</html>

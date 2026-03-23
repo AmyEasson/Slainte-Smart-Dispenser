@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Sláinte — Recent Intake</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,700;0,9..144,900;1,9..144,400&family=DM+Sans:wght@400;500;600;700&display=swap');
+:root{--bg:#F5F0E8;--panel:#FEFCF8;--text:#1A2E1A;--muted:#4A6B4A;--border:#D4C5A9;--ok:#2D6A4F;--ok-bg:#D8F3DC;--danger:#C04030;--danger-bg:#FEF2F2;--gold:#D4A03C;}
+*{margin:0;padding:0;box-sizing:border-box;}html,body{height:100%;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;}body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:40px;}
+.wrap{ max-width: 720px; margin: 0 auto; padding: calc(env(safe-area-inset-top, 20px) + 69px) 16px 16px; }
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:20px;animation:fade-up .5s ease-out .1s both;}.topbar h1{font-size:20px;margin:0;font-weight:900;font-family:'Fraunces',serif;}.back{display:inline-flex;align-items:center;justify-content:center;padding:10px 12px;border-radius:14px;border:1px solid var(--border);text-decoration:none;color:var(--text);background:var(--panel);min-width:64px;font-size:14px;font-family:'DM Sans',sans-serif;box-shadow:0 1px 4px rgba(0,0,0,.04);transition:all .25s ease;}.back:active{transform:scale(.95);}
+.hero{animation:fade-up .5s ease-out .15s both;margin-bottom:20px;}.hero-label{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;}.hero-number{font-family:'Fraunces',serif;font-weight:900;font-size:42px;line-height:1;color:var(--text);}.hero-sub{font-size:13px;color:var(--muted);margin-top:4px;}
+.intake-list{display:flex;flex-direction:column;gap:10px;}
+.intake-card{background:var(--panel);border:1px solid rgba(30,77,43,.08);border-radius:20px;padding:0;box-shadow:0 2px 8px rgba(0,0,0,.03);display:flex;overflow:hidden;animation:fade-up .4s ease-out both;}
+.intake-bar{width:5px;flex-shrink:0;}.intake-bar.taken{background:var(--ok);}.intake-bar.missed{background:var(--danger);}
+.intake-body{flex:1;padding:14px 16px;display:flex;align-items:center;gap:12px;}
+.intake-info{flex:1;}.intake-name{font-family:'Fraunces',serif;font-weight:700;font-size:16px;margin-bottom:2px;}.intake-meta{font-size:13px;color:var(--muted);}
+.intake-status{padding:5px 12px;border-radius:999px;font-size:12px;font-weight:700;flex-shrink:0;}.intake-status.taken{color:var(--ok);background:var(--ok-bg);}.intake-status.missed{color:var(--danger);background:var(--danger-bg);}
+@keyframes fade-up{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="topbar"><a class="back" href="dashboard.html">Back</a><h1>Recent Intake</h1><div style="min-width:64px;"></div></div>
+<div class="hero"><div class="hero-label">Latest entries</div><div class="hero-number" id="hCount">8</div><div class="hero-sub">Most recent vitamin intake records</div></div>
+<div class="intake-list" id="intakeList"></div>
+</div>
+<script>
+var DATA=JSON.parse(sessionStorage.getItem("dashboardData")||"{}");
+var recent=DATA.recentIntake||[];
+document.getElementById("hCount").textContent=recent.length;
+function esc(s){return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+var h='';
+recent.forEach(function(r,i){
+var c=r.taken?"taken":"missed";
+h+='<div class="intake-card" style="animation-delay:'+(0.2+i*0.06)+'s"><div class="intake-bar '+c+'"></div><div class="intake-body"><div class="intake-info"><div class="intake-name">'+esc(r.vitaminType)+' — '+r.numberOfPills+' pill'+(r.numberOfPills===1?'':'s')+'</div><div class="intake-meta">'+esc(r.day)+' '+esc(r.time)+(r.date?' · '+esc(r.date):'')+'</div></div><div class="intake-status '+c+'">'+(r.taken?'TAKEN':'MISSED')+'</div></div></div>';
+});
+document.getElementById("intakeList").innerHTML=h;
+</script>
+</body>
+</html>

@@ -113,7 +113,7 @@ async function scheduleAllNotifications(payload: any, authToken: string, apiBase
     }
 }
 
-type Page = "login" | "home" | "intake" | "schedule" | "refill" | "setup" | "settings";
+type Page = "login" | "home" | "intake" | "schedule" | "refill" | "setup" | "settings"| "dashboard" | "adherence-detail" | "taken-missed-detail" | "vitamins-detail" | "weekly-detail" | "recent-detail" | "dosage-detail";
 
 export default function HomeScreen() {
     const [page, setPage] = useState<Page>("login");
@@ -136,6 +136,13 @@ export default function HomeScreen() {
         refill: require("../../assets/html/refill.html"),
         setup: require("../../assets/html/setup.html"),
         settings: require("../../assets/html/settings.html"),
+        dashboard: require("../../assets/html/dashboard/dashboard.html"),
+        "adherence-detail": require("../../assets/html/dashboard/adherence-detail.html"),
+        "taken-missed-detail": require("../../assets/html/dashboard/taken-missed-detail.html"),
+        "vitamins-detail": require("../../assets/html/dashboard/vitamins-detail.html"),
+        "weekly-detail": require("../../assets/html/dashboard/weekly-detail.html"),
+        "recent-detail": require("../../assets/html/dashboard/recent-detail.html"),
+        "dosage-detail": require("../../assets/html/dashboard/dosage-detail.html"),
     };
 
     const injectedJS = `
@@ -186,6 +193,14 @@ export default function HomeScreen() {
                 window.ReactNativeWebView.postMessage('settings');
                 return;
             }
+            
+            if (href.endsWith('dashboard.html')) { e.preventDefault(); window.ReactNativeWebView.postMessage('dashboard'); }
+            if (href.endsWith('adherence-detail.html')) { e.preventDefault(); window.ReactNativeWebView.postMessage('adherence-detail'); }
+            if (href.endsWith('taken-missed-detail.html')) { e.preventDefault(); window.ReactNativeWebView.postMessage('taken-missed-detail'); }
+            if (href.endsWith('vitamins-detail.html')) { e.preventDefault(); window.ReactNativeWebView.postMessage('vitamins-detail'); }
+            if (href.endsWith('weekly-detail.html')) { e.preventDefault(); window.ReactNativeWebView.postMessage('weekly-detail'); }
+            if (href.endsWith('recent-detail.html')) { e.preventDefault(); window.ReactNativeWebView.postMessage('recent-detail'); }
+            if (href.endsWith('dosage-detail.html')) { e.preventDefault(); window.ReactNativeWebView.postMessage('dosage-detail'); }
         }, true);
         true;
     `;
@@ -348,6 +363,13 @@ export default function HomeScreen() {
                             `);
                         }, 50);
                     }
+                    if (msg === "dashboard") setPage("dashboard");
+                    if (msg === "adherence-detail") setPage("adherence-detail");
+                    if (msg === "taken-missed-detail") setPage("taken-missed-detail");
+                    if (msg === "vitamins-detail") setPage("vitamins-detail");
+                    if (msg === "weekly-detail") setPage("weekly-detail");
+                    if (msg === "recent-detail") setPage("recent-detail");
+                    if (msg === "dosage-detail") setPage("dosage-detail");
                 }}
             />
 
