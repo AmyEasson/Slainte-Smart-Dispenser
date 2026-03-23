@@ -373,7 +373,12 @@
             } else {
                 var text = await res.text();
                 btn.disabled = false;
-                setStatus("step1Status", text || "Failed to claim device. Please try again.", "error");
+                try {
+                    var json = JSON.parse(text);
+                    setStatus("step1Status", json.message || "Failed to claim device. Please try again.", "error");
+                } catch (e) {
+                    setStatus("step1Status", text || "Failed to claim device. Please try again.", "error");
+                }
             }
         } catch (e) {
             btn.disabled = false;
