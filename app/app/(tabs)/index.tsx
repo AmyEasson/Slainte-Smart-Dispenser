@@ -309,13 +309,45 @@ export default function HomeScreen() {
 
                     } catch (_) {}
 
-                    if (msg === "home") setPage("home");
+                    if (msg === "home") {
+                        setPage("home");
+                        setTimeout(() => {
+                            webViewRef.current?.injectJavaScript(`
+                            sessionStorage.removeItem("setupSource");
+                            true;
+                            `);
+                        }, 50);
+                    }
                     if (msg === "login") setPage("login");
                     if (msg === "intake") setPage("intake");
                     if (msg === "schedule") setPage("schedule");
                     if (msg === "refill") setPage("refill");
-                    if (msg === "setup") setPage("setup");
-                    if (msg === "settings") setPage("settings");
+                    if (msg === "setup_from_settings") {
+                        setPage("setup");
+                        webViewRef.current?.injectJavaScript(`
+                        sessionStorage.setItem("setupSource", "settings");
+                        true;
+                        `);
+                        return;
+                    }
+
+                    if (msg === "setup") {
+                        setPage("setup");
+                        webViewRef.current?.injectJavaScript(`
+                        sessionStorage.setItem("setupSource", "onboarding");
+                        true;
+                        `);
+                        return;
+                    }
+                    if (msg === "settings") {
+                        setPage("settings");
+                        setTimeout(() => {
+                            webViewRef.current?.injectJavaScript(`
+                            sessionStorage.removeItem("setupSource");
+                            true;
+                            `);
+                        }, 50);
+                    }
                 }}
             />
 

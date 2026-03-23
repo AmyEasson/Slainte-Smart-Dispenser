@@ -442,8 +442,14 @@
     }
 
     function skipSetup() {
+        var source = sessionStorage.getItem("setupSource");
+
         if (window.ReactNativeWebView) {
-            window.ReactNativeWebView.postMessage("home");
+            if (source === "settings") {
+                window.ReactNativeWebView.postMessage("settings");
+            } else {
+                window.ReactNativeWebView.postMessage("home");
+            }
         }
     }
 </script>
