@@ -16,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 @Slf4j
 @RestController
@@ -48,8 +49,15 @@ public class FirmwareController {
         Device device = deviceRepository.findByDeviceId(deviceId)
                 .orElseThrow(() -> new DeviceNotFoundException(deviceId));
 
+        System.out.println("POLLING!!!!!");
+
         User owner = device.getOwner();
         var result = pollCommandService.getPollingResults(owner);
+
+        System.out.println(result.getCommand()+"\n");
+        if (result.getCommand() == "DISPENSE"){
+            System.out.println("!!!!!!!!!!!!DISPENSING!!!!!!!!!");
+        }
 
         Map<String, Object> body = new HashMap<>();
         body.put("command", result.getCommand());
