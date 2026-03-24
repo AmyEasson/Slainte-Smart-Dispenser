@@ -113,7 +113,7 @@ async function scheduleAllNotifications(payload: any, authToken: string, apiBase
     }
 }
 
-type Page = "login" | "home" | "intake" | "schedule" | "refill" | "setup" | "settings"| "dashboard" | "adherence-detail" | "taken-missed-detail" | "vitamins-detail" | "weekly-detail" | "recent-detail" | "dosage-detail";
+type Page = "login" | "home" | "intake" | "schedule" | "refill" | "setup" | "settings"| "dashboard" | "adherence-detail" | "taken-missed-detail" | "vitamins-detail" | "weekly-detail" | "recent-detail";
 
 export default function HomeScreen() {
     const [page, setPage] = useState<Page>("login");
@@ -142,7 +142,6 @@ export default function HomeScreen() {
         "vitamins-detail": require("../../assets/html/dashboard/vitamins-detail.html"),
         "weekly-detail": require("../../assets/html/dashboard/weekly-detail.html"),
         "recent-detail": require("../../assets/html/dashboard/recent-detail.html"),
-        "dosage-detail": require("../../assets/html/dashboard/dosage-detail.html"),
     };
 
     const injectedJS = `
@@ -200,7 +199,6 @@ export default function HomeScreen() {
             if (href.endsWith('vitamins-detail.html')) { e.preventDefault(); window.ReactNativeWebView.postMessage('vitamins-detail'); }
             if (href.endsWith('weekly-detail.html')) { e.preventDefault(); window.ReactNativeWebView.postMessage('weekly-detail'); }
             if (href.endsWith('recent-detail.html')) { e.preventDefault(); window.ReactNativeWebView.postMessage('recent-detail'); }
-            if (href.endsWith('dosage-detail.html')) { e.preventDefault(); window.ReactNativeWebView.postMessage('dosage-detail'); }
         }, true);
         true;
     `;
@@ -369,7 +367,6 @@ export default function HomeScreen() {
                     if (msg === "vitamins-detail") setPage("vitamins-detail");
                     if (msg === "weekly-detail") setPage("weekly-detail");
                     if (msg === "recent-detail") setPage("recent-detail");
-                    if (msg === "dosage-detail") setPage("dosage-detail");
                 }}
             />
 

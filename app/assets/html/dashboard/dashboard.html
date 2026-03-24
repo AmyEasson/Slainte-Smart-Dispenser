@@ -47,7 +47,6 @@
         .card-vitamins .card-category{color:var(--primary);}
         .card-weekly .card-category{color:var(--forest-pale);}
         .card-recent .card-category{color:var(--gold);}
-        .card-dosage .card-category{color:var(--primary-light);}
         .vitamin-dots{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;}
         .vitamin-dot{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--muted);font-weight:600;}
         .vitamin-dot span{width:10px;height:10px;border-radius:50%;display:inline-block;}
@@ -213,7 +212,6 @@
         h+='<div class="summary-card card-recent" onclick="nav(\'recent-detail\')" style="animation-delay:.45s"><div class="card-header"><div class="card-category"><span class="dot" style="background:var(--gold)"></span> Recent Intake</div><div class="card-date">'+chevron()+'</div></div><div class="recent-mini">';
         recent.forEach(function(r){var c=r.taken?"taken":"missed";h+='<div class="recent-mini-item"><div class="recent-mini-bar '+c+'"></div><div class="recent-mini-name">'+esc(r.vitaminType)+' · '+r.numberOfPills+'</div><div class="recent-mini-status '+c+'">'+(r.taken?'TAKEN':'MISSED')+'</div></div>';});
         h+='</div></div>';
-        h+='<div class="summary-card card-dosage" onclick="nav(\'dosage-detail\')" style="animation-delay:.5s"><div class="card-header"><div class="card-category"><span class="dot" style="background:var(--primary-light)"></span> Dosage Rec.</div><div class="card-date">'+chevron()+'</div></div><div class="card-subtitle" style="font-size:14px;color:var(--text);margin-top:4px;">Get a suggested dose for any supplement based on guidelines.</div><div class="card-subtitle" style="margin-top:6px;font-style:italic;">Tap to open →</div></div>';
 
         document.getElementById("cards").innerHTML=h;
 
