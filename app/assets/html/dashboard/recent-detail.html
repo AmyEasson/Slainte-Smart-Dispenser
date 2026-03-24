@@ -9,7 +9,19 @@
 :root{--bg:#F5F0E8;--panel:#FEFCF8;--text:#1A2E1A;--muted:#4A6B4A;--border:#D4C5A9;--ok:#2D6A4F;--ok-bg:#D8F3DC;--danger:#C04030;--danger-bg:#FEF2F2;--gold:#D4A03C;}
 *{margin:0;padding:0;box-sizing:border-box;}html,body{height:100%;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;}body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:40px;}
 .wrap{ max-width: 720px; margin: 0 auto; padding: calc(env(safe-area-inset-top, 20px) + 69px) 16px 16px; }
-.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:20px;animation:fade-up .5s ease-out .1s both;}.topbar h1{font-size:20px;margin:0;font-weight:900;font-family:'Fraunces',serif;}.back{display:inline-flex;align-items:center;justify-content:center;padding:10px 12px;border-radius:14px;border:1px solid var(--border);text-decoration:none;color:var(--text);background:var(--panel);min-width:64px;font-size:14px;font-family:'DM Sans',sans-serif;box-shadow:0 1px 4px rgba(0,0,0,.04);transition:all .25s ease;}.back:active{transform:scale(.95);}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:20px;animation:fade-up .5s ease-out .1s both;}.topbar h1{font-size:20px;margin:0;font-weight:900;font-family:'Fraunces',serif;}
+.back {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--cream-dark);
+    border: none;
+    text-decoration: none;
+    transition: all 0.25s ease;
+}
 .hero{animation:fade-up .5s ease-out .15s both;margin-bottom:20px;}.hero-label{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;}.hero-number{font-family:'Fraunces',serif;font-weight:900;font-size:42px;line-height:1;color:var(--text);}.hero-sub{font-size:13px;color:var(--muted);margin-top:4px;}
 .intake-list{display:flex;flex-direction:column;gap:10px;}
 .intake-card{background:var(--panel);border:1px solid rgba(30,77,43,.08);border-radius:20px;padding:0;box-shadow:0 2px 8px rgba(0,0,0,.03);display:flex;overflow:hidden;animation:fade-up .4s ease-out both;}
@@ -22,7 +34,9 @@
 </head>
 <body>
 <div class="wrap">
-<div class="topbar"><a class="back" href="dashboard.html">Back</a><h1>Recent Intake</h1><div style="min-width:64px;"></div></div>
+    <div class="topbar"><a class="back" href="dashboard.html">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1A2E1A" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+</a><h1>Recent Intake</h1><div style="min-width:36px;"></div></div>
 <div class="hero"><div class="hero-label">Latest entries</div><div class="hero-number" id="hCount">8</div><div class="hero-sub">Most recent vitamin intake records</div></div>
 <div class="intake-list" id="intakeList"></div>
 </div>
