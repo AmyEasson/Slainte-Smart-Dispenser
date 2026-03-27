@@ -2,6 +2,7 @@ package com.vitamindispenser.backend.integration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vitamindispenser.backend.user.UserRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -10,7 +11,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.transaction.annotation.Transactional;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -21,7 +21,6 @@ import java.util.Map;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-@Transactional
 class AuthIntegrationTest {
 
     @Autowired
@@ -33,9 +32,13 @@ class AuthIntegrationTest {
     @Autowired
     private UserRepository userRepository;
 
+    @BeforeEach
+    void setUp() {
+        userRepository.deleteAll();
+    }
+
     @Test
     void registerAndLogin_returnsToken() throws Exception {
-        // Register
         mockMvc.perform(post("/api/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(
@@ -43,7 +46,6 @@ class AuthIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(content().string("User registered successfully"));
 
-        // Login
         MvcResult result = mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(
@@ -52,7 +54,6 @@ class AuthIntegrationTest {
                 .andExpect(jsonPath("$.token").exists())
                 .andReturn();
 
-        // Token is not empty
         String response = result.getResponse().getContentAsString();
         String token = objectMapper.readTree(response).get("token").asText();
         assertFalse(token.isBlank());
@@ -60,14 +61,12 @@ class AuthIntegrationTest {
 
     @Test
     void login_withWrongPassword_returns401() throws Exception {
-        // Register first
         mockMvc.perform(post("/api/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(
                                 Map.of("username", "testuser", "password", "testpassword"))))
                 .andExpect(status().isOk());
 
-        // Login with wrong password
         mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(
@@ -79,13 +78,11 @@ class AuthIntegrationTest {
     void register_duplicateUsername_returns400() throws Exception {
         Map<String, String> body = Map.of("username", "testuser", "password", "testpassword");
 
-        // Register once
         mockMvc.perform(post("/api/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(body)))
                 .andExpect(status().isOk());
 
-        // Register again with same username
         mockMvc.perform(post("/api/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(body)))
