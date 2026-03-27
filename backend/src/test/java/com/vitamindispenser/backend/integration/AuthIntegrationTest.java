@@ -1,6 +1,7 @@
 package com.vitamindispenser.backend.integration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.vitamindispenser.backend.auth.AccountService;
 import com.vitamindispenser.backend.user.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -32,9 +33,12 @@ class AuthIntegrationTest {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private AccountService accountService;
+
     @BeforeEach
     void setUp() {
-        userRepository.deleteAll();
+        userRepository.findAll().forEach(accountService::deleteAccount);
     }
 
     @Test
