@@ -3,10 +3,10 @@
 #include <ESP32Servo.h>
 
 // --- NETWORK SETTINGS ---
-const char* ssid = "Beany boy";
-const char* pass = "sadiqshaik";
+const char* ssid = "Xinrui_iPhone";
+const char* pass = "hxr:))))";
 
-IPAddress serverAddress(10,45,117,2);
+IPAddress serverAddress(172,20,10,7);
 int serverPort = 8080;
 
 WiFiClient client;
@@ -17,7 +17,8 @@ WiFiClient client;
 #define ULTRASONIC_PIN 33
 
 // --- TIMINGS ---
-const unsigned long TIME_WAIT_AFTER_DISPENSE = 3000;
+const unsigned long TIME_WAIT_AFTER_DISPENSE = 1000;
+const unsigned long TIME_WAIT_FOR_CHANGE = 10000;
 const unsigned long TIME_ALARM_DURATION = 5000;
 const unsigned long TIME_SNOOZE_DURATION = 3000;
 const float DEGREES = 98;
@@ -92,7 +93,9 @@ void runDispenseCycle() {
   myServo.write(0);
 
   // 2. Let pill settle
+  ledcWriteTone(BUZZER_CHANNEL, 2000);
   delay(TIME_WAIT_AFTER_DISPENSE);
+  ledcWriteTone(BUZZER_CHANNEL, 0);
 
   // 3. Take baseline measurement
   long baseline = getStableDistance();
@@ -101,12 +104,13 @@ void runDispenseCycle() {
 
   while (true) {
 
+    delay(TIME_WAIT_FOR_CHANGE);
     long current = getStableDistance();
 
     Serial.print("Current distance: ");
     Serial.println(current);
 
-    // Detect pill removal (distance increases)
+    // 🔥 Detect pill removal (distance increases)
     if (current > baseline) {
       Serial.println("Pill removed!");
       sendStatusReport(true);
@@ -243,6 +247,7 @@ void checkServerForCommands() {
           }
 
           runDispenseCycle();
+          
         }
       }
     }
