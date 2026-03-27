@@ -88,6 +88,7 @@ void setupHardwarePins() {
 }
 
 void runDispenseCycle() {
+  Serial.println(F("[Dispenser] Entering dispense cycle..."));
   dispenserServo.write(SERVO_DISPENSE_DEGREES);
   delay(300);
   dispenserServo.write(0);

@@ -106,10 +106,4 @@ void loop() {
         delay(1000);
       }
       if (millis() - lastPollTime >= POLL_INTERVAL) {
-        checkServerForCommands();
-        lastPollTime = millis();
-      }
-      handleFactoryReset();
-      break;
-  }
-}
+   
