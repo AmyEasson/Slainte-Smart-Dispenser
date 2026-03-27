@@ -39,7 +39,7 @@ public class PollCommandService {
     private final LoggingService loggingService;
 
     private volatile String pendingCommand;
-    private final Map<Integer, Long> lastDispenseSentAt = new ConcurrentHashMap<>();
+    private final Map<String, Long> lastDispenseSentAt = new ConcurrentHashMap<>();
 
     public PollCommandService(ScheduleEntryRepository scheduleEntryRepository,
                               SlotRepository slotRepository,
@@ -132,19 +132,20 @@ public class PollCommandService {
         long nowMs = System.currentTimeMillis();
         List<Integer> intakeIds = new ArrayList<>();
 
+        String slotKey = today + "|" + nowTime;
+        Long last = lastDispenseSentAt.get(slotKey);
+        if (last != null && (nowMs - last) < DISPENSE_COOLDOWN_MINUTES * 60 * 1000) {
+            return new PollCommandResult("IDLE", Collections.emptyList(), null);
+        }
+
         for (ScheduleEntry e : entries) {
             if (!e.getDay().equalsIgnoreCase(today)) continue;
             if (!e.getTime().equals(nowTime)) continue;
-
-            Long last = lastDispenseSentAt.get(e.getId());
-            if (last != null && (nowMs - last) < DISPENSE_COOLDOWN_MINUTES * 60 * 1000) {
-                continue;
-            }
-            lastDispenseSentAt.put(e.getId(), nowMs);
             intakeIds.add(e.getId());
         }
 
         if (!intakeIds.isEmpty()) {
+            lastDispenseSentAt.put(slotKey, nowMs);
             Integer slotNumber = entries.stream()
                     .filter(e -> intakeIds.contains(e.getId()))
                     .findFirst()

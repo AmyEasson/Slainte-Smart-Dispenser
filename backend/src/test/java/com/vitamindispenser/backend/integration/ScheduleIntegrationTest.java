@@ -164,4 +164,60 @@ class ScheduleIntegrationTest {
         mockMvc.perform(get("/api/mobile/getSchedule"))
                 .andExpect(status().isForbidden());
     }
+
+    @Test
+    void saveSchedule_duringDispenseWindow_doesNotTriggerSecondDispense() throws Exception {
+        // Get the current day and time to match what the firmware poller will check
+        String today = java.time.DayOfWeek.from(java.time.LocalDate.now())
+                .getDisplayName(java.time.format.TextStyle.FULL, java.util.Locale.ENGLISH)
+                .toLowerCase();
+        String nowTime = java.time.LocalTime.now()
+                .format(java.time.format.DateTimeFormatter.ofPattern("HH:mm"));
+
+        // Save a schedule matching right now so the poller returns DISPENSE
+        String scheduleJson = String.format("""
+            {
+              "vitamins": [
+                {
+                  "vitaminType": "Vitamin C",
+                  "numberOfPills": 1,
+                  "schedule": [
+                    {"day": "%s", "times": ["%s"]}
+                  ]
+                }
+              ]
+            }
+            """, today, nowTime);
+
+        // Skip if we're too close to a minute boundary to avoid flaky timing
+        org.junit.jupiter.api.Assumptions.assumeTrue(
+                java.time.LocalTime.now().getSecond() < 55,
+                "Skipping test: too close to minute boundary"
+        );
+
+        mockMvc.perform(post("/api/mobile/schedule")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(scheduleJson))
+                .andExpect(status().isOk());
+
+        // First poll — should return DISPENSE
+        mockMvc.perform(get("/api/firmware/poll")
+                        .param("deviceId", "DISPENSER_001"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.command").value("DISPENSE"));
+
+        // Save the same schedule again (simulating a schedule update mid-window)
+        mockMvc.perform(post("/api/mobile/schedule")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(scheduleJson))
+                .andExpect(status().isOk());
+
+        // Second poll within same minute — should be IDLE, not DISPENSE again
+        mockMvc.perform(get("/api/firmware/poll")
+                        .param("deviceId", "DISPENSER_001"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.command").value("IDLE"));
+    }
 }

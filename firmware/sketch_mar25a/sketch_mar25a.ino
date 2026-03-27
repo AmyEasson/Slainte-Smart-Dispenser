@@ -106,8 +106,8 @@ void runDispenseCycle() {
     Serial.print("Current distance: ");
     Serial.println(current);
 
-    // 🔥 Detect pill removal (distance increases)
-    if (current > baseline + 3) {
+    // Detect pill removal (distance increases)
+    if (current > baseline) {
       Serial.println("Pill removed!");
       sendStatusReport(true);
       break;
