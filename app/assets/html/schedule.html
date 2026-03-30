@@ -6,6 +6,7 @@
     <title>Scheduling</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,700;0,9..144,900;1,9..144,400&family=DM+Sans:wght@400;500;600;700&display=swap');
+
         :root{
             --bg:#F5F0E8;
             --panel:#FEFCF8;
@@ -16,246 +17,556 @@
             --danger:#C04030;
             --ok:#2D6A4F;
             --err:#C04030;
-            --cream-dark: #E8DFD0;
+            --cream-dark:#E8DFD0;
         }
 
         *{ box-sizing:border-box; }
+
         body{
             margin:0;
             background:var(--bg);
             color:var(--text);
-            font-family: 'DM Sans', system-ui, sans-serif;
+            font-family:'DM Sans', system-ui, sans-serif;
         }
 
         .wrap{
-            max-width: 720px;
-            margin: 0 auto;
-            /*padding: 100px 16px 16px;*/
-            padding: calc(env(safe-area-inset-top, 20px) + 69px) 16px 16px;
+            max-width:720px;
+            margin:0 auto;
+            padding:calc(env(safe-area-inset-top, 20px) + 69px) 16px 16px;
         }
 
-        .topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px;animation:fade-up .5s ease-out .1s both;}
-        .topbar h1{font-size:20px;margin:0;font-weight:900;font-family:'Fraunces',serif;}
-        .back {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            background: var(--cream-dark);
-            border: none;
-            text-decoration: none;
-            transition: all 0.25s ease;
+        .topbar{
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            gap:12px;
+            margin-bottom:18px;
+            animation:fade-up .5s ease-out .1s both;
         }
 
-        .back:active { transform: scale(0.9); background: var(--border); }
+        .topbar h1{
+            font-size:20px;
+            margin:0;
+            font-weight:900;
+            font-family:'Fraunces',serif;
+        }
+
+        .back{
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            width:36px;
+            height:36px;
+            border-radius:50%;
+            background:var(--cream-dark);
+            border:none;
+            text-decoration:none;
+            transition:all .25s ease;
+        }
+
+        .back:active{
+            transform:scale(.95);
+            background:var(--border);
+        }
 
         .card{
-            background: var(--panel);
-            border: 1px solid rgba(30,77,43,0.08);
-            border-radius: 22px;
-            padding: 14px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
-            margin-top: 12px;
-            animation: fade-up 0.5s ease-out 0.2s both;
+            background:var(--panel);
+            border:1px solid rgba(30,77,43,0.08);
+            border-radius:22px;
+            padding:14px;
+            box-shadow:0 2px 8px rgba(0,0,0,0.03);
+            margin-top:12px;
+            animation:fade-up .5s ease-out .2s both;
         }
 
-        .muted{ color: var(--muted); font-size: 14px; }
-        .ok{ color: var(--ok); font-size: 14px; }
-        .err{ color: var(--err); font-size: 14px; }
+        .muted{ color:var(--muted); font-size:14px; }
+        .ok{ color:var(--ok); font-size:14px; }
+        .err{ color:var(--err); font-size:14px; }
 
-        label{ display:block; font-size: 12px; color: var(--muted); margin-bottom: 6px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
+        label{
+            display:block;
+            font-size:12px;
+            color:var(--muted);
+            margin-bottom:6px;
+            font-weight:600;
+            text-transform:uppercase;
+            letter-spacing:1px;
+        }
 
         input, button{
             width:100%;
-            border-radius: 16px;
-            border: 2px solid transparent;
-            padding: 14px 16px;
-            font-size: 16px;
+            border-radius:16px;
+            border:2px solid transparent;
+            padding:14px 16px;
+            font-size:16px;
             background:var(--panel);
-            color: var(--text);
-            font-family: 'DM Sans', sans-serif;
-            box-shadow: 0 1px 4px rgba(0,0,0,0.04);
-            transition: all 0.25s ease;
+            color:var(--text);
+            font-family:'DM Sans', sans-serif;
+            box-shadow:0 1px 4px rgba(0,0,0,0.04);
+            transition:all .25s ease;
         }
 
         input:focus{
-            border-color: #52B788;
-            box-shadow: 0 0 0 4px rgba(82,183,136,0.15), 0 2px 8px rgba(0,0,0,0.06);
-            outline: none;
+            border-color:#52B788;
+            box-shadow:0 0 0 4px rgba(82,183,136,0.15), 0 2px 8px rgba(0,0,0,0.06);
+            outline:none;
         }
 
-        input[type="number"]{ font-variant-numeric: tabular-nums; }
-        input[type="time"]{ font-variant-numeric: tabular-nums; }
+        input[type="number"],
+        input[type="time"]{
+            font-variant-numeric:tabular-nums;
+        }
 
         button{
             cursor:pointer;
             background:#fff;
             user-select:none;
-            -webkit-tap-highlight-color: transparent;
+            -webkit-tap-highlight-color:transparent;
         }
 
         .primary{
-            background: linear-gradient(135deg, #1E4D2B, #2D6A4F);
+            background:linear-gradient(135deg, #1E4D2B, #2D6A4F);
             color:#FEFCF8;
-            border-color: transparent;
-            box-shadow: 0 4px 16px rgba(30,77,43,0.35);
+            border-color:transparent;
+            box-shadow:0 4px 16px rgba(30,77,43,0.35);
         }
-        .danger{ border-color: transparent; color: var(--danger); background: #FEF2F2; box-shadow: none; }
 
-        .grid2{ display:grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        @media (max-width: 520px){ .grid2{ grid-template-columns: 1fr; } }
+        .danger{
+            border-color:transparent;
+            color:var(--danger);
+            background:#FEF2F2;
+            box-shadow:none;
+        }
 
-        .btnRow{ display:flex; gap:10px; flex-wrap: wrap; align-items:center; }
-        .btnRow button{ width:auto; padding:10px 12px; font-size: 14px; }
+        .grid2{
+            display:grid;
+            grid-template-columns:1fr 1fr;
+            gap:10px;
+        }
 
-        .pillRow{ display:flex; gap:8px; flex-wrap: wrap; margin-top: 8px; }
-        .pillRow button{ width:auto; border-radius: 999px; padding: 10px 12px; font-size: 13px; }
+        @media (max-width:520px){
+            .grid2{ grid-template-columns:1fr; }
+        }
+
+        .btnRow{
+            display:flex;
+            gap:10px;
+            flex-wrap:wrap;
+            align-items:center;
+        }
+
+        .btnRow button{
+            width:auto;
+            padding:10px 12px;
+            font-size:14px;
+        }
+
+        .pillRow{
+            display:flex;
+            gap:8px;
+            flex-wrap:wrap;
+            margin-top:8px;
+        }
+
+        .pillRow button{
+            width:auto;
+            border-radius:999px;
+            padding:10px 12px;
+            font-size:13px;
+        }
 
         .cardHeader{
-            display:flex; align-items:flex-start; justify-content:space-between;
-            gap:12px; padding: 6px 2px 10px 2px;
+            display:flex;
+            align-items:flex-start;
+            justify-content:space-between;
+            gap:12px;
+            padding:6px 2px 10px 2px;
         }
-        .titleLine{ min-width: 0; }
-        .vitName{ font-weight: 900; font-size: 17px; line-height: 1.15; word-break: break-word; font-family: 'Fraunces', serif; }
-        .vitSummary{ margin-top: 4px; color: var(--muted); font-size: 13px; }
 
-        .toggleBtn{ width:auto; padding: 10px 12px; font-size: 13px; border-radius: 999px; }
+        .titleLine{ min-width:0; }
+
+        .vitName{
+            font-weight:900;
+            font-size:17px;
+            line-height:1.15;
+            word-break:break-word;
+            font-family:'Fraunces',serif;
+        }
+
+        .vitSummary{
+            margin-top:4px;
+            color:var(--muted);
+            font-size:13px;
+        }
+
+        .toggleBtn{
+            width:auto;
+            padding:10px 12px;
+            font-size:13px;
+            border-radius:999px;
+        }
+
         .content.hidden{ display:none; }
 
-        .dayGrid{ display:grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin-top: 8px; }
-        @media (max-width: 520px){ .dayGrid{ grid-template-columns: repeat(4, 1fr); } }
+        .dayGrid{
+            display:grid;
+            grid-template-columns:repeat(7, 1fr);
+            gap:8px;
+            margin-top:8px;
+        }
+
+        @media (max-width:520px){
+            .dayGrid{ grid-template-columns:repeat(4, 1fr); }
+        }
 
         .dayBtn{
-            height: 44px; padding: 0; border-radius: 14px; font-size: 12px;
-            font-weight: 700; text-align:center; border: 2px solid var(--border); background:var(--panel);
-            font-family: 'DM Sans', sans-serif; box-shadow: none;
+            height:44px;
+            padding:0;
+            border-radius:14px;
+            font-size:12px;
+            font-weight:700;
+            text-align:center;
+            border:2px solid var(--border);
+            background:var(--panel);
+            font-family:'DM Sans', sans-serif;
+            box-shadow:none;
         }
-        .dayBtn.selected{ background: linear-gradient(135deg, #1E4D2B, #2D6A4F); color:#FEFCF8; border-color: transparent; }
-        .dayBtn.selected{ background: var(--primary); color:#fff; border-color: var(--primary); }
-        .back:active{ transform: scale(0.95); }
-        .primary:active{ transform: scale(0.97); box-shadow: 0 2px 8px rgba(30,77,43,0.25); }
-        .dayBtn:active{ transform: scale(0.92); }
-        .toggleBtn:active{ transform: scale(0.95); }
-        .chip .x:active{ transform: scale(0.9); }
+
+        .dayBtn.selected{
+            background:var(--primary);
+            color:#fff;
+            border-color:var(--primary);
+        }
+
+        .primary:active{
+            transform:scale(.97);
+            box-shadow:0 2px 8px rgba(30,77,43,0.25);
+        }
+
+        .dayBtn:active{ transform:scale(.92); }
+        .toggleBtn:active{ transform:scale(.95); }
+        .chip .x:active{ transform:scale(.9); }
 
         .dayBlock{
-            margin-top: 12px; padding: 12px; border-radius: 18px;
-            border:1px solid rgba(30,77,43,0.08); background: #EDE8DD;
-            animation: fade-up 0.3s ease-out both;
+            margin-top:12px;
+            padding:12px;
+            border-radius:18px;
+            border:1px solid rgba(30,77,43,0.08);
+            background:#EDE8DD;
+            animation:fade-up .3s ease-out both;
         }
-        .dayHead{ display:flex; justify-content: space-between; align-items:center; gap:10px; margin-bottom: 8px; }
-        .dayHead .name{ font-weight: 950; font-size: 14px; }
-        .dayHead button{ width:auto; padding: 10px 12px; font-size: 13px; }
 
-        .chips{ display:flex; flex-wrap: wrap; gap:8px; margin-top: 8px; }
+        .dayHead{
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            gap:10px;
+            margin-bottom:8px;
+        }
+
+        .dayHead .name{
+            font-weight:950;
+            font-size:14px;
+        }
+
+        .dayHead button{
+            width:auto;
+            padding:10px 12px;
+            font-size:13px;
+        }
+
+        .chips{
+            display:flex;
+            flex-wrap:wrap;
+            gap:8px;
+            margin-top:8px;
+        }
+
         .chip{
-            display:inline-flex; align-items:center; gap:8px; padding: 8px 12px;
-            border-radius: 999px; border: 1px solid rgba(30,77,43,0.1); background:var(--panel); font-size: 13px;
-            font-family: ui-monospace, monospace; box-shadow: 0 1px 3px rgba(0,0,0,0.03);
-            animation: fade-in 0.3s ease-out both;
+            display:inline-flex;
+            align-items:center;
+            gap:8px;
+            padding:8px 12px;
+            border-radius:999px;
+            border:1px solid rgba(30,77,43,0.1);
+            background:var(--panel);
+            font-size:13px;
+            font-family:ui-monospace, monospace;
+            box-shadow:0 1px 3px rgba(0,0,0,0.03);
+            animation:fade-in .3s ease-out both;
         }
-        .chip .x{ width:auto; padding: 6px 10px; font-size: 12px; border-radius: 999px; }
 
-        .addTimeRow{ display:grid; grid-template-columns: 1fr auto; gap:10px; align-items:end; margin-top: 10px; }
-        .addTimeRow button{ width:auto; padding: 12px 14px; font-size: 14px; border-radius: 14px; }
+        .chip .x{
+            width:auto;
+            padding:6px 10px;
+            font-size:12px;
+            border-radius:999px;
+        }
 
-        .inlineHint{ margin-top: 8px; font-size: 13px; }
-        .inputErr{ border-color: rgba(180,35,24,0.5) !important; outline: none; }
+        .addTimeRow{
+            display:grid;
+            grid-template-columns:1fr auto;
+            gap:10px;
+            align-items:end;
+            margin-top:10px;
+        }
 
-        /* ── View mode ── */
+        .addTimeRow button{
+            width:auto;
+            padding:12px 14px;
+            font-size:14px;
+            border-radius:14px;
+        }
+
+        .inlineHint{
+            margin-top:8px;
+            font-size:13px;
+        }
+
+        .inputErr{
+            border-color:rgba(180,35,24,0.5) !important;
+            outline:none;
+        }
+
         .view-empty{
-            color: var(--muted);
-            font-size: 15px;
-            padding: 28px 20px;
-            text-align: center;
-            background: var(--panel);
-            border: 1px solid rgba(30,77,43,0.08);
-            border-radius: 22px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
-            line-height: 1.5;
-            animation: fade-up 0.4s ease-out 0.2s both;
+            color:var(--muted);
+            font-size:15px;
+            padding:28px 20px;
+            text-align:center;
+            background:var(--panel);
+            border:1px solid rgba(30,77,43,0.08);
+            border-radius:22px;
+            box-shadow:0 2px 8px rgba(0,0,0,0.03);
+            line-height:1.5;
+            animation:fade-up .4s ease-out .2s both;
         }
 
         .view-card{
-            border: 1px solid rgba(30,77,43,0.08);
-            border-radius: 22px;
-            padding: 16px;
-            margin-top: 10px;
-            background: var(--panel);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
-            animation: fade-up 0.4s ease-out both;
+            border:1px solid rgba(30,77,43,0.08);
+            border-radius:22px;
+            padding:16px;
+            margin-top:10px;
+            background:var(--panel);
+            box-shadow:0 2px 8px rgba(0,0,0,0.03);
+            animation:fade-up .4s ease-out both;
         }
 
         .view-card-header{
-            display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px;
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            margin-bottom:10px;
         }
-        .view-card-name{ font-weight: 900; font-size: 16px; font-family: 'Fraunces', serif; }
-        .view-card-pills{ color: var(--muted); font-size: 13px; margin-top: 2px; }
+
+        .view-card-name{
+            font-weight:900;
+            font-size:16px;
+            font-family:'Fraunces', serif;
+        }
+
+        .view-card-pills{
+            color:var(--muted);
+            font-size:13px;
+            margin-top:2px;
+        }
 
         .view-day-row{
-            display:flex; align-items: baseline; gap: 8px;
-            padding: 6px 0; border-bottom: 1px solid var(--border); font-size: 14px;
+            display:flex;
+            align-items:baseline;
+            gap:8px;
+            padding:6px 0;
+            border-bottom:1px solid var(--border);
+            font-size:14px;
         }
-        .view-day-row:last-child{ border-bottom: none; }
-        .view-day-label{ font-weight: 700; min-width: 90px; font-size: 13px; }
-        .view-times{ display:flex; flex-wrap:wrap; gap:6px; }
+
+        .view-day-row:last-child{ border-bottom:none; }
+
+        .view-day-label{
+            font-weight:700;
+            min-width:90px;
+            font-size:13px;
+        }
+
+        .view-times{
+            display:flex;
+            flex-wrap:wrap;
+            gap:6px;
+        }
+
         .view-time-chip{
-            padding: 4px 12px; border-radius: 999px; border: 1px solid rgba(30,77,43,0.1);
-            font-size: 13px; background: #EDE8DD; font-family: ui-monospace, monospace;
+            padding:4px 12px;
+            border-radius:999px;
+            border:1px solid rgba(30,77,43,0.1);
+            font-size:13px;
+            background:#EDE8DD;
+            font-family:ui-monospace, monospace;
         }
 
-        /* ── Daily time picker modal ── */
         .modal-overlay{
-            display:none; position:fixed; inset:0;
-            background: rgba(11,26,15,0.4); z-index: 100;
-            align-items:center; justify-content:center;
+            display:none;
+            position:fixed;
+            inset:0;
+            background:rgba(11,26,15,0.4);
+            z-index:100;
+            align-items:center;
+            justify-content:center;
         }
-        .modal-overlay.open{ display:flex; animation: fade-in 0.2s ease-out; }
-        .modal-overlay.open .modal{ animation: slide-down 0.3s ease-out; }
+
+        .modal-overlay.open{
+            display:flex;
+            animation:fade-in .2s ease-out;
+        }
+
+        .modal-overlay.open .modal{
+            animation:slide-down .3s ease-out;
+        }
+
         .modal{
-            background: var(--bg); border-radius: 24px; padding: 22px;
-            width: min(340px, 90vw); box-shadow: 0 12px 40px rgba(11,26,15,0.25);
-            border: 1px solid rgba(30,77,43,0.08);
-        }
-        .modal h2{ font-size: 18px; margin: 0 0 6px; font-weight: 900; font-family: 'Fraunces', serif; }
-        .modal p{ font-size: 13px; color: var(--muted); margin: 0 0 14px; }
-        .modal input[type="time"]{ margin-bottom: 14px; width: auto; }
-        .modal-btns{ display:flex; gap:10px; }
-        .modal-btns button{ flex:1; padding: 12px; font-size: 15px; }
-
-
-        @keyframes fade-up {
-            from { opacity: 0; transform: translateY(14px); }
-            to { opacity: 1; transform: translateY(0); }
+            background:var(--bg);
+            border-radius:24px;
+            padding:22px;
+            width:min(340px, 90vw);
+            box-shadow:0 12px 40px rgba(11,26,15,0.25);
+            border:1px solid rgba(30,77,43,0.08);
         }
 
-        @keyframes fade-in {
-            from { opacity: 0; }
-            to { opacity: 1; }
+        .modal h2{
+            font-size:18px;
+            margin:0 0 6px;
+            font-weight:900;
+            font-family:'Fraunces', serif;
         }
 
-        @keyframes slide-down {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
+        .modal p{
+            font-size:13px;
+            color:var(--muted);
+            margin:0 0 14px;
         }
 
+        .modal input[type="time"]{
+            margin-bottom:14px;
+            width:auto;
+        }
+
+        .modal-btns{
+            display:flex;
+            gap:10px;
+        }
+
+        .modal-btns button{
+            flex:1;
+            padding:12px;
+            font-size:15px;
+        }
+
+        .tour-overlay{
+            position:fixed;
+            inset:0;
+            z-index:1000;
+            pointer-events:none;
+            background:rgba(11,26,15,0.45);
+        }
+
+        .tour-layer{
+            position:fixed;
+            inset:0;
+            z-index:1001;
+            pointer-events:none;
+        }
+
+        .tour-highlight-box{
+            position:fixed;
+            border-radius:22px;
+            border:4px solid rgba(82,183,136,0.95);
+            box-shadow:0 8px 24px rgba(0,0,0,0.12);
+            background:transparent;
+            pointer-events:none;
+        }
+
+        .tour-tooltip{
+            position:fixed;
+            z-index:1002;
+            width:min(320px, calc(100vw - 32px));
+            background:var(--panel);
+            color:var(--text);
+            border-radius:20px;
+            padding:16px;
+            border:1px solid rgba(30,77,43,0.08);
+            pointer-events:auto;
+            box-shadow:
+                    0 0 0 4px rgba(82,183,136,0.95),
+                    0 12px 32px rgba(0,0,0,0.18);
+        }
+
+        .tour-step{
+            font-size:12px;
+            font-weight:700;
+            letter-spacing:.06em;
+            text-transform:uppercase;
+            color:var(--ok);
+            margin-bottom:6px;
+        }
+
+        .tour-text{
+            font-size:14px;
+            line-height:1.45;
+            margin-bottom:14px;
+        }
+
+        .tour-actions{
+            display:flex;
+            justify-content:flex-end;
+            gap:10px;
+        }
+
+        .tour-actions button{
+            width:auto;
+            border:none;
+            border-radius:14px;
+            padding:10px 14px;
+            font-size:14px;
+            cursor:pointer;
+        }
+
+        .tour-secondary{
+            background:#EDE8DD;
+            color:var(--text);
+        }
+
+        .tour-daytime-anchor{
+            min-height:80px;
+        }
+
+        @keyframes fade-up{
+            from{ opacity:0; transform:translateY(14px); }
+            to{ opacity:1; transform:translateY(0); }
+        }
+
+        @keyframes fade-in{
+            from{ opacity:0; }
+            to{ opacity:1; }
+        }
+
+        @keyframes slide-down{
+            from{ opacity:0; transform:translateY(-10px); }
+            to{ opacity:1; transform:translateY(0); }
+        }
     </style>
 </head>
 <body>
 <div class="wrap">
     <div class="topbar">
         <a class="back" href="home.html">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1A2E1A" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1A2E1A" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M15 18l-6-6 6-6"/>
+            </svg>
         </a>
         <h1>Scheduling</h1>
-        <div style="min-width: 36px;"></div>
+        <div style="min-width:36px;"></div>
     </div>
 
     <div id="loadStatus" class="muted" style="margin-top:10px;"></div>
 
-    <!-- VIEW MODE -->
     <div id="viewMode">
         <div id="viewList"></div>
         <div class="card" style="margin-top:12px;">
@@ -265,10 +576,8 @@
         </div>
     </div>
 
-    <!-- EDIT MODE -->
     <div id="editMode" style="display:none;">
-        <!-- Add vitamin -->
-        <div class="card">
+        <div class="card" id="tourAddVitaminCard">
             <div class="grid2">
                 <div>
                     <label>Vitamin type</label>
@@ -280,19 +589,20 @@
                     <input id="newVitaminPills" type="number" min="1" step="1" value="1" />
                 </div>
             </div>
+
             <div class="btnRow" style="margin-top:10px; justify-content:flex-end;">
-                <button id="scanBtn" style="width:auto;">📷 Scan barcode</button>
+                <button id="scanBtn" style="width:auto;">Scan barcode</button>
                 <button id="addVitaminBtn" class="primary" style="width:auto;">Add vitamin</button>
             </div>
+
             <div style="margin-top:10px; font-size:12px; line-height:1.4; color:#C04030;">
-                ⚠️ Overuse of vitamins may cause harm. Always follow the recommended dosage on the product label or consult a healthcare professional.
+                Overuse of vitamins may cause harm. Always follow the recommended dosage on the product label or consult a healthcare professional.
             </div>
         </div>
 
-        <div id="vitaminList"></div>
+        <div id="vitaminList" class="tour-daytime-anchor"></div>
 
-        <!-- Save / Cancel -->
-        <div class="card">
+        <div class="card" id="tourSaveCard">
             <div class="btnRow">
                 <button id="save" class="primary" style="width:auto;">Save</button>
                 <button id="cancelEdit" style="width:auto;">Cancel</button>
@@ -302,7 +612,6 @@
     </div>
 </div>
 
-<!-- Daily time picker modal -->
 <div class="modal-overlay" id="dailyModal">
     <div class="modal">
         <h2>Set daily time</h2>
@@ -316,18 +625,31 @@
     </div>
 </div>
 
-<!-- Dosage suggestion modal -->
 <div class="modal-overlay" id="dosageModal">
     <div class="modal">
         <h2 id="dosageModalName"></h2>
         <p id="dosageModalSummary"></p>
-        <div style="margin-bottom: 14px;">
+        <div style="margin-bottom:14px;">
             <label>Time</label>
             <input type="time" id="dosageModalTime" />
         </div>
         <div class="modal-btns">
             <button id="dosageModalSkip">Skip</button>
             <button id="dosageModalConfirm" class="primary">Add with this schedule</button>
+        </div>
+    </div>
+</div>
+
+<div id="tourOverlay" class="tour-overlay" style="display:none;"></div>
+
+<div id="tourLayer" class="tour-layer" style="display:none;">
+    <div id="tourHighlightBox" class="tour-highlight-box"></div>
+
+    <div id="tourTooltip" class="tour-tooltip">
+        <div id="tourStepLabel" class="tour-step"></div>
+        <div id="tourText" class="tour-text"></div>
+        <div class="tour-actions">
+            <button id="tourSkip" class="tour-secondary">Skip</button>
         </div>
     </div>
 </div>
@@ -342,6 +664,8 @@
         : "http://" + window.location.hostname + ":8080";
 
     const authToken = sessionStorage.getItem("authToken");
+    const authUser = sessionStorage.getItem("authUser") || "guest";
+
     if (!authToken) {
         window.ReactNativeWebView && window.ReactNativeWebView.postMessage("login");
         throw new Error("Not authenticated");
@@ -350,9 +674,34 @@
     let state = { vitamins: [] };
     let pendingPresetType = "daily";
     let pendingFocus = null;
-    let pendingDailyIdx = null; // vitamin index waiting for daily modal
+    let pendingDailyIdx = null;
 
-    // ── View mode ────────────────────────────────────────────────
+    function escapeHtml(s){
+        return String(s ?? "")
+            .replaceAll("&","&amp;")
+            .replaceAll("<","&lt;")
+            .replaceAll(">","&gt;")
+            .replaceAll('"',"&quot;")
+            .replaceAll("'","&#039;");
+    }
+
+    function normalizeTime(t){
+        const s = (t || "").trim();
+        if (!/^\d{2}:\d{2}$/.test(s)) return "";
+        return s;
+    }
+
+    function hasValidDraftVitaminDetails() {
+        const name = (document.getElementById("newVitaminName")?.value || "").trim();
+        const pills = Number(document.getElementById("newVitaminPills")?.value);
+        return name.length > 0 && Number.isFinite(pills) && pills >= 1;
+    }
+
+    function hasAtLeastOneScheduledTime() {
+        return state.vitamins.some(v =>
+            Object.keys(v.schedule).some(day => (v.schedule[day] || []).length > 0)
+        );
+    }
 
     function renderView() {
         const root = document.getElementById("viewList");
@@ -361,7 +710,7 @@
         if (state.vitamins.length === 0) {
             const d = document.createElement("div");
             d.className = "view-empty";
-            d.innerHTML = "<div style='font-size:32px; margin-bottom:10px;'>🌱</div><div style='font-family:Fraunces,serif; font-weight:700; font-size:17px; color:#1A2E1A; margin-bottom:6px;'>No schedule yet</div><div>Tap <strong style=\"color:#1E4D2B;\">Edit schedule</strong> below to start adding your vitamins.</div>";
+            d.innerHTML = "<div style='font-family:Fraunces,serif; font-weight:700; font-size:17px; color:#1A2E1A; margin-bottom:6px;'>No schedule yet</div><div>Tap <strong style=\"color:#1E4D2B;\">Edit schedule</strong> below to start adding your vitamins.</div>";
             root.appendChild(d);
             return;
         }
@@ -415,14 +764,20 @@
         setStatusFromValidation();
     }
 
-    document.getElementById("editBtn").addEventListener("click", showEditMode);
+    document.getElementById("editBtn").addEventListener("click", function() {
+        showEditMode();
 
-    document.getElementById("cancelEdit").addEventListener("click", () => {
-        // reload state from backend to discard unsaved changes
-        load();
+        if (isTourActive() && getTourStage() === "schedule_edit") {
+            setTourStage("schedule_details");
+            setTimeout(function() {
+                showScheduleTour("schedule_details");
+            }, 50);
+        }
     });
 
-    // ── Daily modal ───────────────────────────────────────────────
+    document.getElementById("cancelEdit").addEventListener("click", () => {
+        load();
+    });
 
     function openDailyModal(vIdx, presetType = "daily") {
         pendingDailyIdx = vIdx;
@@ -458,15 +813,11 @@
         v.schedule = {};
 
         if (pendingPresetType === "daily") {
-            // All 7 days
             DAYS.forEach(d => v.schedule[d] = [time]);
         } else if (pendingPresetType === "weekdays") {
-            // Mon–Fri only
-            ["MONDAY","TUESDAY","WEDNESDAY","THURSDAY","FRIDAY"]
-                .forEach(d => v.schedule[d] = [time]);
+            ["MONDAY","TUESDAY","WEDNESDAY","THURSDAY","FRIDAY"].forEach(d => v.schedule[d] = [time]);
         }
 
-        // collapse after applying preset
         setCollapsed(pendingDailyIdx, true);
 
         document.getElementById("dailyModal").classList.remove("open");
@@ -474,21 +825,8 @@
 
         render();
         setStatusFromValidation();
+        refreshTourAfterDomChange();
     });
-
-    // ── Edit mode helpers ─────────────────────────────────────────
-
-    function escapeHtml(s){
-        return String(s ?? "")
-            .replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;")
-            .replaceAll('"',"&quot;").replaceAll("'","&#039;");
-    }
-
-    function normalizeTime(t){
-        const s = (t || "").trim();
-        if (!/^\d{2}:\d{2}$/.test(s)) return "";
-        return s;
-    }
 
     function ensureDay(vIdx, day){
         if (!state.vitamins[vIdx].schedule[day]) state.vitamins[vIdx].schedule[day] = [];
@@ -496,12 +834,13 @@
 
     function addTime(vIdx, day, time){
         const t = normalizeTime(time);
-        if (!t) return;
+        if (!t) return false;
         ensureDay(vIdx, day);
         const arr = state.vitamins[vIdx].schedule[day];
-        if (arr.includes(t)) return;
+        if (arr.includes(t)) return false;
         arr.push(t);
         arr.sort();
+        return true;
     }
 
     function removeTime(vIdx, day, time){
@@ -511,8 +850,12 @@
 
     function toggleDay(vIdx, day){
         const v = state.vitamins[vIdx];
-        if (day in v.schedule) { delete v.schedule[day]; return; }
+        if (day in v.schedule) {
+            delete v.schedule[day];
+            return false;
+        }
         v.schedule[day] = [];
+        return true;
     }
 
     function summarizeVitamin(v){
@@ -528,8 +871,14 @@
 
     function applyPreset(vIdx, preset){
         const v = state.vitamins[vIdx];
-        if (preset === "clear") { v.schedule = {}; return; }
-        if (preset === "daily") { openDailyModal(vIdx); return; }
+        if (preset === "clear") {
+            v.schedule = {};
+            return;
+        }
+        if (preset === "daily") {
+            openDailyModal(vIdx);
+            return;
+        }
         if (preset === "weekdays"){
             const templateDays = Object.keys(v.schedule);
             const templateTimes = templateDays.length ? (v.schedule[templateDays[0]] || []).slice() : [];
@@ -567,7 +916,8 @@
                         if (!DAYS.includes(day)) continue;
                         const cleaned = (Array.isArray(e?.times) ? e.times : [])
                             .filter(t => typeof t === "string" && t.trim().length > 0)
-                            .map(t => normalizeTime(t)).filter(Boolean);
+                            .map(t => normalizeTime(t))
+                            .filter(Boolean);
                         if (cleaned.length === 0) continue;
                         uiSchedule[day] = Array.from(new Set((uiSchedule[day] || []).concat(cleaned))).sort();
                     }
@@ -584,11 +934,17 @@
 
     function validatePayload(payload){
         const errors = [];
-        if (!payload || !Array.isArray(payload.vitamins)) { errors.push("Payload must contain vitamins[]."); return errors; }
+        if (!payload || !Array.isArray(payload.vitamins)) {
+            errors.push("Payload must contain vitamins[].");
+            return errors;
+        }
         payload.vitamins.forEach((v,i)=>{
             if (!v.vitaminType) errors.push(`Vitamins[${i}].vitaminType invalid.`);
             if (!Number.isInteger(v.numberOfPills) || v.numberOfPills < 1) errors.push(`Vitamins[${i}].numberOfPills must be >=1.`);
-            if (!Array.isArray(v.schedule)) { errors.push(`Vitamins[${i}].schedule must be array.`); return; }
+            if (!Array.isArray(v.schedule)) {
+                errors.push(`Vitamins[${i}].schedule must be array.`);
+                return;
+            }
             v.schedule.forEach((e,j)=>{
                 if (!e.day) errors.push(`Vitamins[${i}].schedule[${j}].day invalid.`);
                 if (!Array.isArray(e.times) || e.times.length === 0) errors.push(`Vitamins[${i}].schedule[${j}].times empty.`);
@@ -601,8 +957,9 @@
         const issues = [];
         state.vitamins.forEach(v => {
             for (const day of Object.keys(v.schedule)) {
-                if ((v.schedule[day] || []).length === 0)
+                if ((v.schedule[day] || []).length === 0) {
                     issues.push(`${(v.vitaminType || "(Unnamed)").trim()}: ${day}`);
+                }
             }
         });
         return issues;
@@ -611,18 +968,28 @@
     function setStatusFromValidation(){
         const status = document.getElementById("status");
         if (!status) return;
+
         const emptyDays = findEmptySelectedDays();
         if (emptyDays.length) {
             status.className = "err";
-            status.textContent = "Selected days with no times (won't be saved): " + emptyDays.join(", ");
+            status.textContent = "Selected days with no times: " + emptyDays.join(", ");
             return;
         }
+
         const errs = validatePayload(toBackendPayload());
-        if (errs.length === 0) { status.className = "ok"; status.textContent = "Ready to save."; }
-        else { status.className = "err"; status.textContent = "Fix: " + errs.join(" "); }
+        if (errs.length === 0) {
+            status.className = "ok";
+            status.textContent = "Ready to save.";
+        } else {
+            status.className = "err";
+            status.textContent = "Fix: " + errs.join(" ");
+        }
     }
 
-    function removeVitamin(i){ state.vitamins.splice(i,1); render(); }
+    function removeVitamin(i){
+        state.vitamins.splice(i,1);
+        render();
+    }
 
     function setCollapsed(i, collapsed){
         state.vitamins[i].ui = state.vitamins[i].ui || {};
@@ -637,9 +1004,11 @@
         if (!root) return;
         const inp = root.querySelector(`input[data-kind='time'][data-idx='${idx}'][data-day='${day}']`);
         if (!inp) return;
-        inp.scrollIntoView({ behavior: "smooth", block: "center" });
-        inp.focus({ preventScroll: true });
-        if (typeof inp.showPicker === "function") { try { inp.showPicker(); } catch (_) {} }
+        inp.scrollIntoView({ behavior:"smooth", block:"center" });
+        inp.focus({ preventScroll:true });
+        if (typeof inp.showPicker === "function") {
+            try { inp.showPicker(); } catch (_) {}
+        }
     }
 
     function render(){
@@ -651,44 +1020,46 @@
             const collapsed = !!v.ui.collapsed;
             const card = document.createElement("div");
             card.className = "card";
+            card.setAttribute("data-vitamin-card", String(idx));
+
             const name = (v.vitaminType || "").trim() || "(Unnamed vitamin)";
 
             card.innerHTML = `
                 <div class="cardHeader">
-                  <div class="titleLine">
-                    <div class="vitName">${escapeHtml(name)}</div>
-                    <div class="vitSummary">${escapeHtml(summarizeVitamin(v))}</div>
-                  </div>
-                  <button class="toggleBtn" data-kind="toggle" data-idx="${idx}">${collapsed ? "Show" : "Hide"}</button>
+                    <div class="titleLine">
+                        <div class="vitName">${escapeHtml(name)}</div>
+                        <div class="vitSummary">${escapeHtml(summarizeVitamin(v))}</div>
+                    </div>
+                    <button class="toggleBtn" data-kind="toggle" data-idx="${idx}">${collapsed ? "Show" : "Hide"}</button>
                 </div>
 
                 <div class="content ${collapsed ? "hidden":""}" id="content-${idx}">
-                  <div class="grid2">
-                    <div>
-                      <label>Vitamin type</label>
-                      <input data-kind="name" data-idx="${idx}" value="${escapeHtml(v.vitaminType)}" />
+                    <div class="grid2">
+                        <div>
+                            <label>Vitamin type</label>
+                            <input data-kind="name" data-idx="${idx}" value="${escapeHtml(v.vitaminType)}" />
+                        </div>
+                        <div>
+                            <label>Pills per intake</label>
+                            <input data-kind="pills" data-idx="${idx}" type="number" min="1" step="1" value="${escapeHtml(v.numberOfPills)}" />
+                        </div>
                     </div>
-                    <div>
-                      <label>Pills per intake</label>
-                      <input data-kind="pills" data-idx="${idx}" type="number" min="1" step="1" value="${escapeHtml(v.numberOfPills)}" />
-                    </div>
-                  </div>
 
-                  <div style="margin-top:10px;">
-                    <label>Preset</label>
-                    <div class="pillRow">
-                      <button data-kind="preset" data-idx="${idx}" data-preset="daily">Daily</button>
-                      <button data-kind="preset" data-idx="${idx}" data-preset="weekdays">Weekdays</button>
-                      <button data-kind="preset" data-idx="${idx}" data-preset="clear">Clear</button>
-                      <button data-kind="remove-vit" data-idx="${idx}" class="danger">Remove</button>
+                    <div style="margin-top:10px;">
+                        <label>Preset</label>
+                        <div class="pillRow">
+                            <button data-kind="preset" data-idx="${idx}" data-preset="daily">Daily</button>
+                            <button data-kind="preset" data-idx="${idx}" data-preset="weekdays">Weekdays</button>
+                            <button data-kind="preset" data-idx="${idx}" data-preset="clear">Clear</button>
+                            <button data-kind="remove-vit" data-idx="${idx}" class="danger">Remove</button>
+                        </div>
                     </div>
-                  </div>
 
-                  <div style="margin-top:12px;">
-                    <label>Select days</label>
-                    <div class="dayGrid" id="dayGrid-${idx}"></div>
-                  </div>
-                  <div id="days-${idx}"></div>
+                    <div style="margin-top:12px;">
+                        <label>Select days</label>
+                        <div class="dayGrid" id="dayGrid-${idx}"></div>
+                    </div>
+                    <div id="days-${idx}"></div>
                 </div>
             `;
 
@@ -710,7 +1081,8 @@
 
             if (selected.length === 0){
                 const d = document.createElement("div");
-                d.className = "muted"; d.style.marginTop = "10px";
+                d.className = "muted";
+                d.style.marginTop = "10px";
                 d.textContent = "Select days above, then add times.";
                 daysRoot.appendChild(d);
             } else {
@@ -718,18 +1090,19 @@
                     const times = (v.schedule[day] || []).slice().sort();
                     const block = document.createElement("div");
                     block.className = "dayBlock";
+                    block.setAttribute("data-day-block", `${idx}-${day}`);
                     block.innerHTML = `
                         <div class="dayHead">
-                          <div class="name">${escapeHtml(day.charAt(0) + day.slice(1).toLowerCase())}</div>
-                          <button data-kind="remove-day" data-idx="${idx}" data-day="${day}">Remove day</button>
+                            <div class="name">${escapeHtml(day.charAt(0) + day.slice(1).toLowerCase())}</div>
+                            <button data-kind="remove-day" data-idx="${idx}" data-day="${day}">Remove day</button>
                         </div>
                         <div class="chips" id="chips-${idx}-${day}"></div>
-                        <div class="addTimeRow">
-                          <div>
-                            <label>Add time</label>
-                            <input data-kind="time" data-idx="${idx}" data-day="${day}" type="time" />
-                          </div>
-                          <button class="primary" data-kind="add-time" data-idx="${idx}" data-day="${day}">Add</button>
+                        <div class="addTimeRow" data-add-time-row="${idx}-${day}">
+                            <div>
+                                <label>Add time</label>
+                                <input data-kind="time" data-idx="${idx}" data-day="${day}" type="time" />
+                            </div>
+                            <button class="primary" data-kind="add-time" data-idx="${idx}" data-day="${day}">Add</button>
                         </div>
                     `;
                     daysRoot.appendChild(block);
@@ -738,7 +1111,7 @@
                     if (times.length === 0){
                         const m = document.createElement("div");
                         m.className = "err";
-                        m.textContent = "Add at least one time, otherwise this day won't be saved.";
+                        m.textContent = "Add at least one time, otherwise this day will not be saved.";
                         chips.appendChild(m);
                     } else {
                         times.forEach(t=>{
@@ -752,21 +1125,25 @@
             }
         });
 
-        // wire events
         root.querySelectorAll("button[data-kind='toggle']").forEach(btn=>{
             btn.addEventListener("click", (e)=>{
                 e.stopPropagation();
                 const idx = Number(e.currentTarget.getAttribute("data-idx"));
                 setCollapsed(idx, !state.vitamins[idx].ui?.collapsed);
-                render(); setStatusFromValidation();
+                render();
+                setStatusFromValidation();
+                refreshTourAfterDomChange();
             });
         });
+
         root.querySelectorAll("input[data-kind='name']").forEach(inp=>{
             inp.addEventListener("input",(e)=>{
                 state.vitamins[Number(e.target.dataset.idx)].vitaminType = e.target.value;
                 setStatusFromValidation();
+                refreshTourAfterDomChange();
             });
         });
+
         root.querySelectorAll("input[data-kind='pills']").forEach(inp=>{
             inp.addEventListener("change",(e)=>{
                 const idx = Number(e.target.dataset.idx);
@@ -774,6 +1151,7 @@
                 state.vitamins[idx].numberOfPills = Number.isFinite(n) && n >= 1 ? Math.floor(n) : 1;
                 e.target.value = String(state.vitamins[idx].numberOfPills);
                 setStatusFromValidation();
+                refreshTourAfterDomChange();
             });
             inp.addEventListener("blur",(e)=>{
                 if (String(e.target.value || "").trim() === "") {
@@ -781,12 +1159,20 @@
                     state.vitamins[idx].numberOfPills = 1;
                     e.target.value = "1";
                     setStatusFromValidation();
+                    refreshTourAfterDomChange();
                 }
             });
         });
+
         root.querySelectorAll("button[data-kind='remove-vit']").forEach(btn=>{
-            btn.addEventListener("click",(e)=>{ e.stopPropagation(); removeVitamin(Number(e.target.dataset.idx)); setStatusFromValidation(); });
+            btn.addEventListener("click",(e)=>{
+                e.stopPropagation();
+                removeVitamin(Number(e.target.dataset.idx));
+                setStatusFromValidation();
+                refreshTourAfterDomChange();
+            });
         });
+
         root.querySelectorAll("button[data-kind='preset']").forEach(btn=>{
             btn.addEventListener("click",(e)=>{
                 e.stopPropagation();
@@ -804,26 +1190,37 @@
 
                 render();
                 setStatusFromValidation();
+                refreshTourAfterDomChange();
             });
         });
+
         root.querySelectorAll("button[data-kind='day']").forEach(btn=>{
             btn.addEventListener("click",(e)=>{
                 e.stopPropagation();
                 const idx = Number(e.target.dataset.idx);
                 const day = e.target.dataset.day;
-                toggleDay(idx, day);
-                if (day in state.vitamins[idx].schedule) { setCollapsed(idx, false); pendingFocus = { idx, day }; }
-                render(); setStatusFromValidation();
+                const added = toggleDay(idx, day);
+                if (added) {
+                    setCollapsed(idx, false);
+                    pendingFocus = { idx, day };
+                }
+                render();
+                setStatusFromValidation();
+                refreshTourAfterDomChange();
             });
         });
+
         root.querySelectorAll("button[data-kind='remove-day']").forEach(btn=>{
             btn.addEventListener("click",(e)=>{
                 e.stopPropagation();
                 const idx = Number(e.target.dataset.idx);
                 delete state.vitamins[idx].schedule[e.target.dataset.day];
-                render(); setStatusFromValidation();
+                render();
+                setStatusFromValidation();
+                refreshTourAfterDomChange();
             });
         });
+
         root.querySelectorAll("button[data-kind='add-time']").forEach(btn=>{
             btn.addEventListener("click",(e)=>{
                 e.stopPropagation();
@@ -832,14 +1229,19 @@
                 const inp = root.querySelector(`input[data-kind='time'][data-idx='${idx}'][data-day='${day}']`);
                 addTime(idx, day, inp?.value || "");
                 if (inp) inp.value = "";
-                render(); setStatusFromValidation();
+                render();
+                setStatusFromValidation();
+                refreshTourAfterDomChange();
             });
         });
+
         root.querySelectorAll("button[data-kind='rm-time']").forEach(btn=>{
             btn.addEventListener("click",(e)=>{
                 e.stopPropagation();
                 removeTime(Number(e.target.dataset.idx), e.target.dataset.day, e.target.dataset.time);
-                render(); setStatusFromValidation();
+                render();
+                setStatusFromValidation();
+                refreshTourAfterDomChange();
             });
         });
 
@@ -851,6 +1253,7 @@
         const pillsInp = document.getElementById("newVitaminPills");
         const err = document.getElementById("addVitErr");
         const name = (nameInp.value || "").trim();
+
         if (!name){
             err.style.display = "block";
             err.textContent = "Vitamin type is required.";
@@ -858,8 +1261,10 @@
             nameInp.focus();
             return;
         }
+
         err.style.display = "none";
         nameInp.classList.remove("inputErr");
+
         const n = Number(pillsInp.value);
         state.vitamins.push({
             vitaminType: name,
@@ -867,51 +1272,95 @@
             schedule: {},
             ui: { collapsed: false }
         });
+
         nameInp.value = "";
         pillsInp.value = "1";
-        render(); setStatusFromValidation();
-        setTimeout(()=>{ document.getElementById("vitaminList").lastElementChild?.scrollIntoView({ behavior:"smooth", block:"start" }); }, 0);
+
+        render();
+        setStatusFromValidation();
+
+        setTimeout(()=>{
+            document.getElementById("vitaminList").lastElementChild?.scrollIntoView({ behavior:"smooth", block:"start" });
+            refreshTourAfterDomChange();
+        }, 0);
     });
 
     document.getElementById("newVitaminName").addEventListener("input", ()=>{
         document.getElementById("addVitErr").style.display = "none";
         document.getElementById("newVitaminName").classList.remove("inputErr");
+        refreshTourAfterDomChange();
     });
+
+    document.getElementById("newVitaminPills").addEventListener("change", refreshTourAfterDomChange);
+    document.getElementById("newVitaminPills").addEventListener("input", refreshTourAfterDomChange);
 
     document.getElementById("save").addEventListener("click", async ()=>{
         const payload = toBackendPayload();
         const status = document.getElementById("status");
 
         const emptyDays = findEmptySelectedDays();
-        if (emptyDays.length){ status.className = "err"; status.textContent = "Not sending. Add times for: " + emptyDays.join(", "); return; }
+        if (emptyDays.length){
+            status.className = "err";
+            status.textContent = "Not sending. Add times for: " + emptyDays.join(", ");
+            return;
+        }
 
         const errs = validatePayload(payload);
-        if (errs.length){ status.className = "err"; status.textContent = "Not sending. Fix: " + errs.join(" "); return; }
+        if (errs.length){
+            status.className = "err";
+            status.textContent = "Not sending. Fix: " + errs.join(" ");
+            return;
+        }
 
-        status.className = "muted"; status.textContent = "Saving...";
+        status.className = "muted";
+        status.textContent = "Saving...";
 
         try{
             const res = await fetch(API_BASE + "/api/mobile/schedule", {
-                method: "POST",
-                headers: { "Content-Type":"application/json", "Authorization": "Bearer " + authToken },
-                body: JSON.stringify(payload)
+                method:"POST",
+                headers:{
+                    "Content-Type":"application/json",
+                    "Authorization":"Bearer " + authToken
+                },
+                body:JSON.stringify(payload)
             });
+
             const text = await res.text();
-            if (!res.ok){ status.className = "err"; status.textContent = `Save failed (${res.status}): ${text}`; return; }
-            status.className = "ok"; status.textContent = text || "Saved successfully";
+
+            if (!res.ok){
+                status.className = "err";
+                status.textContent = `Save failed (${res.status}): ${text}`;
+                return;
+            }
+
+            status.className = "ok";
+            status.textContent = text || "Saved successfully";
 
             if (window.ReactNativeWebView) {
                 window.ReactNativeWebView.postMessage(JSON.stringify({
-                    type: "scheduleUpdated",
-                    schedule: payload,
-                    authToken: authToken,
-                    apiBase: API_BASE
+                    type:"scheduleUpdated",
+                    schedule:payload,
+                    authToken:authToken,
+                    apiBase:API_BASE
                 }));
+            }
+
+            if (isTourActive() && getTourStage() === "schedule_save") {
+                setTourStage("home_refill");
+                setTimeout(() => {
+                    if (window.ReactNativeWebView) {
+                        window.ReactNativeWebView.postMessage("home");
+                    } else {
+                        window.location.href = "home.html";
+                    }
+                }, 500);
+                return;
             }
 
             setTimeout(() => showViewMode(), 800);
         } catch (e){
-            status.className = "err"; status.textContent = "Network error: " + (e?.message || String(e));
+            status.className = "err";
+            status.textContent = "Network error: " + (e?.message || String(e));
         }
     });
 
@@ -922,25 +1371,30 @@
 
         try{
             const res = await fetch(API_BASE + "/api/mobile/getSchedule", {
-                headers: { "Authorization": "Bearer " + authToken }
+                headers:{ "Authorization":"Bearer " + authToken }
             });
+
             if (!res.ok){
                 const text = await res.text();
                 loadStatus.className = "err";
                 loadStatus.textContent = `Failed to load schedule (${res.status}): ${text}`;
                 state = { vitamins: [] };
                 showViewMode();
+                refreshTourAfterDomChange();
                 return;
             }
+
             const payload = await res.json();
             state = fromBackendPayload(payload);
             loadStatus.textContent = "";
             showViewMode();
+            refreshTourAfterDomChange();
         } catch(e){
             loadStatus.className = "err";
             loadStatus.textContent = "Network error loading schedule: " + (e?.message || String(e));
             state = { vitamins: [] };
             showViewMode();
+            refreshTourAfterDomChange();
         }
     }
 
@@ -949,9 +1403,9 @@
     document.getElementById("scanBtn").addEventListener("click", () => {
         if (window.ReactNativeWebView) {
             window.ReactNativeWebView.postMessage(JSON.stringify({
-                type: "scanBarcode",
-                authToken: authToken,
-                apiBase: API_BASE
+                type:"scanBarcode",
+                authToken:authToken,
+                apiBase:API_BASE
             }));
         }
     });
@@ -964,56 +1418,18 @@
 
             if (result.suggestedDosage) {
                 const { numberOfPills, times } = result.suggestedDosage;
-                const frequencyText = times.length === 1 ? "once daily" : times.length === 2 ? "twice daily" : "three times daily";
+                const frequencyText =
+                    times.length === 1 ? "once daily" :
+                        times.length === 2 ? "twice daily" :
+                            "three times daily";
 
-                // Populate modal
                 document.getElementById("dosageModalName").textContent = result.name;
                 document.getElementById("dosageModalSummary").textContent =
                     `Manufacturer dosage instructions: take ${numberOfPills} pill${numberOfPills === 1 ? "" : "s"} ${frequencyText}. Adjust the time below or skip to set your own schedule.`;
                 document.getElementById("dosageModalTime").value = times[0];
-
-                // Open modal
                 document.getElementById("dosageModal").classList.add("open");
-
-                // Confirm handler
-                document.getElementById("dosageModalConfirm").onclick = () => {
-                    const adjustedTime = document.getElementById("dosageModalTime").value || times[0];
-                    const adjustedTimes = times.map((_, i) => {
-                        // Offset subsequent times relative to adjustment
-                        if (i === 0) return adjustedTime;
-                        const [h, m] = adjustedTime.split(":").map(Number);
-                        const offset = i * Math.round(12 / times.length);
-                        const newH = (h + offset) % 24;
-                        return String(newH).padStart(2, "0") + ":" + String(m).padStart(2, "0");
-                    });
-
-                    const schedule = {};
-                    DAYS.forEach(day => schedule[day] = [...adjustedTimes]);
-
-                    state.vitamins.push({
-                        vitaminType: result.name,
-                        numberOfPills: numberOfPills,
-                        schedule: schedule,
-                        ui: { collapsed: true }
-                    });
-
-                    document.getElementById("newVitaminName").value = "";
-                    document.getElementById("newVitaminPills").value = "1";
-                    document.getElementById("dosageModal").classList.remove("open");
-
-                    showEditMode();
-                    setStatusFromValidation();
-                    setTimeout(() => {
-                        document.getElementById("vitaminList").lastElementChild?.scrollIntoView({ behavior: "smooth", block: "start" });
-                    }, 0);
-                };
-
-                // Skip handler — just populate the name/pills fields, let user set schedule manually
-                document.getElementById("dosageModalSkip").onclick = () => {
-                    document.getElementById("newVitaminPills").value = numberOfPills;
-                    document.getElementById("dosageModal").classList.remove("open");
-                };
-
+            } else {
+                refreshTourAfterDomChange();
             }
         } else {
             const err = document.getElementById("addVitErr");
@@ -1021,6 +1437,331 @@
             err.textContent = "Product not found — try entering the name manually.";
         }
     };
+
+    document.getElementById("dosageModalConfirm").onclick = () => {
+        const name = document.getElementById("dosageModalName").textContent || "";
+        const summary = document.getElementById("dosageModalSummary").textContent || "";
+        const match = summary.match(/take (\d+) pill/);
+        const numberOfPills = match ? Number(match[1]) : 1;
+
+        const baseTime = document.getElementById("dosageModalTime").value || "09:00";
+
+        let timesPerDay = 1;
+        if (summary.includes("twice daily")) timesPerDay = 2;
+        if (summary.includes("three times daily")) timesPerDay = 3;
+
+        const adjustedTimes = Array.from({ length: timesPerDay }, (_, i) => {
+            if (i === 0) return baseTime;
+            const [h, m] = baseTime.split(":").map(Number);
+            const offset = i * Math.round(12 / timesPerDay);
+            const newH = (h + offset) % 24;
+            return String(newH).padStart(2, "0") + ":" + String(m).padStart(2, "0");
+        });
+
+        const schedule = {};
+        DAYS.forEach(day => schedule[day] = [...adjustedTimes]);
+
+        state.vitamins.push({
+            vitaminType: name,
+            numberOfPills: numberOfPills,
+            schedule: schedule,
+            ui: { collapsed: true }
+        });
+
+        document.getElementById("newVitaminName").value = "";
+        document.getElementById("newVitaminPills").value = "1";
+        document.getElementById("dosageModal").classList.remove("open");
+
+        showEditMode();
+        setStatusFromValidation();
+
+        setTimeout(() => {
+            document.getElementById("vitaminList").lastElementChild?.scrollIntoView({ behavior:"smooth", block:"start" });
+            refreshTourAfterDomChange();
+        }, 0);
+    };
+
+    document.getElementById("dosageModalSkip").onclick = () => {
+        const summary = document.getElementById("dosageModalSummary").textContent || "";
+        const match = summary.match(/take (\d+) pill/);
+        const numberOfPills = match ? Number(match[1]) : 1;
+        document.getElementById("newVitaminPills").value = numberOfPills;
+        document.getElementById("dosageModal").classList.remove("open");
+        refreshTourAfterDomChange();
+    };
+
+    const tourPendingKey = "slainte_onboarding_pending_" + authUser;
+    const tourDoneKey = "slainte_onboarding_done_" + authUser;
+    const tourStageKey = "slainte_tour_stage_" + authUser;
+
+    function isTourActive() {
+        return localStorage.getItem(tourPendingKey) === "1" &&
+            localStorage.getItem(tourDoneKey) !== "1";
+    }
+
+    function getTourStage() {
+        return sessionStorage.getItem(tourStageKey);
+    }
+
+    function setTourStage(stage) {
+        sessionStorage.setItem(tourStageKey, stage);
+    }
+
+    function skipScheduleTour() {
+        setTourStage("home_refill");
+        hideScheduleTour();
+    }
+
+    const scheduleTourSteps = {
+        schedule_edit: {
+            step: "Step 2 of 9",
+            text: "Tap Edit schedule to start creating or changing your vitamin plan.",
+            getTarget: () => document.getElementById("editBtn")
+        },
+        schedule_details: {
+            step: "Step 3 of 9",
+            text: "Enter the vitamin type and pills per intake. You can also use Scan barcode if that is easier.",
+            getTarget: () => document.getElementById("tourAddVitaminCard")
+        },
+        schedule_add_button: {
+            step: "Step 4 of 9",
+            text: "Tap Add vitamin to create a schedule card for this vitamin.",
+            getTarget: () => document.getElementById("tourAddVitaminCard")
+        },
+        schedule_daytime: {
+            step: "Step 5 of 9",
+            text: "Choose a day first, then add a time for that day. You can also use Daily or Weekdays presets.",
+            getTarget: () => {
+                const addTimeRow = document.querySelector("#vitaminList .addTimeRow");
+                if (addTimeRow) return addTimeRow;
+
+                const dayBlock = document.querySelector("#vitaminList .dayBlock");
+                if (dayBlock) return dayBlock;
+
+                const selectedDayBtn = document.querySelector("#vitaminList .dayBtn.selected");
+                if (selectedDayBtn) return selectedDayBtn;
+
+                const dayGrid = document.querySelector("#vitaminList .dayGrid");
+                if (dayGrid) return dayGrid;
+
+                const vitaminCard = document.querySelector("#vitaminList [data-vitamin-card]");
+                if (vitaminCard) return vitaminCard;
+
+                return document.getElementById("vitaminList");
+            }
+        },
+        schedule_save: {
+            step: "Step 6 of 9",
+            text: "Save your schedule once everything looks right.",
+            getTarget: () => document.getElementById("tourSaveCard")
+        }
+    };
+
+    function clearOverlayHole() {
+        const overlay = document.getElementById("tourOverlay");
+        overlay.style.clipPath = "";
+        overlay.style.webkitClipPath = "";
+    }
+
+    function setOverlayHole(left, top, right, bottom) {
+        const overlay = document.getElementById("tourOverlay");
+
+        const polygon = `
+            polygon(
+                0 0,
+                100% 0,
+                100% 100%,
+                0 100%,
+                0 ${top}px,
+                ${left}px ${top}px,
+                ${left}px ${bottom}px,
+                ${right}px ${bottom}px,
+                ${right}px ${top}px,
+                0 ${top}px
+            )
+        `;
+
+        overlay.style.clipPath = polygon;
+        overlay.style.webkitClipPath = polygon;
+    }
+
+    function hideScheduleTour() {
+        document.getElementById("tourOverlay").style.display = "none";
+        clearOverlayHole();
+        document.getElementById("tourLayer").style.display = "none";
+    }
+
+    function showScheduleTour(stage) {
+        const config = scheduleTourSteps[stage];
+        if (!config) {
+            hideScheduleTour();
+            return;
+        }
+
+        const target = config.getTarget();
+        if (!target) {
+            hideScheduleTour();
+            return;
+        }
+
+        document.getElementById("tourStepLabel").textContent = config.step;
+        document.getElementById("tourText").textContent = config.text;
+
+        const overlay = document.getElementById("tourOverlay");
+        const layer = document.getElementById("tourLayer");
+        const tooltip = document.getElementById("tourTooltip");
+        const highlightBox = document.getElementById("tourHighlightBox");
+
+        overlay.style.display = "block";
+        layer.style.display = "block";
+
+        const rect = target.getBoundingClientRect();
+        const pad = 8;
+
+        const holeLeft = Math.max(0, rect.left - pad);
+        const holeTop = Math.max(0, rect.top - pad);
+        const holeRight = Math.min(window.innerWidth, rect.right + pad);
+        const holeBottom = Math.min(window.innerHeight, rect.bottom + pad);
+
+        highlightBox.style.left = holeLeft + "px";
+        highlightBox.style.top = holeTop + "px";
+        highlightBox.style.width = (holeRight - holeLeft) + "px";
+        highlightBox.style.height = (holeBottom - holeTop) + "px";
+
+        setOverlayHole(holeLeft, holeTop, holeRight, holeBottom);
+
+        const margin = 16;
+
+        let left = rect.left + rect.width / 2 - tooltip.offsetWidth / 2;
+        if (left + tooltip.offsetWidth > window.innerWidth - margin) {
+            left = window.innerWidth - tooltip.offsetWidth - margin;
+        }
+        if (left < margin) left = margin;
+
+        let top;
+
+        if (stage === "schedule_daytime") {
+            const addCard = document.getElementById("tourAddVitaminCard");
+            if (addCard) {
+                const addCardRect = addCard.getBoundingClientRect();
+                top = addCardRect.bottom + 10;
+            } else {
+                top = rect.bottom + 12;
+            }
+        } else if (stage === "schedule_save") {
+            top = rect.top - tooltip.offsetHeight - 12;
+        } else {
+            top = rect.bottom + 12;
+        }
+
+        if (top + tooltip.offsetHeight > window.innerHeight - margin) {
+            top = window.innerHeight - tooltip.offsetHeight - margin;
+        }
+        if (top < margin) top = margin;
+
+        tooltip.style.left = left + "px";
+        tooltip.style.top = top + "px";
+    }
+
+    function getSafeScheduleStage(stage) {
+        if (!isTourActive()) return null;
+
+        if (!stage || stage === "schedule_add") {
+            return "schedule_edit";
+        }
+
+        if (stage.startsWith("home_") || stage === "done") {
+            return null;
+        }
+
+        if (!scheduleTourSteps[stage]) {
+            return "schedule_edit";
+        }
+
+        return stage;
+    }
+
+    function getAutoAdvancedScheduleStage(stage) {
+        let nextStage = getSafeScheduleStage(stage);
+        if (!nextStage) return null;
+
+        if (nextStage === "schedule_details" && hasValidDraftVitaminDetails()) {
+            nextStage = "schedule_add_button";
+        }
+
+        if (nextStage === "schedule_add_button" && state.vitamins.length > 0) {
+            nextStage = hasAtLeastOneScheduledTime() ? "schedule_save" : "schedule_daytime";
+        }
+
+        if (nextStage === "schedule_daytime" && hasAtLeastOneScheduledTime()) {
+            nextStage = "schedule_save";
+        }
+
+        return nextStage;
+    }
+
+    function maybeStartScheduleTour() {
+        if (!isTourActive()) return;
+
+        let stage = getAutoAdvancedScheduleStage(getTourStage());
+        if (!stage) return;
+
+        if (stage !== getTourStage()) {
+            setTourStage(stage);
+        }
+
+        if (stage === "schedule_edit") {
+            showViewMode();
+        } else {
+            showEditMode();
+        }
+
+        setTimeout(function() {
+            showScheduleTour(stage);
+        }, 80);
+    }
+
+    function refreshTourAfterDomChange() {
+        if (!isTourActive()) return;
+
+        const stage = getAutoAdvancedScheduleStage(getTourStage());
+        if (!stage) {
+            hideScheduleTour();
+            return;
+        }
+
+        if (stage !== getTourStage()) {
+            setTourStage(stage);
+        }
+
+        setTimeout(function() {
+            showScheduleTour(stage);
+        }, 30);
+    }
+
+    document.getElementById("tourSkip").addEventListener("click", skipScheduleTour);
+
+    window.addEventListener("resize", function() {
+        if (!isTourActive()) return;
+        const stage = getAutoAdvancedScheduleStage(getTourStage());
+        if (stage && scheduleTourSteps[stage]) {
+            showScheduleTour(stage);
+        }
+    });
+
+    window.addEventListener("scroll", function() {
+        if (!isTourActive()) return;
+        const stage = getAutoAdvancedScheduleStage(getTourStage());
+        if (stage && scheduleTourSteps[stage]) {
+            showScheduleTour(stage);
+        }
+    }, true);
+
+    window.addEventListener("load", maybeStartScheduleTour);
+
+    window.addEventListener("pageshow", function() {
+        refreshTourAfterDomChange();
+    });
 </script>
 </body>
 </html>

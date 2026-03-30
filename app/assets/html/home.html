@@ -160,6 +160,89 @@
         .modal p { font-size: 13px; color: var(--text-muted); margin: 0 0 14px; }
         .modal-btns { display: flex; gap: 10px; }
         .modal-btns button { flex: 1; padding: 12px; font-size: 15px; }
+
+        .tour-highlight{
+            position: relative;
+            z-index: 1002 !important;
+            box-shadow:
+                    0 0 0 4px rgba(82,183,136,0.95),
+                    0 0 0 9999px rgba(11,26,15,0.45) !important;
+            border-radius: 22px;
+        }
+
+        .tour-overlay{
+            position: fixed;
+            inset: 0;
+            z-index: 1001;
+            pointer-events: none;
+        }
+
+        .tour-tooltip{
+            position: fixed;
+            width: min(320px, calc(100vw - 32px));
+            background: var(--warm-white);
+            color: var(--text-primary);
+            border-radius: 20px;
+            padding: 16px;
+            box-shadow: 0 12px 32px rgba(0,0,0,0.18);
+            border: 1px solid rgba(30,77,43,0.08);
+            pointer-events: auto;
+        }
+
+        .tour-step{
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: var(--forest-green);
+            margin-bottom: 6px;
+        }
+
+        .tour-text{
+            font-size: 14px;
+            line-height: 1.45;
+            color: var(--text-primary);
+            margin-bottom: 14px;
+        }
+
+        .tour-actions{
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .tour-actions button{
+            border: none;
+            border-radius: 14px;
+            padding: 10px 14px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .tour-secondary{
+            background: var(--cream-dark);
+            color: var(--text-primary);
+        }
+
+        .tour-primary{
+            background: var(--forest-mid);
+            color: #fff;
+        }
+
+        .tour-locked #tourScheduleCard,
+        .tour-locked #tourRefillCard,
+        .tour-locked #tourIntakeCard,
+        .tour-locked #pauseToggle,
+        .tour-locked .welcome button {
+            pointer-events: none;
+        }
+
+        .tour-locked #tourScheduleCard:not(.tour-highlight),
+        .tour-locked #tourRefillCard:not(.tour-highlight),
+        .tour-locked #tourIntakeCard:not(.tour-highlight),
+        .tour-locked #pauseCard:not(.tour-highlight) {
+            opacity: 0.92;
+        }
     </style>
 </head>
 <body>
@@ -283,7 +366,7 @@
     </div>
 
     <div class="nav-cards">
-        <a class="nav-card" href="dashboard.html">
+        <a class="nav-card" id="tourIntakeCard" href="dashboard.html">
             <div class="card-icon intake">
                 <svg viewBox="0 0 24 24" fill="none" stroke="#2D6A4F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M9 12l2 2 4-4"/>
@@ -301,7 +384,7 @@
             </div>
         </a>
 
-        <a class="nav-card" href="schedule.html">
+        <a class="nav-card" id="tourScheduleCard" href="schedule.html">
             <div class="card-icon schedule">
                 <svg viewBox="0 0 24 24" fill="none" stroke="#5C3D2E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <rect x="3" y="4" width="18" height="18" rx="4"/>
@@ -325,7 +408,7 @@
                 </svg>
             </div>
         </a>
-        <a class="nav-card" href="refill.html">
+        <a class="nav-card" id="tourRefillCard" href="refill.html">
             <div class="card-icon refill">
                 <svg viewBox="0 0 24 24" fill="none" stroke="#5C3D2E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M9 3h6"></path>
@@ -379,6 +462,17 @@
     </div>
 </div>
 
+<div id="tourOverlay" class="tour-overlay" style="display:none;">
+    <div id="tourTooltip" class="tour-tooltip">
+        <div id="tourStepLabel" class="tour-step"></div>
+        <div id="tourText" class="tour-text"></div>
+        <div class="tour-actions">
+            <button id="tourSkip" class="tour-secondary">Skip</button>
+            <button id="tourNext" class="tour-primary">Next</button>
+        </div>
+    </div>
+</div>
+
 <script>
     var authToken = sessionStorage.getItem("authToken");
     var authUser = sessionStorage.getItem("authUser");
@@ -399,8 +493,14 @@
     document.getElementById("greetingText").textContent = greeting;
 
     document.getElementById("logoutBtn").addEventListener("click", function() {
+        var currentUser = sessionStorage.getItem("authUser");
+        if (currentUser) {
+            sessionStorage.removeItem("slainte_tour_stage_" + currentUser);
+        }
+
         sessionStorage.removeItem("authToken");
         sessionStorage.removeItem("authUser");
+
         if (window.ReactNativeWebView) {
             window.ReactNativeWebView.postMessage("login");
         }
@@ -543,6 +643,184 @@
     });
 
     fetchPauseState();
+    var tourUser = sessionStorage.getItem("authUser") || "guest";
+    var tourPendingKey = "slainte_onboarding_pending_" + tourUser;
+    var tourDoneKey = "slainte_onboarding_done_" + tourUser;
+    var tourStageKey = "slainte_tour_stage_" + tourUser;
+
+    var homeTourSteps = {
+        home_schedule: {
+            targetId: "tourScheduleCard",
+            step: "Step 1 of 9",
+            text: "Start here. Set up your weekly vitamin plan by choosing vitamins, days, times, and doses."
+        },
+        home_refill: {
+            targetId: "tourRefillCard",
+            step: "Step 7 of 9",
+            text: "Open Refill Instructions to see how to place vitamins into the dispenser correctly."
+        },
+        home_intake: {
+            targetId: "tourIntakeCard",
+            step: "Step 8 of 9",
+            text: "Use Intake Dashboard to review your vitamin history, including what was taken and what was missed."
+        },
+        home_pause: {
+            targetId: "pauseCard",
+            step: "Step 9 of 9",
+            text: "If you are away and cannot take your vitamins for a while, pause dispensing here and resume later."
+        }
+    };
+
+    function setTourInteractionLock(locked) {
+        if (locked) {
+            document.body.classList.add("tour-locked");
+        } else {
+            document.body.classList.remove("tour-locked");
+        }
+    }
+
+    function getTourStage() {
+        return sessionStorage.getItem(tourStageKey);
+    }
+
+    function setTourStage(stage) {
+        sessionStorage.setItem(tourStageKey, stage);
+    }
+
+    function finishTour() {
+        localStorage.setItem(tourDoneKey, "1");
+        localStorage.removeItem(tourPendingKey);
+        sessionStorage.removeItem(tourStageKey);
+        setTourInteractionLock(false);
+        hideHomeTour();
+    }
+
+    function hideHomeTour() {
+        document.getElementById("tourOverlay").style.display = "none";
+        document.querySelectorAll(".tour-highlight").forEach(function(el) {
+            el.classList.remove("tour-highlight");
+        });
+        setTourInteractionLock(false);
+    }
+
+    function showHomeTour(stage) {
+        var config = homeTourSteps[stage];
+        if (!config) {
+            hideHomeTour();
+            return;
+        }
+
+        var target = document.getElementById(config.targetId);
+        if (!target) {
+            hideHomeTour();
+            return;
+        }
+
+        setTourInteractionLock(true);
+
+        document.querySelectorAll(".tour-highlight").forEach(function(el) {
+            el.classList.remove("tour-highlight");
+        });
+
+        target.classList.add("tour-highlight");
+
+        var tooltip = document.getElementById("tourTooltip");
+        document.getElementById("tourStepLabel").textContent = config.step;
+        document.getElementById("tourText").textContent = config.text;
+        document.getElementById("tourNext").textContent = stage === "home_pause" ? "Finish" : "Next";
+        document.getElementById("tourOverlay").style.display = "block";
+
+        var rect = target.getBoundingClientRect();
+        var tooltipWidth = Math.min(320, window.innerWidth - 32);
+
+        var left = rect.left;
+        if (left + tooltipWidth > window.innerWidth - 16) {
+            left = window.innerWidth - tooltipWidth - 16;
+        }
+        if (left < 16) left = 16;
+
+        var top = rect.bottom + 12;
+        if (top + 170 > window.innerHeight - 16) {
+            top = rect.top - 170 - 12;
+        }
+        if (top < 16) top = 16;
+
+        tooltip.style.left = left + "px";
+        tooltip.style.top = top + "px";
+    }
+
+    function maybeStartHomeTour() {
+        if (!tourUser) return;
+        if (localStorage.getItem(tourDoneKey) === "1") return;
+        if (localStorage.getItem(tourPendingKey) !== "1") return;
+
+        var stage = getTourStage();
+        if (!stage) {
+            stage = "home_schedule";
+            setTourStage(stage);
+        }
+
+        if (homeTourSteps[stage]) {
+            showHomeTour(stage);
+        } else {
+            setTourStage("home_schedule");
+            showHomeTour("home_schedule");
+        }
+    }
+
+    document.getElementById("tourSkip").addEventListener("click", finishTour);
+
+    document.getElementById("tourNext").addEventListener("click", function() {
+        var stage = getTourStage();
+
+        if (stage === "home_schedule") {
+            setTourStage("schedule_edit");
+            if (window.ReactNativeWebView) {
+                window.ReactNativeWebView.postMessage("schedule");
+            } else {
+                window.location.href = "schedule.html";
+            }
+            return;
+        }
+
+        if (stage === "home_refill") {
+            setTourStage("home_intake");
+            showHomeTour("home_intake");
+            return;
+        }
+
+        if (stage === "home_intake") {
+            setTourStage("home_pause");
+            showHomeTour("home_pause");
+            return;
+        }
+
+        if (stage === "home_pause") {
+            finishTour();
+            return;
+        }
+    });
+
+    window.addEventListener("resize", function() {
+        var stage = getTourStage();
+        if (homeTourSteps[stage]) {
+            showHomeTour(stage);
+        }
+    });
+
+    document.addEventListener("click", function(e) {
+        if (!document.body.classList.contains("tour-locked")) return;
+
+        var blockedTarget = e.target.closest(
+            "#tourScheduleCard, #tourRefillCard, #tourIntakeCard, #pauseToggle, .welcome button"
+        );
+
+        if (blockedTarget) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+    }, true);
+    window.addEventListener("load", maybeStartHomeTour);
 </script>
 
 </body>

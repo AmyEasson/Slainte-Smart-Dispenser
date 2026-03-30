@@ -654,6 +654,9 @@
       }
 
       if (currentTab === "register") {
+        localStorage.setItem("slainte_onboarding_pending_" + username, "1");
+        localStorage.removeItem("slainte_onboarding_done_" + username);
+        sessionStorage.removeItem("slainte_tour_stage_" + username);
         msg.className = "msg ok";
         msg.style.display = "block";
         msg.textContent = text || "Account created! You can now sign in.";
