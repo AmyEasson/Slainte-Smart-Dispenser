@@ -284,4 +284,13 @@ public class MobileAppController {
         accountService.deleteAccount(user);
         return ResponseEntity.ok("Account deleted successfully");
     }
+
+    @Operation(summary = "Empty carousel", description = "Flags the dispenser to rotate all slots out on the next firmware poll")
+    @PostMapping("/empty-carousel")
+    public ResponseEntity<?> emptyCarousel(Principal principal) {
+        User user = userRepository.findByUsername(principal.getName())
+                .orElseThrow(() -> new UserNotFoundException(principal.getName()));
+        schedulingService.requestEmpty(user);
+        return ResponseEntity.ok("Empty command queued");
+    }
 }

@@ -439,4 +439,33 @@ public class SchedulingService {
                 .min(Comparator.naturalOrder())
                 .orElse(null);
     }
+
+    /**
+     * clears all slot assignments when the carousel is emptied
+     * @param user the user whose dispenser has been emptied
+     */
+    @Transactional
+    public void clearSlots(User user) {
+        List<Slot> slots = slotRepository.findByUserOrderBySlotNumber(user);
+        slots.forEach(s -> {
+            s.setAssignedDay(null);
+            s.setAssignedTime(null);
+        });
+        slotRepository.saveAll(slots);
+
+        user.setLastFillDate(null);
+        user.setScheduleChanged(false);
+
+        userRepository.saveAndFlush(user);
+    }
+
+    /**
+     * flags that the carousel should be emptied on the next firmware poll
+     * @param user the user whose dispenser is to be emptied
+     */
+    @Transactional
+    public void requestEmpty(User user) {
+        user.setPendingEmpty(true);
+        userRepository.save(user);
+    }
 }

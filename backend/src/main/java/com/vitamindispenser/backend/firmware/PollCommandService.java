@@ -3,11 +3,8 @@ package com.vitamindispenser.backend.firmware;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vitamindispenser.backend.firmware.dto.PollCommandResult;
 import com.vitamindispenser.backend.logging.LoggingService;
-import com.vitamindispenser.backend.schedule.ScheduleEntry;
-import com.vitamindispenser.backend.schedule.Slot;
+import com.vitamindispenser.backend.schedule.*;
 import com.vitamindispenser.backend.user.User;
-import com.vitamindispenser.backend.schedule.ScheduleEntryRepository;
-import com.vitamindispenser.backend.schedule.SlotRepository;
 import com.vitamindispenser.backend.user.UserRepository;
 import org.springframework.stereotype.Service;
 
@@ -37,6 +34,7 @@ public class PollCommandService {
     private final SlotRepository slotRepository;
     private final UserRepository userRepository;
     private final LoggingService loggingService;
+    private final SchedulingService schedulingService;
 
     private volatile String pendingCommand;
     private final Map<String, Long> lastDispenseSentAt = new ConcurrentHashMap<>();
@@ -44,11 +42,13 @@ public class PollCommandService {
     public PollCommandService(ScheduleEntryRepository scheduleEntryRepository,
                               SlotRepository slotRepository,
                               UserRepository userRepository,
-                              LoggingService loggingService) {
+                              LoggingService loggingService,
+                              SchedulingService schedulingService) {
         this.scheduleEntryRepository = scheduleEntryRepository;
         this.slotRepository = slotRepository;
         this.userRepository = userRepository;
         this.loggingService = loggingService;
+        this.schedulingService = schedulingService;
     }
 
     /**
@@ -115,6 +115,12 @@ public class PollCommandService {
                 userRepository.save(user);
                 return new PollCommandResult("ADVANCE", Collections.emptyList(), null);
             }
+        }
+
+        if (user.isPendingEmpty()) {
+            user.setPendingEmpty(false);
+            schedulingService.clearSlots(user);
+            return new PollCommandResult("EMPTY", Collections.emptyList(), null);
         }
 
         if (pendingCommand != null) {

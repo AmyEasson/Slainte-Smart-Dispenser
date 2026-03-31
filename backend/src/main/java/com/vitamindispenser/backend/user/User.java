@@ -56,6 +56,9 @@ public class User implements UserDetails {
     @Column(columnDefinition = "TEXT")
     private String missedSlotQueue;
 
+    @Column(nullable = false)
+    private boolean pendingEmpty = false;
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities(){
         return List.of(new SimpleGrantedAuthority(role));

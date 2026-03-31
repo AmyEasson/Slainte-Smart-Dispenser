@@ -650,6 +650,7 @@
         <div id="tourText" class="tour-text"></div>
         <div class="tour-actions">
             <button id="tourSkip" class="tour-secondary">Skip</button>
+            <button id="tourNext" style="background:#1E4D2B; color:#fff;">Next</button>
         </div>
     </div>
 </div>
@@ -1598,6 +1599,11 @@
             return;
         }
 
+        const nextBtn = document.getElementById("tourNext");
+        if (nextBtn) {
+            nextBtn.textContent = stage === "schedule_save" ? "Next" : "Next";
+        }
+
         const target = config.getTarget();
         if (!target) {
             hideScheduleTour();
@@ -1740,6 +1746,45 @@
     }
 
     document.getElementById("tourSkip").addEventListener("click", skipScheduleTour);
+    document.getElementById("tourNext").addEventListener("click", function() {
+        const stage = getTourStage();
+
+        if (stage === "schedule_edit") {
+            showEditMode();
+            setTourStage("schedule_details");
+            setTimeout(() => showScheduleTour("schedule_details"), 50);
+            return;
+        }
+
+        if (stage === "schedule_details") {
+            setTourStage("schedule_add_button");
+            showScheduleTour("schedule_add_button");
+            return;
+        }
+
+        if (stage === "schedule_add_button") {
+            setTourStage("schedule_daytime");
+            showScheduleTour("schedule_daytime");
+            return;
+        }
+
+        if (stage === "schedule_daytime") {
+            setTourStage("schedule_save");
+            showScheduleTour("schedule_save");
+            return;
+        }
+
+        if (stage === "schedule_save") {
+            setTourStage("home_refill");
+            hideScheduleTour();
+            if (window.ReactNativeWebView) {
+                window.ReactNativeWebView.postMessage("home");
+            } else {
+                window.location.href = "home.html";
+            }
+            return;
+        }
+    });
 
     window.addEventListener("resize", function() {
         if (!isTourActive()) return;

@@ -71,7 +71,7 @@
         .card-icon { width: 56px; height: 56px; border-radius: 16px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
         .card-icon.intake { background: linear-gradient(145deg, #D8F3DC, #B7E4C7); }
         .card-icon.schedule { background: linear-gradient(145deg, #E8DFD0, #D4C5A9); }
-        .card-icon.refill {background: #F3E8D3;}
+        .card-icon.refill { background: #F3E8D3; }
         .card-icon svg { width: 28px; height: 28px; }
 
         .card-body { flex: 1; min-width: 0; }
@@ -83,9 +83,12 @@
         .nav-card:active .card-arrow svg path { stroke: white; }
         .card-arrow svg { width: 16px; height: 16px; }
 
-        .signout-row { margin-top: auto; padding-bottom: 5vh; text-align: center; animation: fade-up 0.5s ease-out 0.6s both; }
+        .signout-row { margin-top: auto; padding-bottom: 5vh; text-align: center; animation: fade-up 0.5s ease-out 0.6s both; display: flex; align-items: center; justify-content: center; gap: 8px; }
         .signout-btn { background: none; border: none; font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--text-light); cursor: pointer; padding: 12px 20px; border-radius: 14px; transition: all 0.2s ease; -webkit-tap-highlight-color: transparent; }
         .signout-btn:active { background: var(--cream-dark); color: var(--danger); }
+
+        .empty-btn { background: none; border: none; font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--text-light); cursor: pointer; padding: 12px 20px; border-radius: 14px; transition: all 0.2s ease; -webkit-tap-highlight-color: transparent; }
+        .empty-btn:active { background: #FEF2F2; color: var(--danger); }
 
         @keyframes fade-up {
             from { opacity: 0; transform: translateY(14px); }
@@ -145,6 +148,7 @@
         }
         .pause-toggle.active::after { transform: translateX(22px); }
 
+        /* ── Modals ── */
         .modal-overlay {
             display: none; position: fixed; inset: 0;
             background: rgba(11,26,15,0.4); z-index: 100;
@@ -157,11 +161,27 @@
             border: 1px solid rgba(30,77,43,0.08);
         }
         .modal h2 { font-size: 18px; margin: 0 0 6px; font-weight: 900; font-family: 'Fraunces', serif; }
-        .modal p { font-size: 13px; color: var(--text-muted); margin: 0 0 14px; }
+        .modal p { font-size: 13px; color: var(--text-muted); margin: 0 0 14px; line-height: 1.5; }
         .modal-btns { display: flex; gap: 10px; }
-        .modal-btns button { flex: 1; padding: 12px; font-size: 15px; }
+        .modal-btns button {
+            flex: 1; padding: 12px; font-size: 15px;
+            border-radius: 16px; border: none; cursor: pointer;
+            font-family: 'DM Sans', sans-serif; font-weight: 600;
+            transition: all 0.2s ease;
+        }
+        .modal-btn-cancel { background: var(--cream-dark); color: var(--text-primary); }
+        .modal-btn-cancel:active { background: var(--border); }
+        .modal-btn-danger { background: var(--danger); color: #fff; box-shadow: 0 4px 12px rgba(192,64,48,0.3); }
+        .modal-btn-danger:active { opacity: 0.85; }
+        .modal-btn-primary { background: linear-gradient(135deg, #1E4D2B, #2D6A4F); color: #fff; box-shadow: 0 4px 12px rgba(30,77,43,0.3); }
 
-        .tour-highlight{
+        @keyframes fade-in {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* ── Tour ── */
+        .tour-highlight {
             position: relative;
             z-index: 1002 !important;
             box-shadow:
@@ -170,14 +190,9 @@
             border-radius: 22px;
         }
 
-        .tour-overlay{
-            position: fixed;
-            inset: 0;
-            z-index: 1001;
-            pointer-events: none;
-        }
+        .tour-overlay { position: fixed; inset: 0; z-index: 1001; pointer-events: none; }
 
-        .tour-tooltip{
+        .tour-tooltip {
             position: fixed;
             width: min(320px, calc(100vw - 32px));
             background: var(--warm-white);
@@ -189,45 +204,12 @@
             pointer-events: auto;
         }
 
-        .tour-step{
-            font-size: 12px;
-            font-weight: 700;
-            letter-spacing: 0.06em;
-            text-transform: uppercase;
-            color: var(--forest-green);
-            margin-bottom: 6px;
-        }
-
-        .tour-text{
-            font-size: 14px;
-            line-height: 1.45;
-            color: var(--text-primary);
-            margin-bottom: 14px;
-        }
-
-        .tour-actions{
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
-        }
-
-        .tour-actions button{
-            border: none;
-            border-radius: 14px;
-            padding: 10px 14px;
-            font-size: 14px;
-            cursor: pointer;
-        }
-
-        .tour-secondary{
-            background: var(--cream-dark);
-            color: var(--text-primary);
-        }
-
-        .tour-primary{
-            background: var(--forest-mid);
-            color: #fff;
-        }
+        .tour-step { font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--forest-green); margin-bottom: 6px; }
+        .tour-text { font-size: 14px; line-height: 1.45; color: var(--text-primary); margin-bottom: 14px; }
+        .tour-actions { display: flex; justify-content: flex-end; gap: 10px; }
+        .tour-actions button { border: none; border-radius: 14px; padding: 10px 14px; font-size: 14px; cursor: pointer; }
+        .tour-secondary { background: var(--cream-dark); color: var(--text-primary); }
+        .tour-primary { background: var(--forest-mid); color: #fff; }
 
         .tour-locked #tourScheduleCard,
         .tour-locked #tourRefillCard,
@@ -342,7 +324,6 @@
     <div class="firefly"></div>
     <div class="firefly"></div>
 
-    <!-- Curved bottom edge into cream -->
     <div class="header-curve">
         <svg viewBox="0 0 393 30" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M0 30 Q100 0 196.5 0 Q293 0 393 30 L393 30 L0 30Z" fill="#F5F0E8"/>
@@ -408,6 +389,7 @@
                 </svg>
             </div>
         </a>
+
         <a class="nav-card" id="tourRefillCard" href="refill.html">
             <div class="card-icon refill">
                 <svg viewBox="0 0 24 24" fill="none" stroke="#5C3D2E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -446,22 +428,35 @@
     </div>
 
     <div class="signout-row">
+        <button class="empty-btn" id="emptyCarouselBtn">Empty carousel</button>
         <button class="signout-btn" id="logoutBtn">Sign out</button>
     </div>
-
-
 </div>
 
+<!-- Resume warning modal -->
 <div class="modal-overlay" id="resumeWarningModal">
     <div class="modal">
         <h2>⚠️ Catching up</h2>
         <p id="resumeWarningMsg"></p>
         <div class="modal-btns">
-            <button id="resumeWarningOk" class="primary">OK, got it</button>
+            <button id="resumeWarningOk" class="modal-btn-primary">OK, got it</button>
         </div>
     </div>
 </div>
 
+<!-- Empty carousel confirmation modal -->
+<div class="modal-overlay" id="emptyCarouselModal">
+    <div class="modal">
+        <h2>Empty carousel?</h2>
+        <p>This will rotate the dispenser through all 15 slots, ejecting every pill currently loaded into the tray. This cannot be undone — you will need to refill the dispenser afterwards.</p>
+        <div class="modal-btns">
+            <button id="emptyCarouselCancel" class="modal-btn-cancel">Cancel</button>
+            <button id="emptyCarouselConfirm" class="modal-btn-danger">Empty it</button>
+        </div>
+    </div>
+</div>
+
+<!-- Tour -->
 <div id="tourOverlay" class="tour-overlay" style="display:none;">
     <div id="tourTooltip" class="tour-tooltip">
         <div id="tourStepLabel" class="tour-step"></div>
@@ -485,7 +480,6 @@
         document.getElementById("userName").textContent = authUser;
     }
 
-    // Time-based greeting
     var hour = new Date().getHours();
     var greeting = "Good evening";
     if (hour < 12) greeting = "Good morning";
@@ -497,10 +491,8 @@
         if (currentUser) {
             sessionStorage.removeItem("slainte_tour_stage_" + currentUser);
         }
-
         sessionStorage.removeItem("authToken");
         sessionStorage.removeItem("authUser");
-
         if (window.ReactNativeWebView) {
             window.ReactNativeWebView.postMessage("login");
         }
@@ -513,7 +505,6 @@
     var isPaused = false;
 
     async function fetchPauseState() {
-        console.log("fetchPauseState called, authToken:", authToken);
         try {
             var res = await fetch(API_BASE + "/api/mobile/pause-status", {
                 headers: { "Authorization": "Bearer " + authToken }
@@ -522,9 +513,7 @@
                 var data = await res.json();
                 setPauseUI(data.paused);
             }
-        } catch (e) {
-            console.log("fetchPauseState error:", e);
-        }
+        } catch (e) {}
     }
 
     function goToSettings() {
@@ -547,7 +536,6 @@
             title.textContent = "Dispensing paused";
             desc.textContent = "Tap to resume when you're back.";
             svg.setAttribute("stroke", "#2D6A4F");
-            // Change to play icon
             svg.innerHTML = '<circle cx="12" cy="12" r="9"/><polygon points="10,8 18,12 10,16" fill="#2D6A4F" stroke="none"/>';
         } else {
             toggle.classList.remove("active");
@@ -568,7 +556,6 @@
 
     document.getElementById("pauseToggle").addEventListener("click", async function() {
         if (isPaused) {
-            // resuming — check if advances needed first
             try {
                 var res = await fetch(API_BASE + "/api/mobile/resume", {
                     method: "POST",
@@ -578,23 +565,17 @@
                     var data = await res.json();
                     var advances = data.slotsToAdvance || 0;
                     var dispenses = data.immediateDispenses || 0;
-
                     if (advances > 0 || dispenses > 0) {
                         showResumeWarning(advances, dispenses);
                     } else {
                         setPauseUI(false);
-
                         if (window.ReactNativeWebView) {
-                            window.ReactNativeWebView.postMessage(JSON.stringify({
-                                type: "pauseToggled",
-                                paused: false
-                            }));
+                            window.ReactNativeWebView.postMessage(JSON.stringify({ type: "pauseToggled", paused: false }));
                         }
                     }
                 }
             } catch (e) {}
         } else {
-            // pausing
             try {
                 var res = await fetch(API_BASE + "/api/mobile/pause", {
                     method: "POST",
@@ -602,12 +583,8 @@
                 });
                 if (res.ok) {
                     setPauseUI(true);
-
                     if (window.ReactNativeWebView) {
-                        window.ReactNativeWebView.postMessage(JSON.stringify({
-                            type: "pauseToggled",
-                            paused: true
-                        }));
+                        window.ReactNativeWebView.postMessage(JSON.stringify({ type: "pauseToggled", paused: true }));
                     }
                 }
             } catch (e) {}
@@ -617,14 +594,13 @@
     function showResumeWarning(advances, dispenses) {
         var modal = document.getElementById("resumeWarningModal");
         var msg = document.getElementById("resumeWarningMsg");
-
         var text = "";
         if (advances > 0) {
-            text += `Your dispenser needs to skip ${advances} missed slot${advances > 1 ? "s" : ""}. `;
-            text += `Pills from these slots will fall into the tray — please discard them before taking your next dose. `;
+            text += "Your dispenser needs to skip " + advances + " missed slot" + (advances > 1 ? "s" : "") + ". ";
+            text += "Pills from these slots will fall into the tray — please discard them before taking your next dose. ";
         }
         if (dispenses > 0) {
-            text += `Your most recent dose will be dispensed immediately.`;
+            text += "Your most recent dose will be dispensed immediately.";
         }
         msg.textContent = text;
         modal.classList.add("open");
@@ -633,15 +609,31 @@
     document.getElementById("resumeWarningOk").addEventListener("click", function() {
         document.getElementById("resumeWarningModal").classList.remove("open");
         setPauseUI(false);
-
         if (window.ReactNativeWebView) {
-            window.ReactNativeWebView.postMessage(JSON.stringify({
-                type: "pauseToggled",
-                paused: false
-            }));
+            window.ReactNativeWebView.postMessage(JSON.stringify({ type: "pauseToggled", paused: false }));
         }
     });
 
+    // ── Empty carousel ──
+    document.getElementById("emptyCarouselBtn").addEventListener("click", function() {
+        document.getElementById("emptyCarouselModal").classList.add("open");
+    });
+
+    document.getElementById("emptyCarouselCancel").addEventListener("click", function() {
+        document.getElementById("emptyCarouselModal").classList.remove("open");
+    });
+
+    document.getElementById("emptyCarouselConfirm").addEventListener("click", async function() {
+        document.getElementById("emptyCarouselModal").classList.remove("open");
+        try {
+            await fetch(API_BASE + "/api/mobile/empty-carousel", {
+                method: "POST",
+                headers: { "Authorization": "Bearer " + authToken }
+            });
+        } catch (e) {}
+    });
+
+    // ── Tour ──
     fetchPauseState();
     var tourUser = sessionStorage.getItem("authUser") || "guest";
     var tourPendingKey = "slainte_onboarding_pending_" + tourUser;
@@ -679,13 +671,8 @@
         }
     }
 
-    function getTourStage() {
-        return sessionStorage.getItem(tourStageKey);
-    }
-
-    function setTourStage(stage) {
-        sessionStorage.setItem(tourStageKey, stage);
-    }
+    function getTourStage() { return sessionStorage.getItem(tourStageKey); }
+    function setTourStage(stage) { sessionStorage.setItem(tourStageKey, stage); }
 
     function finishTour() {
         localStorage.setItem(tourDoneKey, "1");
@@ -697,31 +684,18 @@
 
     function hideHomeTour() {
         document.getElementById("tourOverlay").style.display = "none";
-        document.querySelectorAll(".tour-highlight").forEach(function(el) {
-            el.classList.remove("tour-highlight");
-        });
+        document.querySelectorAll(".tour-highlight").forEach(function(el) { el.classList.remove("tour-highlight"); });
         setTourInteractionLock(false);
     }
 
     function showHomeTour(stage) {
         var config = homeTourSteps[stage];
-        if (!config) {
-            hideHomeTour();
-            return;
-        }
-
+        if (!config) { hideHomeTour(); return; }
         var target = document.getElementById(config.targetId);
-        if (!target) {
-            hideHomeTour();
-            return;
-        }
+        if (!target) { hideHomeTour(); return; }
 
         setTourInteractionLock(true);
-
-        document.querySelectorAll(".tour-highlight").forEach(function(el) {
-            el.classList.remove("tour-highlight");
-        });
-
+        document.querySelectorAll(".tour-highlight").forEach(function(el) { el.classList.remove("tour-highlight"); });
         target.classList.add("tour-highlight");
 
         var tooltip = document.getElementById("tourTooltip");
@@ -732,19 +706,12 @@
 
         var rect = target.getBoundingClientRect();
         var tooltipWidth = Math.min(320, window.innerWidth - 32);
-
         var left = rect.left;
-        if (left + tooltipWidth > window.innerWidth - 16) {
-            left = window.innerWidth - tooltipWidth - 16;
-        }
+        if (left + tooltipWidth > window.innerWidth - 16) left = window.innerWidth - tooltipWidth - 16;
         if (left < 16) left = 16;
-
         var top = rect.bottom + 12;
-        if (top + 170 > window.innerHeight - 16) {
-            top = rect.top - 170 - 12;
-        }
+        if (top + 170 > window.innerHeight - 16) top = rect.top - 170 - 12;
         if (top < 16) top = 16;
-
         tooltip.style.left = left + "px";
         tooltip.style.top = top + "px";
     }
@@ -755,11 +722,7 @@
         if (localStorage.getItem(tourPendingKey) !== "1") return;
 
         var stage = getTourStage();
-        if (!stage) {
-            stage = "home_schedule";
-            setTourStage(stage);
-        }
-
+        if (!stage) { stage = "home_schedule"; setTourStage(stage); }
         if (homeTourSteps[stage]) {
             showHomeTour(stage);
         } else {
@@ -772,7 +735,6 @@
 
     document.getElementById("tourNext").addEventListener("click", function() {
         var stage = getTourStage();
-
         if (stage === "home_schedule") {
             setTourStage("schedule_edit");
             if (window.ReactNativeWebView) {
@@ -782,44 +744,22 @@
             }
             return;
         }
-
-        if (stage === "home_refill") {
-            setTourStage("home_intake");
-            showHomeTour("home_intake");
-            return;
-        }
-
-        if (stage === "home_intake") {
-            setTourStage("home_pause");
-            showHomeTour("home_pause");
-            return;
-        }
-
-        if (stage === "home_pause") {
-            finishTour();
-            return;
-        }
+        if (stage === "home_refill") { setTourStage("home_intake"); showHomeTour("home_intake"); return; }
+        if (stage === "home_intake") { setTourStage("home_pause"); showHomeTour("home_pause"); return; }
+        if (stage === "home_pause") { finishTour(); return; }
     });
 
     window.addEventListener("resize", function() {
         var stage = getTourStage();
-        if (homeTourSteps[stage]) {
-            showHomeTour(stage);
-        }
+        if (homeTourSteps[stage]) showHomeTour(stage);
     });
 
     document.addEventListener("click", function(e) {
         if (!document.body.classList.contains("tour-locked")) return;
-
-        var blockedTarget = e.target.closest(
-            "#tourScheduleCard, #tourRefillCard, #tourIntakeCard, #pauseToggle, .welcome button"
-        );
-
-        if (blockedTarget) {
-            e.preventDefault();
-            e.stopPropagation();
-        }
+        var blockedTarget = e.target.closest("#tourScheduleCard, #tourRefillCard, #tourIntakeCard, #pauseToggle, .welcome button");
+        if (blockedTarget) { e.preventDefault(); e.stopPropagation(); }
     }, true);
+
     window.addEventListener("load", maybeStartHomeTour);
 </script>
 
