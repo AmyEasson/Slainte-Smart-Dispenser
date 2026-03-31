@@ -1,4 +1,4 @@
-import { View, StatusBar, Modal } from "react-native";
+import { View, StatusBar, Modal, TouchableOpacity, Text } from "react-native";
 import { WebView } from "react-native-webview";
 import { useState, useRef } from "react";
 import * as Notifications from "expo-notifications";
@@ -379,6 +379,24 @@ export default function HomeScreen() {
                             onBarcodeScanned={handleBarcodeScanned}
                         />
                     )}
+
+                    {/* Close button */}
+                    <TouchableOpacity
+                        onPress={() => setShowCamera(false)}
+                        style={{
+                            position: "absolute",
+                            top: 56,
+                            right: 20,
+                            width: 44,
+                            height: 44,
+                            borderRadius: 22,
+                            backgroundColor: "rgba(0,0,0,0.55)",
+                            alignItems: "center",
+                            justifyContent: "center",
+                        }}
+                    >
+                        <Text style={{ color: "#fff", fontSize: 18, fontWeight: "600" }}>✕</Text>
+                    </TouchableOpacity>
                 </View>
             </Modal>
         </View>
