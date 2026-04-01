@@ -306,7 +306,7 @@ void dispenseOnePill() {
   // Tune PULSE_DURATION_MS and NUM_PULSES to the wheel
 
   const int NUM_PULSES = 1;          // number of short bursts
-  const int PULSE_DURATION_MS = 500;  // ms per burst — tune
+  const int PULSE_DURATION_MS = 450;  // ms per burst — tune
   const int PULSE_GAP_MS = 50;       // pause between bursts
 
   for (int i = 0; i < NUM_PULSES; i++) {
@@ -320,7 +320,7 @@ void dispenseOnePill() {
 void advanceOneSlot() {
   // Same as dispenseOnePill but no buzzer, no status report
   myServo.write(98);
-  delay(500);
+  delay(450);
   myServo.write(0);
   delay(50);
 }
@@ -329,7 +329,7 @@ void emptyCarousel() {
   // Rotate all 15 slots through
   for (int i = 0; i < 15; i++) {
     myServo.write(98);
-    delay(500);
+    delay(400);
     myServo.write(0);
     delay(300); // slightly longer gap to let each slot settle
   }
