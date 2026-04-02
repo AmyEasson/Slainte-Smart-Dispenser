@@ -1,6 +1,6 @@
 # Sláinte — Smart Vitamin Dispenser
 
-An automated vitamin dispensing system that combines **IoT hardware, a mobile app, and a backend service** to help users stay consistent with their medication and supplement routines.
+An automated vitamin dispensing system that combines **hardware, a mobile app, and a backend service** to help users stay consistent with their medication and supplement routines.
 
 ---
 
