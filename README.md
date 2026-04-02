@@ -101,7 +101,7 @@ The dispenser is built using:
 
 ## Project Status
 
-This project was developed as part of a university project and is actively being refined.
+This project was developed as part of the University of Edinburgh's System Design Project course.
 
 ---
 
